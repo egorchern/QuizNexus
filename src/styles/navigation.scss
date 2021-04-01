@@ -1,0 +1,28 @@
+$navigation_font_size: calc(1.25rem + 0.1vw);
+.navigation{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    padding: 4px;
+    background: rgb(63,94,251);
+    background: linear-gradient(90deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+    .navigation_item{
+        padding-left:12px;
+        padding-right:12px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        transition: background-color 0.3s;
+        display: inline-flex;
+        cursor: pointer;
+        span{
+            color: white;
+            font-size: $navigation_font_size;
+        }
+    }
+    .navigation_logo{
+        max-width: 75px;
+    }
+    .navigation_item:hover{
+        background-color: hsla(0, 0%, 45%, 50%);
+    }
+}
