@@ -20,6 +20,9 @@ export class Navigation extends React.Component{
                         <span>Home</span>
                     </div>
                     <div>
+                        <span>Browse</span>
+                    </div>
+                    <div>
                         <span>Log in</span>
                     </div>
                     <div>
