@@ -9,17 +9,24 @@ export class Navigation extends React.Component{
     render(){
         return (
             <div className="navigation">
-                <img src={this.props.icon} className="navigation_logo"> 
-                </img>
-                <div className="navigation_item">
-                    <span>Home</span>
+                <div className="navigation_logo_container">
+                    <img src={this.props.icon} className="navigation_logo"> 
+
+                    </img>
+                    <span>QuizNexus</span>
                 </div>
-                <div className="navigation_item">
-                    <span>Log in</span>
+                <div className="navigation_buttons_container">
+                    <div>
+                        <span>Home</span>
+                    </div>
+                    <div>
+                        <span>Log in</span>
+                    </div>
+                    <div>
+                        <span>Register</span>
+                    </div>
                 </div>
-                <div className="navigation_item">
-                    <span>Register</span>
-                </div>
+                
             </div>
         )
     }

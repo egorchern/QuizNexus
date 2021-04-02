@@ -1,28 +1,58 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap");
 $navigation_font_size: calc(1.25rem + 0.1vw);
-.navigation{
+$logo_font_size: calc(1.5rem + 1.4vw);
+$logo_font_family: "Dancing Script";
+
+.navigation {
     display: flex;
     flex-flow: row wrap;
-    justify-content: flex-end;
-    padding: 4px;
-    background: rgb(63,94,251);
-    background: linear-gradient(90deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
-    .navigation_item{
-        padding-left:12px;
-        padding-right:12px;
-        padding-top: 6px;
-        padding-bottom: 6px;
-        transition: background-color 0.3s;
-        display: inline-flex;
-        cursor: pointer;
-        span{
+    padding: 6px;
+    background: rgb(63, 94, 251);
+    background: linear-gradient(
+        90deg,
+        rgba(63, 94, 251, 1) 0%,
+        rgba(252, 70, 107, 1) 100%
+    );
+    .navigation_logo_container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        span {
+            margin-left: 10px;
             color: white;
-            font-size: $navigation_font_size;
+            font-size: $logo_font_size;
+            font-family: $logo_font_family;
         }
     }
-    .navigation_logo{
-        max-width: 75px;
+    .navigation_buttons_container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        flex-grow: 1;
+        > div {
+            height: 80%;
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            transition: background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            span {
+                color: white;
+                font-size: $navigation_font_size;
+            }
+        }
+        > div:hover {
+            background-color: hsla(0, 0%, 45%, 60%);
+        }
     }
-    .navigation_item:hover{
-        background-color: hsla(0, 0%, 45%, 50%);
+    .navigation_logo {
+        max-width: 75px;
     }
 }

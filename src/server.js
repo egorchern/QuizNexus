@@ -52,5 +52,6 @@ async function main(){
         res.status(200).sendFile("index_page.html", {root: "dist"});
     });
     server.listen(port);
+    console.log(`Listening on port: ${port}`)
 }
 main();
