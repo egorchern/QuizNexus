@@ -22,7 +22,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
                 background: transparent;
                 border: none;
                 padding: 0;
-                height: 40px;
+                
                 border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
                 border-radius: 0;
                 transition: border-bottom 0.3s;
@@ -32,7 +32,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
                 background-color: transparent;
                 border: none;
                 padding: 0;
-                height: 40px;
+                
                 border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
                 border-radius: 0;
                 transition: border-bottom 0.3s;
@@ -50,4 +50,14 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
         }
         
     }
+    .browse_results{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        .browse_results_item{
+
+        }
+    }
+
 }

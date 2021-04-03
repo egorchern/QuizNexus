@@ -9,6 +9,7 @@ import {io} from "socket.io/client-dist/socket.io";
 import "animate.css";
 
 let root = document.querySelector("#root");
+let categories = ["Programming", "Video games", "Mathematics", "History", "General", "Russian&English", "Chess" ];
 let socket;
 class App extends React.Component{
     constructor(props){
@@ -45,7 +46,7 @@ class App extends React.Component{
         }
         else if(state === "browse"){
             content = (
-                <Browse switch_page_state={this.switch_page_state}>
+                <Browse switch_page_state={this.switch_page_state} categories={categories}>
                 </Browse>
             )
         }
