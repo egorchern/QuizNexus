@@ -1,0 +1,53 @@
+$toolbar_font_size: calc(1.2rem + 0.1vw);
+.browse{
+    height: 100%;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    column-gap: 20px;
+    .browse_toolbar{
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        .browse_input_container{
+            font-size: $toolbar_font_size;
+            margin-top: 25px;
+            width: 100%;
+            input{
+                font-size: $toolbar_font_size;
+                background: transparent;
+                border: none;
+                padding: 0;
+                height: 40px;
+                border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
+                border-radius: 0;
+                transition: border-bottom 0.3s;
+            }
+            select{
+                font-size: $toolbar_font_size;
+                background-color: transparent;
+                border: none;
+                padding: 0;
+                height: 40px;
+                border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
+                border-radius: 0;
+                transition: border-bottom 0.3s;
+            }
+            input:focus{
+                border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
+                box-shadow: none;
+                color: black;
+            }
+            select:focus{
+                border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
+                box-shadow: none;
+                color: black;
+            }
+        }
+        
+    }
+}

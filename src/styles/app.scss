@@ -33,3 +33,15 @@ body{
   margin: 0;
   /*background-color: hsl(0, 0%, 94.5%);*/
 }
+
+.flex_horizontal{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.two_column_grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+}
