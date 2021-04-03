@@ -1,5 +1,6 @@
 @use "navigation";
 @use "home";
+@use "browse";
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,500;1,400;1,500&display=swap");
 * {
   font-family: "Lato", sans-serif;
@@ -20,6 +21,8 @@ body{
 //So that home component spans all page
 .app_container{
   height: 100%;
+  background: rgb(255,240,152);
+  background: linear-gradient(315deg, rgba(255,240,152,1) 0%, rgba(255,223,223,1) 100%);
 }
 
 #root {

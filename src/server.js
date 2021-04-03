@@ -51,6 +51,9 @@ async function main(){
     app.get("/", (req, res) => {
         res.status(200).sendFile("index_page.html", {root: "dist"});
     });
+    io.on("connect", socket => {
+        
+    })
     server.listen(port);
     console.log(`Listening on port: ${port}`)
 }

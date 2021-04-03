@@ -1,9 +1,10 @@
 $home_title_font_size: calc(1.25rem + 0.65vw);
 .home{
     height: 100%;
-    background: rgb(255,240,152);
-    background: linear-gradient(315deg, rgba(255,240,152,1) 0%, rgba(255,223,223,1) 100%);
     display: flex;
+    .animate__animated{
+        animation-duration: 0.7s;
+    }
     .home_content_container{
         width: 95%;
         max-width: 1000px;

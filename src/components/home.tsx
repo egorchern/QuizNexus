@@ -25,13 +25,17 @@ export class Home extends React.Component{
                     <div className="home_join_container animate__animated animate__zoomInUp" >
                         
                         <input className="form-control" value={this.state.join_code_value} onChange={this.on_join_code_value_change} placeholder="Join code:"></input>
-                        <button className="btn btn-primary">
+                        <button className="btn btn-primary" onClick={() => {
+                            this.props.join(this.state.join_code_value);
+                        }}>
                             Join
                         </button>
                         <span className="home_title">
                             Or 
                         </span>
-                        <button className="btn btn-primary">
+                        <button className="btn btn-primary" onClick={() => {
+                            this.props.switch_page_state("browse");
+                        }}>
                             Browse quizzes
                         </button>
                     </div>

@@ -16,10 +16,14 @@ export class Navigation extends React.Component{
                     <span>QuizNexus</span>
                 </div>
                 <div className="navigation_buttons_container">
-                    <div>
+                    <div onClick={() => {
+                        this.props.switch_page_state("home");
+                    }}>
                         <span>Home</span>
                     </div>
-                    <div>
+                    <div onClick={() => {
+                        this.props.switch_page_state("browse");
+                    }}>
                         <span>Browse</span>
                     </div>
                     <div>
