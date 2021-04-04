@@ -97,6 +97,76 @@ export class Browse extends React.Component {
                     category: "Mathematics",
                     difficulty: "Hard",
                 },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
+                {
+                    title: "Formulas",
+                    description: "Test your knowledge in formulas",
+                    creators_name: "egorcik",
+                    date_created: "03/04/2021",
+                    time_to_complete: 10,
+                    number_of_questions: 12,
+                    category: "Mathematics",
+                    difficulty: "Hard",
+                },
             ],
 
             title_value: "",
@@ -140,10 +210,16 @@ export class Browse extends React.Component {
         // Find quizzes that match the search criteria
         for (let i = 0; i < this.state.results.length; i += 1) {
             let current_quiz = this.state.results[i];
+            // Matches whether the quiz title contains title search criteria
+            let regex = new RegExp(`.*${this.state.title_value}.*`, "i");
+            let regex_matches_bool = current_quiz.title.match(regex) != null;
             if (
+                
                 (this.state.difficulty_value === "Any" || this.state.difficulty_value === current_quiz.difficulty) 
                 && (this.state.category_value === "Any" || this.state.category_value === current_quiz.category)
                 && (this.state.time_min_value === "" || current_quiz.time_to_complete >= Number(this.state.time_min_value)) 
+                && (this.state.time_max_value === "" || current_quiz.time_to_complete <= Number(this.state.time_max_value))
+                && regex_matches_bool === true
             ) {
                 matching_results.push(current_quiz);
             }

@@ -4,6 +4,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
 .browse {
     height: 100%;
     width: 95%;
+    padding: 4px;
     margin-left: auto;
     margin-right: auto;
     display: grid;
@@ -63,7 +64,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
         grid-template-columns: 1fr 1fr 1fr;
         */
         padding: 12px;
-        
+        height: 90%;
         .browse_results_item {
             background-color: hsl(0, 0%, 100%);
             margin: 20px;
@@ -112,4 +113,5 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
             font-size: $toolbar_font_size;
         }
     }
+    
 }
