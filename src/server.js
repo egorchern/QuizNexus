@@ -17,6 +17,86 @@ app.set("trust proxy", true);
 
 
 let dev_mode = false;
+let quizzes = [
+    {
+        title: "Личная проверка",
+        quiz_id: 1,
+        description: "Sample",
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 4,
+        number_of_questions: 8,
+        category: "General",
+        difficulty: "Easy",
+    },
+    {
+        title: "Личная проверкаа",
+        description: "Sample",
+        quiz_id: 2,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 4,
+        number_of_questions: 8,
+        category: "General",
+        difficulty: "Easy",
+    },
+    {
+        title: "JS quiz",
+        description: "Sample sampleee",
+        quiz_id: 3,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 12,
+        number_of_questions: 20,
+        category: "Programming",
+        difficulty: "Medium",
+    },
+    {
+        title: "Differentiation",
+        description: "Differentiate with speed",
+        quiz_id: 4,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 10,
+        number_of_questions: 12,
+        category: "Mathematics",
+        difficulty: "Hard",
+    },
+    {
+        title: "Integration",
+        description: "Integrate with speed",
+        quiz_id: 5,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 10,
+        number_of_questions: 12,
+        category: "Mathematics",
+        difficulty: "Medium",
+    },
+    {
+        title: "Formulas",
+        description: "Test your knowledge in formulas",
+        quiz_id: 6,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 10,
+        number_of_questions: 12,
+        category: "Mathematics",
+        difficulty: "Medium",
+    },
+    {
+        title: "Formulas",
+        description: "Test your knowledge in formulas",
+        quiz_id: 7,
+        creators_name: "egorcik",
+        date_created: "03/04/2021",
+        time_to_complete: 10,
+        number_of_questions: 12,
+        category: "Mathematics",
+        difficulty: "Hard",
+    }
+];
+
 /*
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
@@ -52,7 +132,11 @@ async function main(){
         res.status(200).sendFile("index_page.html", {root: "dist"});
     });
     io.on("connect", socket => {
-        
+        // When receive a request for quizzes data, send quizzes array
+        socket.on("request_quizzes", data => {
+            console.log("request for quizzes received");
+            socket.emit("get_quizzes", JSON.stringify(quizzes));
+        })
     })
     server.listen(port);
     console.log(`Listening on port: ${port}`)

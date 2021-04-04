@@ -7,166 +7,7 @@ export class Browse extends React.Component {
         super(props);
         this.state = {
             results: [
-                {
-                    title: "Личная проверка",
-                    description: "Sample",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 4,
-                    number_of_questions: 8,
-                    category: "General",
-                    difficulty: "Easy",
-                },
-                {
-                    title: "Личная проверкаа",
-                    description: "Sample",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 4,
-                    number_of_questions: 8,
-                    category: "General",
-                    difficulty: "Easy",
-                },
-                {
-                    title: "JS quiz",
-                    description: "Sample sampleee",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 12,
-                    number_of_questions: 20,
-                    category: "Programming",
-                    difficulty: "Medium",
-                },
-                {
-                    title: "Differentiation",
-                    description: "Differentiate with speed",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Integration",
-                    description: "Integrate with speed",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Medium",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Medium",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
-                {
-                    title: "Formulas",
-                    description: "Test your knowledge in formulas",
-                    creators_name: "egorcik",
-                    date_created: "03/04/2021",
-                    time_to_complete: 10,
-                    number_of_questions: 12,
-                    category: "Mathematics",
-                    difficulty: "Hard",
-                },
+                
             ],
 
             title_value: "",
@@ -175,6 +16,15 @@ export class Browse extends React.Component {
             category_value: "Any",
             difficulty_value: "Any",
         };
+        this.props.socket.on("get_quizzes", data => {
+
+            let quizzes = JSON.parse(data);
+            this.props.socket.off("get_quizzes");
+            this.setState({
+                results: quizzes
+            });
+        })
+        this.props.socket.emit("request_quizzes");
         // Get markup for categories passed in the props
         this.categories = this.props.categories.map((category, index) => {
             return <option key={index}>{category}</option>;
@@ -227,7 +77,7 @@ export class Browse extends React.Component {
         // Get markup for search results
         let browse_results = matching_results.map((quiz, index) => {
             return (
-                <div className="browse_results_item" key={index}>
+                <div className="browse_results_item animate__animated animate__zoomIn" key={index}>
                     <div className="flex_vertical top_part">
                         <span className="result_title">{quiz.title}</span>
                         <span className="result_heading">
@@ -253,7 +103,10 @@ export class Browse extends React.Component {
                         <span className="result_text margin_bottom_small">
                             Description: {quiz.description}
                         </span>
-                        <button className="btn btn-primary flex_horizontal">
+                        <button className="btn btn-primary flex_horizontal" onClick={() => {
+                            // When start button is clicked, call start_quiz function that is in app.tsx with the quiz_id
+                            this.props.start_quiz(quiz.quiz_id);
+                        }}>
                             Start
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

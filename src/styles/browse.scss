@@ -1,6 +1,16 @@
 $toolbar_font_size: calc(1.2rem + 0.1vw);
 $result_title_font_size: calc(1.5rem + 0.25vw);
 $result_text_font_size: calc(1.1rem + 0.05vw);
+@media (max-width:1200px){
+    :root{
+        --browse_item_width_percentage: 42%;
+    }
+}
+@media (min-width:1200.01px){
+    :root{
+        --browse_item_width_percentage: 28%;
+    }
+}
 .browse {
     height: 100%;
     width: 95%;
@@ -11,6 +21,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     grid-template-columns: 1fr 4fr;
     column-gap: 20px;
     .browse_toolbar {
+        height: 90%;
         padding: 12px;
         display: flex;
         flex-direction: column;
@@ -70,7 +81,8 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
             margin: 20px;
             display: flex;
             flex-direction: column;
-            width: 28%;
+            animation-duration: 0.5s;
+            width: var(--browse_item_width_percentage);
             border-radius: 14px;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
             transition: transform 0.3s;
