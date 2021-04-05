@@ -1,0 +1,47 @@
+$main_font_size: calc(1.2rem + 0.1vw);
+$title_font_size: calc(1.25rem + 0.65vw);
+.game{
+    height: 100%;
+    width: 95%;
+    padding: 4px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.username_prompt{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    *{
+        font-size: $title_font_size;
+    }
+    button{
+        margin-top: 20px;
+        width: 50%;
+        max-width: 175px;
+    }
+}
+.username_input{
+    font-size: $title_font_size;
+    background: transparent !important;
+    border: none;
+    padding: 0;
+    
+    border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
+    border-radius: 0;
+    transition: border-bottom 0.3s;
+}
+.username_input:focus{
+    border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
+    box-shadow: none;
+    color: black;
+}
+.join_code{
+    font-size: $title_font_size;
+}

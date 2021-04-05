@@ -23,7 +23,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            page_state: "browse",
+            page_state: "home",
             join_code: undefined
         };
         socket = io.connect();
