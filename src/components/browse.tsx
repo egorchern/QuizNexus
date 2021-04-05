@@ -16,15 +16,22 @@ export class Browse extends React.Component {
             category_value: "Any",
             difficulty_value: "Any",
         };
-        this.props.socket.on("get_quizzes", data => {
-
-            let quizzes = JSON.parse(data);
-            this.props.socket.off("get_quizzes");
+        
+        // Fetch all quizzes from the server and set the state when response received
+        fetch("/get_quizzes", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+        .then(result => result.json())
+        .then(data => {
+            let quizzes = data.quizzes;
             this.setState({
                 results: quizzes
-            });
+            })
         })
-        this.props.socket.emit("request_quizzes");
+        
         // Get markup for categories passed in the props
         this.categories = this.props.categories.map((category, index) => {
             return <option key={index}>{category}</option>;

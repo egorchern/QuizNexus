@@ -31,7 +31,24 @@ class App extends React.Component {
         console.log(join_code);
     };
     start_quiz = (quiz_id) => {
-        console.log(quiz_id);
+        let jsoned = {
+            quiz_id: quiz_id
+        }
+        jsoned = JSON.stringify(jsoned);
+        
+        // Post to the start_quiz route with quiz_id in the body. Get join_code as the response
+        fetch("/start_quiz", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: jsoned,
+        })
+        .then((result) => result.json())
+        .then((data) => {
+            let join_code = data.join_code;
+            console.log(join_code);
+        });
     };
     switch_page_state = (state) => {
         //To prevent unneeded switches from same state

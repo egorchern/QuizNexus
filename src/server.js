@@ -96,7 +96,10 @@ let quizzes = [
         difficulty: "Hard",
     }
 ];
+// join code => lobby info
+let lobbies = {
 
+}
 /*
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
@@ -118,6 +121,35 @@ const client = new Client({
 client.connect();
 */
 
+// Generates random secure token
+const generateToken = () => {
+    return crypto.randomBytes(80).toString('hex');
+}
+
+// Gives random integer between min(inclusive) and max(inclusive)
+function get_random_int(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  
+
+function generate_join_code(){
+    let join_code = "";
+    let charlist = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
+    "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
+    "T", "U", "V", "W", "X", "Y", "Z"
+    ]
+    let code_length = 8;
+    for (let i = 0; i < code_length; i += 1){
+        let char_index = get_random_int(0, charlist.length - 1);
+        let char = charlist[char_index];
+        join_code += char;
+    }
+    return join_code;
+    
+}
+
 async function main(){
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
@@ -128,15 +160,34 @@ async function main(){
     app.use(express.static("dist"));
     var server = http.createServer(app);
     var io = socketio(server);
+    // When receive a request for quizzes data, send quizzes array
+    app.get("/get_quizzes", (req, res) => {
+        res.send({
+            quizzes: quizzes
+        });
+    })
+    app.post("/start_quiz", (req, res) => {
+        let quiz_id = req.body.quiz_id;
+        console.log(quiz_id);
+        let join_code = generate_join_code();
+        /*
+        let lobby_token = generateToken();
+        res.cookie('Lobby_token', lobby_token, { maxAge: 725760000, expires: 725760000 });
+        */
+        lobbies[join_code] = {
+            participants: {},
+            quiz_id: quiz_id
+        }
+        console.log(lobbies);
+        res.send({
+            join_code: join_code
+        });
+    })
     app.get("/", (req, res) => {
         res.status(200).sendFile("index_page.html", {root: "dist"});
     });
     io.on("connect", socket => {
-        // When receive a request for quizzes data, send quizzes array
-        socket.on("request_quizzes", data => {
-            console.log("request for quizzes received");
-            socket.emit("get_quizzes", JSON.stringify(quizzes));
-        })
+        
     })
     server.listen(port);
     console.log(`Listening on port: ${port}`)
