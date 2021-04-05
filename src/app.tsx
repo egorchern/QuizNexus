@@ -24,11 +24,36 @@ class App extends React.Component {
         super(props);
         this.state = {
             page_state: "browse",
+            join_code: undefined
         };
         socket = io.connect();
     }
     join = (join_code) => {
-        console.log(join_code);
+        let fetch_body = {
+            join_code: join_code
+        }
+        fetch_body = JSON.stringify(fetch_body);
+        // Check whether the lobby with selected join code exists and whether it can be joined
+        // Response codes: 1 - lobby does not exist, 2 - lobby exists, but the game has already started, 3 - Game finished, 4 - lobby can be joined
+        fetch("/can_join", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: fetch_body
+            
+        })
+        .then(result => result.json())
+        .then(result => {
+            let code = result.code;
+            console.log(code);
+            if(code === 4){
+                this.setState({
+                    page_state: "game",
+                    join_code: join_code
+                })
+            }
+        })
     };
     start_quiz = (quiz_id) => {
         let jsoned = {
@@ -47,7 +72,10 @@ class App extends React.Component {
         .then((result) => result.json())
         .then((data) => {
             let join_code = data.join_code;
-            console.log(join_code);
+            this.setState({
+                page_state: "game",
+                join_code: join_code
+            })
         });
     };
     switch_page_state = (state) => {
@@ -78,6 +106,16 @@ class App extends React.Component {
                     start_quiz={this.start_quiz}
                 ></Browse>
             );
+        }
+        else if(state === "game"){
+            content = (
+                <Game
+                socket={socket}
+                join_code={this.state.join_code}
+                >
+
+                </Game>
+            )
         }
         return (
             <div className="app_container">

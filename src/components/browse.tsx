@@ -84,7 +84,7 @@ export class Browse extends React.Component {
         // Get markup for search results
         let browse_results = matching_results.map((quiz, index) => {
             return (
-                <div className="browse_results_item animate__animated animate__zoomIn" key={index}>
+                <div className="browse_results_item" key={index}>
                     <div className="flex_vertical top_part">
                         <span className="result_title">{quiz.title}</span>
                         <span className="result_heading">

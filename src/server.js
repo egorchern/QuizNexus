@@ -160,25 +160,96 @@ async function main(){
     app.use(express.static("dist"));
     var server = http.createServer(app);
     var io = socketio(server);
+    
     // When receive a request for quizzes data, send quizzes array
     app.get("/get_quizzes", (req, res) => {
         res.send({
             quizzes: quizzes
         });
     })
+    // Check whether the lobby with selected join code exists and whether it can be joined
+    // Response codes: 1 - lobby does not exist, 2 - lobby exists, but the game has already started, 3 - Game finished, 4 - lobby can be joined
+    app.post("/can_join", (req, res) => {
+        let join_code = req.body.join_code;
+        let lobby_exists = lobbies[join_code] != undefined;
+        if(lobby_exists === false){
+            res.send({
+                code: 1
+            })
+        }
+        else{
+            let lobby_state = lobbies[join_code].state;
+            if(lobby_state === "game"){
+                res.send({
+                    code: 2
+                })
+            }
+            else if(lobby_state === "finished"){
+                res.send({
+                    code: 3
+                })
+            }
+            else{
+                res.send({
+                    code: 4
+                })
+            }
+        }
+        
+    })
+    // Registers a new user in lobby, and issues an auth_token if needed
+    app.post("/register_user_in_lobby", (req, res) => {
+        let join_code = req.body.join_code;
+        let auth_token = req.cookies.auth_token;
+        let username = req.body.username;
+        // If no auth_token found, then the participant is not a host and a new token needs to be issued.
+        if(auth_token === undefined){
+            auth_token = generateToken();
+            res.cookie('auth_token', auth_token, { maxAge: 725760000, expires: 725760000 });
+            lobbies[join_code].participants[auth_token] = {
+                role: "participant",
+                score: 0,
+                question_pointer: 0
+
+            }
+        }
+        lobbies[join_code].participants[auth_token].username = username;
+        res.send({
+            code: 1
+        })
+    })
+    // Get user information from a certain lobby and auth_token
+    app.post("/get_user_info", (req, res) => {
+        let join_code = req.body.join_code;
+        let auth_token = req.cookies.auth_token;
+        let user_info = lobbies[join_code].participants[auth_token];
+        res.send({
+            user_info: user_info
+        });
+    })
+    // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
         console.log(quiz_id);
         let join_code = generate_join_code();
-        /*
-        let lobby_token = generateToken();
-        res.cookie('Lobby_token', lobby_token, { maxAge: 725760000, expires: 725760000 });
-        */
+        
+        let auth_token = generateToken();
+        // Issue host auth_token
+        res.cookie('auth_token', auth_token, { maxAge: 725760000, expires: 725760000 });
+        // Lobby states: lobby - game not started, game - game in progress, finished - game finished
         lobbies[join_code] = {
-            participants: {},
-            quiz_id: quiz_id
+            participants: {
+                [auth_token]:{
+                    role: "host",
+                    username: undefined,
+                    score: 0,
+                    question_pointer: 0
+                }
+            },
+            quiz_id: quiz_id,
+            state: "lobby"
         }
-        console.log(lobbies);
+        console.log(lobbies)
         res.send({
             join_code: join_code
         });
