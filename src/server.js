@@ -309,7 +309,15 @@ async function main() {
             join_code: join_code
         });
     })
-
+    app.get("/browse", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/home", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/lobby/:join_code", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    })
     app.get("/", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });

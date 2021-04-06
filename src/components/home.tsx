@@ -7,6 +7,7 @@ export class Home extends React.Component{
         this.state = {
             join_code_value: ""
         }
+        history.pushState({page_state: "home"}, "Home", "/home");
     }
     on_join_code_value_change = (ev) => {
         this.setState({

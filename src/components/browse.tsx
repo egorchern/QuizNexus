@@ -16,7 +16,7 @@ export class Browse extends React.Component {
             category_value: "Any",
             difficulty_value: "Any",
         };
-        
+        history.pushState({page_state: "browse"}, "Browse", "/browse");
         // Fetch all quizzes from the server and set the state when response received
         fetch("/get_quizzes", {
             method: "GET",

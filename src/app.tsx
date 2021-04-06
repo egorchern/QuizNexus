@@ -18,14 +18,39 @@ let categories = [
     "Chess",
 ];
 let socket;
+
 class App extends React.Component {
     constructor(props) {
         super(props);
+        
         this.state = {
             page_state: "home",
             join_code: undefined
         };
+        window.onpopstate = (ev) => {
+            let state = ev.state;
+            if(state.page_state === "game"){
+                this.setState({
+                    page_state: state.page_state,
+                    join_code: state.join_code
+                })
+            }
+            else{
+                this.setState({
+                    page_state: state.page_state
+                })
+            }
+        }
+        // Get information from url and switch state appropriately
+        let path_name = location.pathname;
+        console.log(path_name);
+        let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
+        let temp = lobby_regex.exec(path_name);
         
+        if(temp != null){
+            this.join(temp.groups.join_code);
+        }
+       
     }
     join = (join_code) => {
         let fetch_body = {
