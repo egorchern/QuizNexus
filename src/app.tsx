@@ -5,7 +5,6 @@ import {Home} from "./components/home";
 import {Browse} from "./components/browse";
 import {Game} from "./components/game";
 import assets from "./assets/*.png";
-import {io} from "socket.io/client-dist/socket.io";
 import "animate.css";
 
 let root = document.querySelector("#root");
@@ -26,7 +25,7 @@ class App extends React.Component {
             page_state: "home",
             join_code: undefined
         };
-        socket = io.connect();
+        
     }
     join = (join_code) => {
         let fetch_body = {

@@ -1,17 +1,37 @@
 import { user } from "pg/lib/defaults";
 import * as React from "react";
 import { render } from "react-dom";
+import {io} from "socket.io/client-dist/socket.io";
 
 export class Game extends React.Component{
     join_code: any;
     constructor(props){
         super(props);
         this.join_code = this.props.join_code;
+        
         this.state = {
             username: undefined,
             game_state: "username_prompt",
             username_value: ""
         }
+        this.get_user_info();
+        
+    }
+    
+    join_io_room = () => {
+        this.socket = io.connect();
+        this.socket.on("logged_users_in_room", data => {
+            let logged_users = data;
+            console.log(logged_users);
+        })
+        let body = {
+            join_code: this.join_code,
+            
+        }
+        body = JSON.stringify(body);
+        this.socket.emit("connect_to_room", body);
+    }
+    get_user_info = () => {
         let fetch_body = {
             join_code: this.join_code
         }
@@ -29,6 +49,7 @@ export class Game extends React.Component{
         .then(result => {
             let user_info = result.user_info;
             if(user_info.username != undefined){
+                this.join_io_room();
                 this.setState({
                     game_state: "lobby"
                 })
@@ -58,10 +79,12 @@ export class Game extends React.Component{
         .then(result => {
             let code = result.code;
             if(code === 2){
+                this.join_io_room();
                 this.setState({
                     username: this.state.username_value,
                     game_state: "lobby"
                 })
+                
             }
         })
     }

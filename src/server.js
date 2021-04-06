@@ -136,7 +136,7 @@ function get_random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
+// Generates a new join code from the charlist
 function generate_join_code() {
     let join_code = "";
     let charlist = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
@@ -153,6 +153,7 @@ function generate_join_code() {
 
 }
 
+// Returns a boolean on whether the selected username in a particular lobby is free
 function is_username_free(join_code, username) {
     let usernames = all_usernames[join_code];
     
@@ -162,6 +163,21 @@ function is_username_free(join_code, username) {
         }
     }
     return true;
+}
+
+// Returns a list of currently logged participants in a particular lobby
+function get_logged_participants(join_code){
+    let participants = lobbies[join_code].participants;
+    let keys = Object.keys(participants);
+    let logged_in_participants_list = [];
+    for(let i = 0; i < keys.length; i += 1){
+        let user_info = participants[keys[i]];
+        if(user_info.logged === true){
+            logged_in_participants_list.push(user_info.username);
+        }
+    }
+    console.log(logged_in_participants_list);
+    return logged_in_participants_list;
 }
 
 async function main() {
@@ -226,7 +242,8 @@ async function main() {
             lobbies[join_code].participants[auth_token] = {
                 role: "participant",
                 score: 0,
-                question_pointer: 0
+                question_pointer: 0,
+                logged: false
 
             }
         }
@@ -277,7 +294,8 @@ async function main() {
                     role: "host",
                     username: undefined,
                     score: 0,
-                    question_pointer: 0
+                    question_pointer: 0,
+                    logged: false
                 }
             },
             quiz_id: quiz_id,
@@ -286,16 +304,38 @@ async function main() {
         all_usernames[join_code] = [];
 
 
-        console.log(lobbies)
+        
         res.send({
             join_code: join_code
         });
     })
+
     app.get("/", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     io.on("connect", socket => {
-
+        socket.on("connect_to_room", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let auth_token = regex.exec(socket.handshake.headers.cookie).groups.auth_token;
+            socket.join(`${join_code}`);
+            lobbies[join_code].participants[auth_token].logged = true;
+            console.log(lobbies[join_code]);
+            let logged_users = get_logged_participants(join_code);
+            io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
+        })
+        socket.on("disconnecting", () => {
+            let socket_rooms = [...socket.rooms];
+            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let auth_token = regex.exec(socket.handshake.headers.cookie).groups.auth_token;
+            if(socket_rooms.length > 1){
+                let join_code = socket_rooms[1];
+                lobbies[join_code].participants[auth_token].logged = false;
+                let logged_users = get_logged_participants(join_code);
+                io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
+            }
+        })
     })
     server.listen(port);
     console.log(`Listening on port: ${port}`)
