@@ -139,7 +139,6 @@ class App extends React.Component {
                 <Browse
                     switch_page_state={this.switch_page_state}
                     categories={categories}
-                    socket={socket}
                     start_quiz={this.start_quiz}
                 ></Browse>
             );
@@ -147,7 +146,6 @@ class App extends React.Component {
         else if(state === "game"){
             content = (
                 <Game
-                socket={socket}
                 join_code={this.state.join_code}
                 >
 

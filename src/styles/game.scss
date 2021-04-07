@@ -12,6 +12,11 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     justify-content: center;
     align-items: center;
 }
+.quiz_title{
+    font-size: $heading_font_size;
+    margin-bottom: 10px;
+    font-weight: bolder;
+}
 .lobby{
     width: 95%;
     max-width: 1000px;
@@ -25,6 +30,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 }
 .heading{
     font-size: $heading_font_size;
+    font-weight: bolder;
 }
 .start_button{
     margin-top: 20px;
@@ -78,5 +84,6 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     color: black;
 }
 .join_code{
+    margin-bottom: 10px;
     font-size: $title_font_size;
 }

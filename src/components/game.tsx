@@ -12,6 +12,7 @@ export class Game extends React.Component {
         this.state = {
             username: undefined,
             game_state: "username_prompt",
+            quiz_descriptors: undefined,
             username_value: "",
             participants: [],
             is_host: false,
@@ -25,10 +26,17 @@ export class Game extends React.Component {
         }
         
         this.get_user_info();
+        
     }
 
     join_io_room = () => {
         this.socket = io.connect();
+        this.socket.on("get_quiz_descriptors", data => {
+            let quiz_descriptors = data;
+            this.setState({
+                quiz_descriptors: quiz_descriptors
+            })
+        })
         this.socket.on("logged_users_in_room", (data) => {
             let logged_users = data;
             this.setState({
@@ -40,6 +48,7 @@ export class Game extends React.Component {
         };
         body = JSON.stringify(body);
         this.socket.emit("connect_to_room", body);
+        this.socket.emit("request_quiz_descriptors", body);
     };
     get_user_info = () => {
         let fetch_body = {
@@ -142,6 +151,14 @@ export class Game extends React.Component {
 
             content = (
                 <div className="lobby">
+                    {
+                        this.state.quiz_descriptors != undefined ?
+                        (
+                            <span className="quiz_title">Quiz title: {this.state.quiz_descriptors.title}</span>
+                            
+                        )
+                        :null
+                    }
                     <span className="heading">Join code:</span>
                     <span className="join_code">{this.join_code}</span>
                     <span className="heading">Link:</span>
@@ -162,6 +179,13 @@ export class Game extends React.Component {
                     
                 </div>
             );
+        }
+        else if(state === "quiz"){
+            content = (
+                <div className="quiz">
+
+                </div>
+            )
         }
         return <div className="game">{content}</div>;
     }

@@ -17,8 +17,8 @@ app.set("trust proxy", true);
 
 
 let dev_mode = false;
-let quizzes = [
-    {
+let quizzes = {
+    1: {
         title: "Личная проверка",
         quiz_id: 1,
         description: "Sample",
@@ -29,7 +29,7 @@ let quizzes = [
         category: "General",
         difficulty: "Easy",
     },
-    {
+    2: {
         title: "Личная проверкаа",
         description: "Sample",
         quiz_id: 2,
@@ -40,7 +40,7 @@ let quizzes = [
         category: "General",
         difficulty: "Easy",
     },
-    {
+    3: {
         title: "JS quiz",
         description: "Sample sampleee",
         quiz_id: 3,
@@ -51,7 +51,7 @@ let quizzes = [
         category: "Programming",
         difficulty: "Medium",
     },
-    {
+    4: {
         title: "Differentiation",
         description: "Differentiate with speed",
         quiz_id: 4,
@@ -62,7 +62,7 @@ let quizzes = [
         category: "Mathematics",
         difficulty: "Hard",
     },
-    {
+    5: {
         title: "Integration",
         description: "Integrate with speed",
         quiz_id: 5,
@@ -73,7 +73,7 @@ let quizzes = [
         category: "Mathematics",
         difficulty: "Medium",
     },
-    {
+    6: {
         title: "Formulas",
         description: "Test your knowledge in formulas",
         quiz_id: 6,
@@ -84,7 +84,7 @@ let quizzes = [
         category: "Mathematics",
         difficulty: "Medium",
     },
-    {
+    7: {
         title: "Formulas",
         description: "Test your knowledge in formulas",
         quiz_id: 7,
@@ -95,7 +95,27 @@ let quizzes = [
         category: "Mathematics",
         difficulty: "Hard",
     }
-];
+};
+let quiz_questions = {
+    1: {
+        1: {
+            multi_choice: false,
+            question_text: "Кто является лучшим Джином в регионе Европы, в игре League of Legends?",
+            answer_choices: ["Егор Чернышев Владимерович", "Владислав Былёв Витальевич", "Дмитрий Мысников"],
+            correct_answer_indexes: [0],
+            time_allocated: 20,
+            points_base: 50
+        },
+        2: {
+            multi_choice: false,
+            question_text: "Как инструмент помощающий с поеданием пищи, что лучше: Ложка или Вилка",
+            answer_choices: ["Ложка", "Вилка"],
+            correct_answer_indexes: [0],
+            time_allocated: 20,
+            points_base: 50
+        }
+    }
+}
 // join code => lobby info
 let lobbies = {
 
@@ -179,7 +199,14 @@ function get_logged_participants(join_code){
     console.log(logged_in_participants_list);
     return logged_in_participants_list;
 }
+/*
+function get_quiz_object(quiz_id) {
+    let quiz_obj;
+    for(let i = 0; i < quizzes.length; i += 1){
 
+    }
+}
+*/
 async function main() {
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
@@ -193,8 +220,9 @@ async function main() {
 
     // When receive a request for quizzes data, send quizzes array
     app.get("/get_quizzes", (req, res) => {
+        let quizzes_list = Object.values(quizzes);
         res.send({
-            quizzes: quizzes
+            quizzes: quizzes_list
         });
     })
 
@@ -333,6 +361,28 @@ async function main() {
             console.log(lobbies[join_code]);
             let logged_users = get_logged_participants(join_code);
             io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
+        })
+        socket.on("request_quiz_descriptors", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let quiz_id = lobbies[join_code].quiz_id;
+            let quiz_obj = quizzes[quiz_id];
+            socket.emit("get_quiz_descriptors", quiz_obj);
+        })
+        socket.on("request_question", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let question_number = parsed.question_number;
+            let quiz_id = lobbies[join_code].quiz_id;
+            let question_obj = quiz_questions[quiz_id][question_number];
+            let answer_body = {
+                multi_choice: question_obj.multi_choice,
+                question_text: question_obj.question_text,
+                answer_choices: question_obj.answer_choices,
+                time_allocated: question_obj.time_allocated,
+                points_base: question_obj.points_base
+            }
+            socket.emit("get_question", answer_body);
         })
         socket.on("disconnecting", () => {
             let socket_rooms = [...socket.rooms];
