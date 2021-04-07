@@ -16,8 +16,8 @@ export class Game extends React.Component {
             participants: [],
             is_host: false,
         };
+        // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
-        console.log(path_name);
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
         if(temp === null){
@@ -93,12 +93,16 @@ export class Game extends React.Component {
             .then((result) => result.json())
             .then((result) => {
                 let code = result.code;
+                // Codes: 1 - username taken, 2 - good to go
                 if (code === 2) {
                     this.join_io_room();
                     this.setState({
                         username: this.state.username_value,
                         game_state: "lobby",
                     });
+                }
+                else{
+                    alert(`Username: ${this.state.username_value} is already taken! Please choose another username`);
                 }
             });
     };

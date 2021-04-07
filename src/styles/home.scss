@@ -3,11 +3,12 @@ $home_title_font_size: calc(1.25rem + 0.65vw);
     height: 100%;
     display: flex;
     .animate__animated {
-        animation-duration: 0.7s;
+        animation-duration: 0.5s;
     }
     .home_content_container {
         width: 95%;
         max-width: 1000px;
+        padding: 12px;
         margin-left: auto;
         margin-right: auto;
         display: flex;

@@ -22,9 +22,13 @@ let socket;
 class App extends React.Component {
     constructor(props) {
         super(props);
-        
+        let page_state = "home";
+        let path_name = location.pathname;
+        if(path_name === "/browse"){
+            page_state = "browse";
+        }
         this.state = {
-            page_state: "home",
+            page_state: page_state,
             join_code: undefined
         };
         window.onpopstate = (ev) => {
@@ -41,8 +45,9 @@ class App extends React.Component {
                 })
             }
         }
+
         // Get information from url and switch state appropriately
-        let path_name = location.pathname;
+        
         console.log(path_name);
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
@@ -50,6 +55,7 @@ class App extends React.Component {
         if(temp != null){
             this.join(temp.groups.join_code);
         }
+        
        
     }
     join = (join_code) => {
@@ -69,6 +75,7 @@ class App extends React.Component {
         })
         .then(result => result.json())
         .then(result => {
+            // Response codes: 1 - lobby does not exist, 2 - lobby exists, but the game has already started, 3 - Game finished, 4 - lobby can be joined
             let code = result.code;
             console.log(code);
             if(code === 4){
@@ -76,6 +83,12 @@ class App extends React.Component {
                     page_state: "game",
                     join_code: join_code
                 })
+            }
+            if(code === 1){
+                alert(`Lobby with join code: ${join_code} does not exist! Please check if the join code is correct`);
+            }
+            if(code === 2){
+                alert(`Lobby with join code: ${join_code} does exist, but the host has already started the quiz`);
             }
         })
     };

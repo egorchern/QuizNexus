@@ -16,7 +16,14 @@ export class Browse extends React.Component {
             category_value: "Any",
             difficulty_value: "Any",
         };
-        history.pushState({page_state: "browse"}, "Browse", "/browse");
+        // This is to prevent pushing into history when the state is already at browse
+        let path_name = location.pathname;
+        let regex = new RegExp("^/browse$");
+        let temp = regex.exec(path_name);
+        if(temp === null){
+            history.pushState({page_state: "browse"}, "Browse", "/browse");
+        }
+        
         // Fetch all quizzes from the server and set the state when response received
         fetch("/get_quizzes", {
             method: "GET",
@@ -133,7 +140,7 @@ export class Browse extends React.Component {
 
         return (
             <div className="browse">
-                <div className="browse_toolbar">
+                <div className="browse_toolbar animate__animated animate__zoomInLeft">
                     <div className="browse_input_container">
                         <span>Title:</span>
                         <input
@@ -184,7 +191,7 @@ export class Browse extends React.Component {
                         </select>
                     </div>
                 </div>
-                <div className="browse_results">{browse_results}</div>
+                <div className="browse_results animate__animated animate__zoomInRight">{browse_results}</div>
             </div>
         );
     }

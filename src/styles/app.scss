@@ -29,6 +29,12 @@ body {
         rgba(255, 223, 223, 1) 100%
     );
 }
+@media screen and (max-width: 750px) {
+    .app_container{
+        height: 100%;
+        display: grid;
+    }
+}
 
 #root {
     width: 100%;

@@ -250,6 +250,7 @@ async function main() {
 
         let username_free = is_username_free(join_code, username);
         console.log(username_free);
+        // If username is not free, send code 1 to indicate that it is taken
         if (username_free === false) {
             res.send({
                 code: 1

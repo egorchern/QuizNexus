@@ -6,6 +6,7 @@ $logo_font_family: "Dancing Script";
 .navigation {
     display: flex;
     flex-flow: row wrap;
+    height: fit-content;
     padding: 6px;
     background: rgb(63, 94, 251);
     background: linear-gradient(
@@ -54,5 +55,22 @@ $logo_font_family: "Dancing Script";
     }
     .navigation_logo {
         max-width: 75px;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    .navigation{
+        flex-flow: column nowrap;
+    }
+    .navigation_buttons_container{
+        margin-top: 10px !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        >div{
+            width: 100% !important;
+            padding: 14px !important;
+            align-items: flex-start !important;
+            height: auto !important;
+        }
     }
 }
