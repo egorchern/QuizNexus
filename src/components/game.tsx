@@ -16,6 +16,10 @@ export class Game extends React.Component {
             username_value: "",
             participants: [],
             is_host: false,
+            current_question_obj: undefined,
+            question_pointer: 0,
+            score: 0
+
         };
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
@@ -31,9 +35,20 @@ export class Game extends React.Component {
 
         this.get_user_info();
     }
-
+    fetch_question = () => {
+        this.state.question_pointer += 1;
+        this.socket.emit("request_question", JSON.stringify({
+            join_code: this.join_code,
+            question_number: this.state.question_pointer
+        }));
+    }
     join_io_room = () => {
         this.socket = io.connect();
+        this.socket.on("get_question", data => {
+            this.setState({
+                current_question_obj: data
+            })
+        })
         this.socket.on("get_quiz_descriptors", (data) => {
             let quiz_descriptors = data;
             this.setState({
@@ -48,6 +63,9 @@ export class Game extends React.Component {
         });
         this.socket.on("get_lobby_state", data => {
             let lobby_state = data;
+            if(lobby_state === "game"){
+                this.fetch_question();
+            }
             this.setState({
                 game_state: lobby_state
             })
@@ -55,6 +73,7 @@ export class Game extends React.Component {
         this.socket.on("start_game_response", (data) => {
             let code = data;
             if (code === 2) {
+                this.fetch_question();
                 this.setState({
                     game_state: "game",
                 });
@@ -68,13 +87,11 @@ export class Game extends React.Component {
         body = JSON.stringify(body);
         this.socket.emit("connect_to_room", body);
         this.socket.emit("request_quiz_descriptors", body);
-        this.socket.emit("submit_answer", JSON.stringify({
-            join_code: this.join_code,
-            question_number: 1,
-            answer_indexes: [0],
-            time: 6
-        }));
+        
     };
+    submit_answer = () => {
+
+    }
     get_user_info = () => {
         let fetch_body = {
             join_code: this.join_code,
@@ -101,6 +118,9 @@ export class Game extends React.Component {
                     this.join_io_room();
                     this.setState({
                         game_state: "lobby",
+                        username: user_info.username,
+                        question_pointer: user_info.question_pointer,
+                        score: user_info.score
                     });
                 }
             });
