@@ -21,27 +21,46 @@ export class Game extends React.Component {
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
-        if(temp === null){
-            history.pushState({page_state: "game", join_code: this.join_code}, this.join_code, `lobby/${this.join_code}`);
+        if (temp === null) {
+            history.pushState(
+                {page_state: "game", join_code: this.join_code},
+                this.join_code,
+                `lobby/${this.join_code}`
+            );
         }
-        
+
         this.get_user_info();
-        
     }
 
     join_io_room = () => {
         this.socket = io.connect();
-        this.socket.on("get_quiz_descriptors", data => {
+        this.socket.on("get_quiz_descriptors", (data) => {
             let quiz_descriptors = data;
             this.setState({
-                quiz_descriptors: quiz_descriptors
-            })
-        })
+                quiz_descriptors: quiz_descriptors,
+            });
+        });
         this.socket.on("logged_users_in_room", (data) => {
             let logged_users = data;
             this.setState({
                 participants: logged_users,
             });
+        });
+        this.socket.on("get_lobby_state", data => {
+            let lobby_state = data;
+            this.setState({
+                game_state: lobby_state
+            })
+        })
+        this.socket.on("start_game_response", (data) => {
+            let code = data;
+            if (code === 2) {
+                this.setState({
+                    game_state: "game",
+                });
+            } else {
+                alert("You are not authorized to start the game!");
+            }
         });
         let body = {
             join_code: this.join_code,
@@ -49,6 +68,12 @@ export class Game extends React.Component {
         body = JSON.stringify(body);
         this.socket.emit("connect_to_room", body);
         this.socket.emit("request_quiz_descriptors", body);
+        this.socket.emit("submit_answer", JSON.stringify({
+            join_code: this.join_code,
+            question_number: 1,
+            answer_indexes: [0],
+            time: 6
+        }));
     };
     get_user_info = () => {
         let fetch_body = {
@@ -85,7 +110,14 @@ export class Game extends React.Component {
             username_value: ev.target.value,
         });
     };
-    start_game = () => {};
+    start_game = () => {
+        this.socket.emit(
+            "start_game",
+            JSON.stringify({
+                join_code: this.join_code,
+            })
+        );
+    };
     on_submit_username = () => {
         let fetch_body = {
             join_code: this.join_code,
@@ -109,9 +141,10 @@ export class Game extends React.Component {
                         username: this.state.username_value,
                         game_state: "lobby",
                     });
-                }
-                else{
-                    alert(`Username: ${this.state.username_value} is already taken! Please choose another username`);
+                } else {
+                    alert(
+                        `Username: ${this.state.username_value} is already taken! Please choose another username`
+                    );
                 }
             });
     };
@@ -151,14 +184,11 @@ export class Game extends React.Component {
 
             content = (
                 <div className="lobby">
-                    {
-                        this.state.quiz_descriptors != undefined ?
-                        (
-                            <span className="quiz_title">Quiz title: {this.state.quiz_descriptors.title}</span>
-                            
-                        )
-                        :null
-                    }
+                    {this.state.quiz_descriptors != undefined ? (
+                        <span className="quiz_title">
+                            Quiz title: {this.state.quiz_descriptors.title}
+                        </span>
+                    ) : null}
                     <span className="heading">Join code:</span>
                     <span className="join_code">{this.join_code}</span>
                     <span className="heading">Link:</span>
@@ -169,23 +199,18 @@ export class Game extends React.Component {
                     <div className="participants_container">
                         {participants_markup}
                     </div>
-                    {
-                        this.state.is_host === true ?
-                        <button className="btn btn-primary start_button" onClick={this.start_game}>
+                    {this.state.is_host === true ? (
+                        <button
+                            className="btn btn-primary start_button"
+                            onClick={this.start_game}
+                        >
                             Start
                         </button>
-                        :null
-                    }
-                    
+                    ) : null}
                 </div>
             );
-        }
-        else if(state === "quiz"){
-            content = (
-                <div className="quiz">
-
-                </div>
-            )
+        } else if (state === "quiz") {
+            content = <div className="quiz"></div>;
         }
         return <div className="game">{content}</div>;
     }
