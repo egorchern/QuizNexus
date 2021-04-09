@@ -104,7 +104,7 @@ let quiz_questions = {
             answer_choices: [
                 "Егор Чернышев Владимерович",
                 "Владислав Былёв Витальевич",
-                "Дмитрий Мысников",
+                "Дмитрий Мысников Александрович",
             ],
             correct_answer_indexes: [0],
             time_allocated: 20,

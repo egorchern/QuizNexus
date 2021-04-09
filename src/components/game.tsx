@@ -229,8 +229,33 @@ export class Game extends React.Component {
                     ) : null}
                 </div>
             );
-        } else if (state === "quiz") {
-            content = <div className="quiz"></div>;
+        } else if (state === "game") {
+            if(this.state.current_question_obj != undefined){
+                let answer_choices = this.state.current_question_obj.answer_choices.map((answer_choice, index) => {
+                    return (
+                        <div className="answer_choice" key={index}>
+                            <span>
+                                {answer_choice}
+                            </span>
+                        </div>
+                    )
+                })
+                content = (
+                    <div className="quiz">
+                        <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                        <div className="answer_choices">
+                            {answer_choices}
+                        </div>
+                    </div>
+                )
+            }
+            else{
+                content = (
+                    <div className="quiz">
+
+                    </div>
+                )
+            }
         }
         return <div className="game">{content}</div>;
     }
