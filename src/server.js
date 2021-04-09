@@ -113,7 +113,7 @@ let quiz_questions = {
         2: {
             multi_choice: false,
             question_text:
-                "Как инструмент помощающий с поеданием пищи, что лучше: Ложка или Вилка",
+                "Как инструмент помогающий с поеданием пищи, что лучше: Ложка или Вилка",
             answer_choices: ["Ложка", "Вилка"],
             correct_answer_indexes: [0],
             time_allocated: 20,

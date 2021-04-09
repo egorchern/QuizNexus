@@ -4,13 +4,14 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 .game{
     height: 100%;
     width: 100%;
-    padding: 4px;
+    padding: 12px;
     margin-left: auto;
     margin-right: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow: auto;
 }
 .quiz_title{
     font-size: $heading_font_size;
@@ -86,19 +87,14 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 .join_code{
     margin-bottom: 10px;
     font-size: $title_font_size;
+    word-break: break-all;
 }
 .quiz{
     width: 100%;
     height: 100%;
-    /*
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    */
-    
+    overflow: auto;
     display: grid;
-    grid-template-rows: 3fr 2fr;
+    grid-template-rows: 7fr 2fr;
     
     *{
         font-size: $main_font_size;
@@ -124,7 +120,8 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     align-items: center;
 }
 .answer_choice{
-    height: 100%;
+    height: 95%;
+    min-height: 85px;
     display: flex;
     flex-direction: column;
     color: white;
@@ -137,7 +134,26 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     background-color: hsla(0, 0%, 0%, 60%);
     transition: background-color 0.3s;
     cursor: pointer;
+    
 }
 .answer_choice:hover{
     background-color: hsla(0, 0%, 0%, 90%);
+}
+@media screen and (max-width: 750px) {
+    .quiz{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .answer_choice{
+        height: auto;
+    }
+    .question_text{
+        margin-top: 100px;
+        margin-bottom: 20px;
+    }
+    .answer_choices{
+        margin-top: auto;
+    }
 }
