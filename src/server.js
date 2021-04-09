@@ -100,7 +100,7 @@ let quiz_questions = {
         1: {
             multi_choice: false,
             question_text:
-                "Кто является лучшим Джином в регионе Европы, в игре League of Legends?",
+                "Кто является лучшим игроком на Джине в регионе Европы, в игре League of Legends?",
             answer_choices: [
                 "Егор Чернышев Владимерович",
                 "Владислав Былёв Витальевич",
@@ -113,9 +113,63 @@ let quiz_questions = {
         2: {
             multi_choice: false,
             question_text:
-                "Как инструмент помогающий с поеданием пищи, что лучше: Ложка или Вилка",
+                "Как инструмент помогающий с поеданием пищи, что лучше: Ложка или Вилка?",
             answer_choices: ["Ложка", "Вилка"],
             correct_answer_indexes: [0],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        3: {
+            multi_choice: false,
+            question_text:
+                "Какой из нижеперечисленных ингредиентов пищи Егор Чернышев Владимерович ненавидит больше всего?",
+            answer_choices: ["Лук", "Изюм", "Киви"],
+            correct_answer_indexes: [1],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        4: {
+            multi_choice: false,
+            question_text:
+                "Кто является худщим игроком на Пайке в регионе Европы, в игре League of Legends?",
+            answer_choices: ["Андрей Лихачёв", "Данил Воротников", "Владислав Былёв Витальевич", "Никто из перечисленных"],
+            correct_answer_indexes: [2],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        5: {
+            multi_choice: false,
+            question_text:
+                "Какая манга является лучшей в жанре \"Гарем\"?",
+            answer_choices: ["To Love-Ru", "Yuragi-Sou no Yuuna-San", "Temple", "5-toubun no Hanayome (Пять невест)"],
+            correct_answer_indexes: [3],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        6: {
+            multi_choice: false,
+            question_text:
+                "Является ли Владислав Былёв Витальевич (Дата рождения: 09/01/2002, Место проживания - Российская Федерация, Пермь, Микро-район Липовая Гора) предателем?",
+            answer_choices: ["Да", "Нет"],
+            correct_answer_indexes: [0],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        7: {
+            multi_choice: false,
+            question_text:
+                "Кто входит в Топ 100 лудших Шейкеров в регионе Европы, в игре Dota 2?",
+            answer_choices: ["Дмитрий Мысников Александрович", "Владислав Былёв Витальевич", "Егор Чернышев Владимерович", "Никто из перечисленных"],
+            correct_answer_indexes: [3],
+            time_allocated: 20,
+            points_base: 1000,
+        },
+        8: {
+            multi_choice: false,
+            question_text:
+                "Кто виноват что Владислав Былёв Витальевич не поднимает ММР в Доте?",
+            answer_choices: ["Дмитрий Мысников Александрович", "Егор Чернышев Владимерович", "Он сам (например: рубик пятерка с take aim)", "Агенты Габена"],
+            correct_answer_indexes: [2],
             time_allocated: 20,
             points_base: 1000,
         },

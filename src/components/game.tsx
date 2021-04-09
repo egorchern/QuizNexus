@@ -1,8 +1,8 @@
 import {user} from "pg/lib/defaults";
 import * as React from "react";
 import {render} from "react-dom";
-import {io} from "socket.io/client-dist/socket.io";
-
+import socketIo, {io} from "socket.io/client-dist/socket.io";
+// TODO make seconds_elapsed server-side
 export class Game extends React.Component {
     join_code: any;
     constructor(props) {
@@ -17,10 +17,12 @@ export class Game extends React.Component {
             participants: [],
             is_host: false,
             current_question_obj: undefined,
+            seconds_elapsed: 0,
             question_pointer: 0,
             score: 0
 
         };
+        
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
@@ -35,6 +37,11 @@ export class Game extends React.Component {
 
         this.get_user_info();
     }
+    on_second_elapse = () => {
+        this.setState({
+            seconds_elapsed: this.state.seconds_elapsed + 1
+        })
+    }
     fetch_question = () => {
         this.state.question_pointer += 1;
         this.socket.emit("request_question", JSON.stringify({
@@ -45,7 +52,10 @@ export class Game extends React.Component {
     join_io_room = () => {
         this.socket = io.connect();
         this.socket.on("get_question", data => {
+            clearInterval(this.timer);
+            this.timer = setInterval(this.on_second_elapse, 1000);
             this.setState({
+                seconds_elapsed: 0,
                 current_question_obj: data
             })
         })
@@ -89,8 +99,17 @@ export class Game extends React.Component {
         this.socket.emit("request_quiz_descriptors", body);
         
     };
-    submit_answer = () => {
-
+    submit_answer = (indexes) => {
+        this.socket.emit("submit_answer", JSON.stringify({
+            question_number: this.state.question_pointer,
+            answer_indexes: indexes,
+            time: this.state.seconds_elapsed,
+            join_code: this.join_code
+        }));
+        if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
+            this.fetch_question();
+        }
+        
     }
     get_user_info = () => {
         let fetch_body = {
@@ -233,7 +252,9 @@ export class Game extends React.Component {
             if(this.state.current_question_obj != undefined){
                 let answer_choices = this.state.current_question_obj.answer_choices.map((answer_choice, index) => {
                     return (
-                        <div className="answer_choice" key={index}>
+                        <div className="answer_choice" key={index} onClick={() => {
+                            this.submit_answer([index]);
+                        }}>
                             <span>
                                 {answer_choice}
                             </span>

@@ -131,13 +131,13 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     margin: 8px;
     padding: 12px;
     border-radius: 12px;
-    background-color: hsla(0, 0%, 0%, 60%);
+    background-color: hsla(0, 0%, 0%, 80%);
     transition: background-color 0.3s;
     cursor: pointer;
     
 }
 .answer_choice:hover{
-    background-color: hsla(0, 0%, 0%, 90%);
+    background-color: hsla(0, 0%, 0%, 100%);
 }
 @media screen and (max-width: 750px) {
     .quiz{
