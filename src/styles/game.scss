@@ -139,6 +139,31 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 .answer_choice:hover{
     background-color: hsla(0, 0%, 0%, 100%);
 }
+
+.quiz_top_part{
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+}
+.timer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.progress_bar{
+    background-color: white;
+    border-radius: 12px;
+    width: 100%;
+    height: 40px;
+}
+.progress_bar_fill{
+    transition: width 0.3s;
+    background-color: #21D4FD;
+    background-image: linear-gradient(19deg, #21D4FD 0%, #B721FF 100%);
+
+    border-radius: 12px;
+    height: 40px;
+}
 @media screen and (max-width: 750px) {
     .quiz{
         display: flex;

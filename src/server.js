@@ -158,7 +158,7 @@ let quiz_questions = {
         7: {
             multi_choice: false,
             question_text:
-                "Кто входит в Топ 100 лудших Шейкеров в регионе Европы, в игре Dota 2?",
+                "Кто входит в Топ 100 лучших Шейкеров в регионе Европы, в игре Dota 2?",
             answer_choices: ["Дмитрий Мысников Александрович", "Владислав Былёв Витальевич", "Егор Чернышев Владимерович", "Никто из перечисленных"],
             correct_answer_indexes: [3],
             time_allocated: 20,
@@ -372,6 +372,7 @@ async function main() {
                 score: 0,
                 question_pointer: 0,
                 logged: false,
+                answers: {}
             };
         }
 
@@ -424,6 +425,7 @@ async function main() {
                     score: 0,
                     question_pointer: 0,
                     logged: false,
+                    answers: {}
                 },
             },
             quiz_id: quiz_id,
@@ -496,6 +498,9 @@ async function main() {
             let time = parsed.time;
             let question_obj = quiz_questions[quiz_id][question_number];
             let is_correct = JSON.stringify(answer_indexes) === JSON.stringify(question_obj.correct_answer_indexes);
+            if(time >= question_obj.time_allocated){
+                is_correct = false;
+            }
             let points_earned;
             // Formula for points: points_base - (points_base / time_allocated * time);
             if(is_correct){
@@ -504,7 +509,14 @@ async function main() {
             else{
                 points_earned = 0;
             }
+            lobbies[join_code].participants[auth_token].answers[question_number] = {
+                answer_indexes: answer_indexes,
+                is_correct: is_correct,
+                points_earned: points_earned
+            }
+            lobbies[join_code].participants[auth_token].question_pointer += 1;
             console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
+            console.log(lobbies[join_code].participants[auth_token]);
         });
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);

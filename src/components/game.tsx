@@ -38,9 +38,15 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
-        this.setState({
-            seconds_elapsed: this.state.seconds_elapsed + 1
-        })
+        if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
+            this.submit_answer([-1]);
+        }
+        else{
+            this.setState({
+                seconds_elapsed: this.state.seconds_elapsed + 1
+            })
+        }
+        
     }
     fetch_question = () => {
         this.state.question_pointer += 1;
@@ -261,9 +267,25 @@ export class Game extends React.Component {
                         </div>
                     )
                 })
+                let progress_bar_width_percentage = Math.floor(this.state.seconds_elapsed / this.state.current_question_obj.time_allocated * 100);
+                
+                let styles = {
+                    width: `${progress_bar_width_percentage}%`
+                }
                 content = (
                     <div className="quiz">
-                        <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                        <div className="quiz_top_part">
+                            <div className="timer">
+                                <span>{this.state.seconds_elapsed} / {this.state.current_question_obj.time_allocated}</span>
+                                <div className="progress_bar">
+                                    <div className="progress_bar_fill" style={styles}>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                        </div>
+                        
                         <div className="answer_choices">
                             {answer_choices}
                         </div>
