@@ -65,6 +65,9 @@ export class Game extends React.Component {
                 current_question_obj: data
             })
         })
+        this.socket.on("score_update", data => {
+            console.log(data);
+        })
         this.socket.on("get_quiz_descriptors", (data) => {
             let quiz_descriptors = data;
             this.setState({
@@ -114,6 +117,12 @@ export class Game extends React.Component {
         }));
         if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
             this.fetch_question();
+        }
+        else{
+            clearInterval(this.timer);
+            this.setState({
+                game_state: "results"
+            })
         }
         
     }

@@ -170,7 +170,7 @@ let quiz_questions = {
                 "Кто виноват что Владислав Былёв Витальевич не поднимает ММР в Доте?",
             answer_choices: ["Дмитрий Мысников Александрович", "Егор Чернышев Владимерович", "Он сам (например: рубик пятерка с take aim)", "Агенты Габена"],
             correct_answer_indexes: [2],
-            time_allocated: 20,
+            time_allocated: 25,
             points_base: 1000,
         },
     },
@@ -515,8 +515,16 @@ async function main() {
                 points_earned: points_earned
             }
             lobbies[join_code].participants[auth_token].question_pointer += 1;
+            lobbies[join_code].participants[auth_token].score += points_earned;
+            if(points_earned != 0){
+                io.to(`${join_code}`).emit("score_update", {
+                    username: username,
+                    score: lobbies[join_code].participants[auth_token].score
+                });
+            }
+            
             console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
-            console.log(lobbies[join_code].participants[auth_token]);
+            
         });
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
