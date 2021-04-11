@@ -43,7 +43,7 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
-        /*
+        
         if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
             this.submit_answer([-1]);
         }
@@ -52,7 +52,7 @@ export class Game extends React.Component {
                 seconds_elapsed: this.state.seconds_elapsed + 1
             })
         }
-        */
+        
     }
     fetch_question = () => {
         this.setState({
@@ -68,7 +68,7 @@ export class Game extends React.Component {
     join_io_room = () => {
         this.socket = io.connect();
         this.socket.on("get_question", data => {
-            clearInterval(this.timer);
+            
             this.timer = setInterval(this.on_second_elapse, 1000);
             this.setState({
                 seconds_elapsed: 0,
@@ -116,7 +116,12 @@ export class Game extends React.Component {
         this.socket.on("get_lobby_state", data => {
             let lobby_state = data;
             if(lobby_state === "game"){
-                this.fetch_question();
+                if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
+                    this.fetch_question();
+                }
+                else{
+                    lobby_state = "results";
+                }
             }
             this.setState({
                 game_state: lobby_state
@@ -137,8 +142,9 @@ export class Game extends React.Component {
             join_code: this.join_code,
         };
         body = JSON.stringify(body);
-        this.socket.emit("connect_to_room", body);
         this.socket.emit("request_quiz_descriptors", body);
+        this.socket.emit("connect_to_room", body);
+        
         
     };
     submit_answer = () => {
@@ -148,12 +154,12 @@ export class Game extends React.Component {
             time: this.state.seconds_elapsed,
             join_code: this.join_code
         }));
+        clearInterval(this.timer);
         let tmr = setTimeout(() => {
             if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
                 this.fetch_question();
             }
             else{
-                clearInterval(this.timer);
                 this.setState({
                     game_state: "results"
                 })
@@ -373,7 +379,14 @@ export class Game extends React.Component {
                                     </div>
                                 </div>
                             </div>
-                            <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                            <div className="question_info">
+                                <span className="question_indicator">Question: {this.state.question_pointer} / {this.state.quiz_descriptors.number_of_questions}</span>
+                                <div className="question_text_container">
+                                    <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                                </div>
+                                
+                            </div>
+                            
                             <div className="user_scores">
                                 <table className="table align-middle">
                                     <thead>
