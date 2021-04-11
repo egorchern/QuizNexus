@@ -532,7 +532,7 @@ async function main() {
                     score: lobbies[join_code].participants[auth_token].score
                 });
             }
-            
+            socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
             console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
             
         });

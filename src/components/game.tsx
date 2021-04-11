@@ -5,10 +5,12 @@ import socketIo, {io} from "socket.io/client-dist/socket.io";
 // TODO make seconds_elapsed server-side
 export class Game extends React.Component {
     join_code: any;
+    wait_interval_between_questions: number;
+    socket: any;
     constructor(props) {
         super(props);
         this.join_code = this.props.join_code;
-
+        this.wait_interval_between_questions = 2000;
         this.state = {
             username: undefined,
             game_state: "username_prompt",
@@ -20,7 +22,9 @@ export class Game extends React.Component {
             current_question_obj: undefined,
             seconds_elapsed: 0,
             question_pointer: 0,
-            score: 0
+            score: 0,
+            correct_answer_indexes: [],
+            selected_answer_indexes: []
 
         };
         
@@ -51,6 +55,10 @@ export class Game extends React.Component {
         */
     }
     fetch_question = () => {
+        this.setState({
+            correct_answer_indexes: [],
+            selected_answer_indexes: []
+        })
         this.state.question_pointer += 1;
         this.socket.emit("request_question", JSON.stringify({
             join_code: this.join_code,
@@ -65,6 +73,11 @@ export class Game extends React.Component {
             this.setState({
                 seconds_elapsed: 0,
                 current_question_obj: data
+            })
+        })
+        this.socket.on("get_correct_answer", data => {
+            this.setState({
+                correct_answer_indexes: data
             })
         })
         this.socket.on("score_update", data => {
@@ -128,22 +141,25 @@ export class Game extends React.Component {
         this.socket.emit("request_quiz_descriptors", body);
         
     };
-    submit_answer = (indexes) => {
+    submit_answer = () => {
         this.socket.emit("submit_answer", JSON.stringify({
             question_number: this.state.question_pointer,
-            answer_indexes: indexes,
+            answer_indexes: this.state.selected_answer_indexes,
             time: this.state.seconds_elapsed,
             join_code: this.join_code
         }));
-        if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
-            this.fetch_question();
-        }
-        else{
-            clearInterval(this.timer);
-            this.setState({
-                game_state: "results"
-            })
-        }
+        let tmr = setTimeout(() => {
+            if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
+                this.fetch_question();
+            }
+            else{
+                clearInterval(this.timer);
+                this.setState({
+                    game_state: "results"
+                })
+            }
+        }, this.wait_interval_between_questions);
+        
         
     }
     get_user_info = () => {
@@ -301,9 +317,20 @@ export class Game extends React.Component {
         } else if (state === "game") {
             if(this.state.current_question_obj != undefined){
                 let answer_choices = this.state.current_question_obj.answer_choices.map((answer_choice, index) => {
+                    let class_list = "answer_choice ";
+                    if(this.state.selected_answer_indexes.includes(index) && this.state.correct_answer_indexes.includes(index) === false){
+                        class_list += "incorrect ";
+                    }
+                    if(this.state.correct_answer_indexes.includes(index)){
+                        class_list += "correct ";
+                    }
                     return (
-                        <div className="answer_choice" key={index} onClick={() => {
-                            this.submit_answer([index]);
+                        <div className={class_list} key={index} onClick={() => {
+                            this.state.selected_answer_indexes = [index];
+                            if(this.state.correct_answer_indexes.length === 0){
+                                this.submit_answer();
+                            }
+                            
                         }}>
                             <span>
                                 {answer_choice}
