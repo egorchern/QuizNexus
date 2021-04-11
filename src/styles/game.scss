@@ -164,6 +164,20 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     border-radius: 12px;
     height: 40px;
 }
+.user_scores{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.table{
+    th, td{
+        text-align: center;
+    }
+    tr{
+        border-color: black;
+    }
+}
 @media screen and (max-width: 750px) {
     .quiz{
         display: flex;

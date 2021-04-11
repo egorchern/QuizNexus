@@ -287,14 +287,21 @@ function get_logged_participants(join_code) {
     console.log(logged_in_participants_list);
     return logged_in_participants_list;
 }
-/*
-function get_quiz_object(quiz_id) {
-    let quiz_obj;
-    for(let i = 0; i < quizzes.length; i += 1){
 
+function get_scores(join_code){
+    let participants = lobbies[join_code].participants;
+    let participants_keys = Object.keys(participants);
+    let scores_list = [];
+    for(let i = 0; i < participants_keys.length; i += 1){
+        let user_info = participants[participants_keys[i]];
+        let obj = {
+            username: user_info.username,
+            score: user_info.score
+        }
+        scores_list.push(obj);
     }
+    return scores_list;
 }
-*/
 async function main() {
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({extended: true}));
@@ -460,6 +467,9 @@ async function main() {
             lobbies[join_code].participants[auth_token].logged = true;
             
             let logged_users = get_logged_participants(join_code);
+            let scores_list = get_scores(join_code);
+            
+            socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
             io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
         });
@@ -540,6 +550,8 @@ async function main() {
                 lobbies[join_code].state = "game";
                 code = 2;
             }
+            let scores_list = get_scores(join_code);
+            io.to(`${join_code}`).emit("get_all_scores", scores_list);
             io.to(`${join_code}`).emit("start_game_response", code);
         });
         socket.on("disconnecting", () => {

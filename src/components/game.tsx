@@ -15,6 +15,7 @@ export class Game extends React.Component {
             quiz_descriptors: undefined,
             username_value: "",
             participants: [],
+            scores: undefined,
             is_host: false,
             current_question_obj: undefined,
             seconds_elapsed: 0,
@@ -38,6 +39,7 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
+        /*
         if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
             this.submit_answer([-1]);
         }
@@ -46,7 +48,7 @@ export class Game extends React.Component {
                 seconds_elapsed: this.state.seconds_elapsed + 1
             })
         }
-        
+        */
     }
     fetch_question = () => {
         this.state.question_pointer += 1;
@@ -66,7 +68,25 @@ export class Game extends React.Component {
             })
         })
         this.socket.on("score_update", data => {
-            console.log(data);
+            let updated_username = data.username;
+            let updated_index;
+            let new_score = data.score;
+            for(let i = 0; i < this.state.scores.length; i += 1){
+                let current_score_obj = this.state.scores[i];
+                let current_username = current_score_obj.username;
+                if(updated_username === current_username){
+                    updated_index = i;
+                }
+            }
+            
+            this.state.scores[updated_index].score = new_score;
+            this.sort_scores();
+            this.forceUpdate();
+        })
+        this.socket.on("get_all_scores", data => {
+            this.setState({
+                scores: data
+            })
         })
         this.socket.on("get_quiz_descriptors", (data) => {
             let quiz_descriptors = data;
@@ -202,6 +222,21 @@ export class Game extends React.Component {
                 }
             });
     };
+    sort_scores(){
+        let lst = this.state.scores;
+        for(let i = 0; i < lst.length; i += 1){
+            for(let j = 0; j < lst.length - i - 1; j += 1){
+                let left_score = lst[j].score;
+                let right_score = lst[j + 1].score;
+                if(left_score < right_score){
+                    let temp = lst[j];
+                    lst[j] = lst[j + 1];
+                    lst[j + 1] = temp;
+
+                }
+            }
+        }
+    }
     render() {
         let content;
         let state = this.state.game_state;
@@ -276,6 +311,25 @@ export class Game extends React.Component {
                         </div>
                     )
                 })
+                let scores_content;
+                if(this.state.scores != undefined){
+                    scores_content = this.state.scores.map((score_obj, index) => {
+                        return (
+                            <tr className="user_score" key={score_obj.username}>
+                                <td scope="row">
+                                    {score_obj.username}
+                                </td>
+                                <td>
+                                    {score_obj.score}
+                                </td>
+                            </tr>
+                        )
+                    })
+                }
+                else{
+                    scores_content = null;
+                }
+                
                 let progress_bar_width_percentage = Math.floor(this.state.seconds_elapsed / this.state.current_question_obj.time_allocated * 100);
                 
                 let styles = {
@@ -293,6 +347,24 @@ export class Game extends React.Component {
                                 </div>
                             </div>
                             <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                            <div className="user_scores">
+                                <table className="table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">
+                                                Username
+                                            </th>
+                                            <th scope="col">
+                                                Score
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {scores_content}
+                                    </tbody>
+                                </table>
+                               
+                            </div>
                         </div>
                         
                         <div className="answer_choices">
