@@ -165,14 +165,14 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     background-color: var(--bs-success);
 }
 .answer_choice.selected{
-    background-color: var(--bs-primary);
+    background-color: var(--bs-indigo);
 }
 .quiz_top_part{
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
 }
 .timer{
-    padding: 4px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -234,7 +234,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
         height: auto;
     }
     .question_text{
-        margin-top: 60px;
+        margin-top: 20px;
         margin-bottom: 20px;
     }
     .answer_choices{
@@ -244,11 +244,11 @@ $heading_font_size: calc(1.5rem + 0.9vw);
         grid-template-columns: 1fr;
     }
     .timer{
-        order: 0;
-        margin-bottom: 20px;
+        order: 1;
+        margin-top: 20px;
     }
     .user_scores{
-        order: 1;
+        order: 0;
     }
     .question_info{
         order: 2;

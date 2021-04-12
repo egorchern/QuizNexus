@@ -42,7 +42,7 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
-        /*
+        
         if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
             this.submit_answer([-1]);
         }
@@ -51,7 +51,7 @@ export class Game extends React.Component {
                 seconds_elapsed: this.state.seconds_elapsed + 1
             })
         }
-        */
+        
     };
     fetch_question = () => {
         this.setState({
