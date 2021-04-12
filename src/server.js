@@ -120,11 +120,11 @@ let quiz_questions = {
             points_base: 1000,
         },
         3: {
-            multi_choice: false,
+            multi_choice: true,
             question_text:
                 "Какой из нижеперечисленных ингредиентов пищи Егор Чернышев Владимерович ненавидит больше всего?",
             answer_choices: ["Лук", "Изюм", "Киви"],
-            correct_answer_indexes: [1],
+            correct_answer_indexes: [0, 1],
             time_allocated: 20,
             points_base: 1000,
         },
@@ -507,7 +507,8 @@ async function main() {
             let answer_indexes = parsed.answer_indexes;
             let time = parsed.time;
             let question_obj = quiz_questions[quiz_id][question_number];
-            let is_correct = JSON.stringify(answer_indexes) === JSON.stringify(question_obj.correct_answer_indexes);
+            isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
+            let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
             if(time >= question_obj.time_allocated){
                 is_correct = false;
             }

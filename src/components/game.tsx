@@ -1,7 +1,7 @@
-import {user} from "pg/lib/defaults";
+import { user } from "pg/lib/defaults";
 import * as React from "react";
-import {render} from "react-dom";
-import socketIo, {io} from "socket.io/client-dist/socket.io";
+import { render } from "react-dom";
+import socketIo, { io } from "socket.io/client-dist/socket.io";
 // TODO make seconds_elapsed server-side
 export class Game extends React.Component {
     join_code: any;
@@ -24,17 +24,16 @@ export class Game extends React.Component {
             question_pointer: 0,
             score: 0,
             correct_answer_indexes: [],
-            selected_answer_indexes: []
-
+            selected_answer_indexes: [],
         };
-        
+
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
         if (temp === null) {
             history.pushState(
-                {page_state: "game", join_code: this.join_code},
+                { page_state: "game", join_code: this.join_code },
                 this.join_code,
                 `lobby/${this.join_code}`
             );
@@ -43,7 +42,7 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
-        
+        /*
         if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
             this.submit_answer([-1]);
         }
@@ -52,55 +51,57 @@ export class Game extends React.Component {
                 seconds_elapsed: this.state.seconds_elapsed + 1
             })
         }
-        
-    }
+        */
+    };
     fetch_question = () => {
         this.setState({
             correct_answer_indexes: [],
-            selected_answer_indexes: []
-        })
+            selected_answer_indexes: [],
+        });
         this.state.question_pointer += 1;
-        this.socket.emit("request_question", JSON.stringify({
-            join_code: this.join_code,
-            question_number: this.state.question_pointer
-        }));
-    }
+        this.socket.emit(
+            "request_question",
+            JSON.stringify({
+                join_code: this.join_code,
+                question_number: this.state.question_pointer,
+            })
+        );
+    };
     join_io_room = () => {
         this.socket = io.connect();
-        this.socket.on("get_question", data => {
-            
+        this.socket.on("get_question", (data) => {
             this.timer = setInterval(this.on_second_elapse, 1000);
             this.setState({
                 seconds_elapsed: 0,
-                current_question_obj: data
-            })
-        })
-        this.socket.on("get_correct_answer", data => {
+                current_question_obj: data,
+            });
+        });
+        this.socket.on("get_correct_answer", (data) => {
             this.setState({
-                correct_answer_indexes: data
-            })
-        })
-        this.socket.on("score_update", data => {
+                correct_answer_indexes: data,
+            });
+        });
+        this.socket.on("score_update", (data) => {
             let updated_username = data.username;
             let updated_index;
             let new_score = data.score;
-            for(let i = 0; i < this.state.scores.length; i += 1){
+            for (let i = 0; i < this.state.scores.length; i += 1) {
                 let current_score_obj = this.state.scores[i];
                 let current_username = current_score_obj.username;
-                if(updated_username === current_username){
+                if (updated_username === current_username) {
                     updated_index = i;
                 }
             }
-            
+
             this.state.scores[updated_index].score = new_score;
             this.sort_scores();
             this.forceUpdate();
-        })
-        this.socket.on("get_all_scores", data => {
+        });
+        this.socket.on("get_all_scores", (data) => {
             this.setState({
-                scores: data
-            })
-        })
+                scores: data,
+            });
+        });
         this.socket.on("get_quiz_descriptors", (data) => {
             let quiz_descriptors = data;
             this.setState({
@@ -113,20 +114,22 @@ export class Game extends React.Component {
                 participants: logged_users,
             });
         });
-        this.socket.on("get_lobby_state", data => {
+        this.socket.on("get_lobby_state", (data) => {
             let lobby_state = data;
-            if(lobby_state === "game"){
-                if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
+            if (lobby_state === "game") {
+                if (
+                    this.state.question_pointer <
+                    this.state.quiz_descriptors.number_of_questions
+                ) {
                     this.fetch_question();
-                }
-                else{
+                } else {
                     lobby_state = "results";
                 }
             }
             this.setState({
-                game_state: lobby_state
-            })
-        })
+                game_state: lobby_state,
+            });
+        });
         this.socket.on("start_game_response", (data) => {
             let code = data;
             if (code === 2) {
@@ -144,30 +147,31 @@ export class Game extends React.Component {
         body = JSON.stringify(body);
         this.socket.emit("request_quiz_descriptors", body);
         this.socket.emit("connect_to_room", body);
-        
-        
     };
     submit_answer = () => {
-        this.socket.emit("submit_answer", JSON.stringify({
-            question_number: this.state.question_pointer,
-            answer_indexes: this.state.selected_answer_indexes,
-            time: this.state.seconds_elapsed,
-            join_code: this.join_code
-        }));
+        this.socket.emit(
+            "submit_answer",
+            JSON.stringify({
+                question_number: this.state.question_pointer,
+                answer_indexes: this.state.selected_answer_indexes,
+                time: this.state.seconds_elapsed,
+                join_code: this.join_code,
+            })
+        );
         clearInterval(this.timer);
         let tmr = setTimeout(() => {
-            if(this.state.question_pointer < this.state.quiz_descriptors.number_of_questions){
+            if (
+                this.state.question_pointer <
+                this.state.quiz_descriptors.number_of_questions
+            ) {
                 this.fetch_question();
-            }
-            else{
+            } else {
                 this.setState({
-                    game_state: "results"
-                })
+                    game_state: "results",
+                });
             }
         }, this.wait_interval_between_questions);
-        
-        
-    }
+    };
     get_user_info = () => {
         let fetch_body = {
             join_code: this.join_code,
@@ -196,7 +200,7 @@ export class Game extends React.Component {
                         game_state: "lobby",
                         username: user_info.username,
                         question_pointer: user_info.question_pointer,
-                        score: user_info.score
+                        score: user_info.score,
                     });
                 }
             });
@@ -244,17 +248,16 @@ export class Game extends React.Component {
                 }
             });
     };
-    sort_scores(){
+    sort_scores() {
         let lst = this.state.scores;
-        for(let i = 0; i < lst.length; i += 1){
-            for(let j = 0; j < lst.length - i - 1; j += 1){
+        for (let i = 0; i < lst.length; i += 1) {
+            for (let j = 0; j < lst.length - i - 1; j += 1) {
                 let left_score = lst[j].score;
                 let right_score = lst[j + 1].score;
-                if(left_score < right_score){
+                if (left_score < right_score) {
                     let temp = lst[j];
                     lst[j] = lst[j + 1];
                     lst[j + 1] = temp;
-
                 }
             }
         }
@@ -321,104 +324,186 @@ export class Game extends React.Component {
                 </div>
             );
         } else if (state === "game") {
-            if(this.state.current_question_obj != undefined){
-                let answer_choices = this.state.current_question_obj.answer_choices.map((answer_choice, index) => {
-                    let class_list = "answer_choice ";
-                    if(this.state.selected_answer_indexes.includes(index) && this.state.correct_answer_indexes.includes(index) === false){
-                        class_list += "incorrect ";
-                    }
-                    if(this.state.correct_answer_indexes.includes(index)){
-                        class_list += "correct ";
-                    }
-                    return (
-                        <div className={class_list} key={index} onClick={() => {
-                            this.state.selected_answer_indexes = [index];
-                            if(this.state.correct_answer_indexes.length === 0){
-                                this.submit_answer();
+            if (this.state.current_question_obj != undefined) {
+                let answer_choices = this.state.current_question_obj.answer_choices.map(
+                    (answer_choice, index) => {
+                        let class_list = "answer_choice ";
+                        if (this.state.correct_answer_indexes.length > 0) {
+                            if (
+                                this.state.selected_answer_indexes.includes(
+                                    index
+                                ) &&
+                                this.state.correct_answer_indexes.includes(
+                                    index
+                                ) === false
+                            ) {
+                                class_list += "incorrect ";
                             }
-                            
-                        }}>
-                            <span>
-                                {answer_choice}
-                            </span>
-                        </div>
-                    )
-                })
-                let scores_content;
-                if(this.state.scores != undefined){
-                    scores_content = this.state.scores.map((score_obj, index) => {
+                            if (
+                                this.state.correct_answer_indexes.includes(
+                                    index
+                                )
+                            ) {
+                                class_list += "correct ";
+                            }
+                        }
+                        if (
+                            this.state.current_question_obj.multi_choice ===
+                            true &&
+                            this.state.correct_answer_indexes.length === 0 &&
+                            this.state.selected_answer_indexes.includes(index)
+                        ) {
+                            class_list += "selected ";
+                        }
+
                         return (
-                            <tr className="user_score" key={score_obj.username}>
-                                <td scope="row">
-                                    {score_obj.username}
-                                </td>
-                                <td>
-                                    {score_obj.score}
-                                </td>
-                            </tr>
-                        )
-                    })
-                }
-                else{
+                            <div
+                                className={class_list}
+                                key={index}
+                                onClick={() => {
+                                    if (
+                                        this.state.current_question_obj
+                                            .multi_choice === true
+                                    ) {
+                                        if (
+                                            this.state.selected_answer_indexes.includes(
+                                                index
+                                            )
+                                        ) {
+                                            let index_to_remove = this.state.selected_answer_indexes.indexOf(
+                                                index
+                                            );
+                                            console.log(index_to_remove);
+                                            this.state.selected_answer_indexes.splice(
+                                                index_to_remove,
+                                                1
+                                            );
+                                        } else {
+                                            this.state.selected_answer_indexes.push(
+                                                index
+                                            );
+                                        }
+                                        this.forceUpdate();
+                                    } else {
+                                        this.state.selected_answer_indexes = [
+                                            index,
+                                        ];
+                                        if (
+                                            this.state.correct_answer_indexes
+                                                .length === 0
+                                        ) {
+                                            this.submit_answer();
+                                        }
+                                    }
+                                }}
+                            >
+                                <span>{answer_choice}</span>
+                            </div>
+                        );
+                    }
+                );
+                let scores_content;
+                if (this.state.scores != undefined) {
+                    scores_content = this.state.scores.map(
+                        (score_obj, index) => {
+                            return (
+                                <tr
+                                    className="user_score"
+                                    key={score_obj.username}
+                                >
+                                    <td scope="row">{score_obj.username}</td>
+                                    <td>{score_obj.score}</td>
+                                </tr>
+                            );
+                        }
+                    );
+                } else {
                     scores_content = null;
                 }
-                
-                let progress_bar_width_percentage = Math.floor(this.state.seconds_elapsed / this.state.current_question_obj.time_allocated * 100);
-                
+
+                let progress_bar_width_percentage = Math.floor(
+                    (this.state.seconds_elapsed /
+                        this.state.current_question_obj.time_allocated) *
+                    100
+                );
+
                 let styles = {
-                    width: `${progress_bar_width_percentage}%`
-                }
+                    width: `${progress_bar_width_percentage}%`,
+                };
                 content = (
                     <div className="quiz">
                         <div className="quiz_top_part">
                             <div className="timer">
-                                <span>{this.state.seconds_elapsed} / {this.state.current_question_obj.time_allocated}</span>
+                                <span>
+                                    {this.state.seconds_elapsed} /{" "}
+                                    {
+                                        this.state.current_question_obj
+                                            .time_allocated
+                                    }
+                                </span>
                                 <div className="progress_bar">
-                                    <div className="progress_bar_fill" style={styles}>
-
-                                    </div>
+                                    <div
+                                        className="progress_bar_fill"
+                                        style={styles}
+                                    ></div>
                                 </div>
                             </div>
                             <div className="question_info">
-                                <span className="question_indicator">Question: {this.state.question_pointer} / {this.state.quiz_descriptors.number_of_questions}</span>
+                                <span className="question_indicator">
+                                    Question: {this.state.question_pointer} /{" "}
+                                    {
+                                        this.state.quiz_descriptors
+                                            .number_of_questions
+                                    }
+                                </span>
+                                {
+                                    this.state.current_question_obj.multi_choice === true ?
+                                    (
+                                        <span className="multi_choice_indicator">
+                                            Multiple Answers!
+                                        </span>
+                                    )
+                                    :null
+                                }
                                 <div className="question_text_container">
-                                    <span className="question_text">{this.state.current_question_obj.question_text}</span>
+                                    <span className="question_text">
+                                        {
+                                            this.state.current_question_obj
+                                                .question_text
+                                        }
+                                    </span>
                                 </div>
+        
+                                    {
+                                        this.state.current_question_obj.multi_choice === true && this.state.selected_answer_indexes.length > 0 ?
+                                        (
+                                            <button className="btn btn-primary multi_choice_submit" onClick={this.submit_answer}>
+                                                Submit
+                                            </button>
+                                        )
+                                        :null
+                                    }
                                 
                             </div>
-                            
+
                             <div className="user_scores">
                                 <table className="table align-middle">
                                     <thead>
                                         <tr>
-                                            <th scope="col">
-                                                Username
-                                            </th>
-                                            <th scope="col">
-                                                Score
-                                            </th>
+                                            <th scope="col">Username</th>
+                                            <th scope="col">Score</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {scores_content}
-                                    </tbody>
+                                    <tbody>{scores_content}</tbody>
                                 </table>
-                               
                             </div>
                         </div>
-                        
-                        <div className="answer_choices">
-                            {answer_choices}
-                        </div>
-                    </div>
-                )
-            }
-            else{
-                content = (
-                    <div className="quiz">
 
+                        <div className="answer_choices">{answer_choices}</div>
                     </div>
-                )
+                );
+            } else {
+                content = <div className="quiz"></div>;
             }
         }
         return <div className="game">{content}</div>;
