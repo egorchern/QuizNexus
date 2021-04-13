@@ -178,7 +178,7 @@ let quiz_questions = {
 // join code => lobby info
 let lobbies = {};
 let all_usernames = {};
-/*
+
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
     let database_url = fs.readFileSync("connection_string.txt", "utf8");
@@ -186,7 +186,7 @@ if (dev_mode === true) {
     process.env.DATABASE_URL = database_url;
 }
 
-app.use(express.static("dist"));
+//app.use(express.static("dist"));
 
 // connect to a database
 const client = new Client({
@@ -197,7 +197,7 @@ const client = new Client({
 });
 
 client.connect();
-*/
+
 
 // Generates random secure token
 const generateToken = () => {
