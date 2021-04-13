@@ -3,6 +3,47 @@ import * as React from "react";
 import { render } from "react-dom";
 import socketIo, { io } from "socket.io/client-dist/socket.io";
 // TODO make seconds_elapsed server-side
+
+class Score_board extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        let scores_content;
+        if (this.props.scores != undefined) {
+            scores_content = this.props.scores.map(
+                (score_obj, index) => {
+                    return (
+                        <tr
+                            className="user_score"
+                            key={score_obj.username}
+                        >
+                            <td scope="row">{score_obj.username}</td>
+                            <td>{score_obj.score}</td>
+                        </tr>
+                    );
+                }
+            );
+        } else {
+            scores_content = null;
+        }
+
+        return (
+            <div className="user_scores">
+                <table className="table align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Username</th>
+                            <th scope="col">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>{scores_content}</tbody>
+                </table>
+            </div>
+        )
+    }
+}
+
 export class Game extends React.Component {
     join_code: any;
     wait_interval_between_questions: number;
@@ -42,16 +83,16 @@ export class Game extends React.Component {
         this.get_user_info();
     }
     on_second_elapse = () => {
-        
-        if(this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1){
+
+        if (this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1) {
             this.submit_answer([-1]);
         }
-        else{
+        else {
             this.setState({
                 seconds_elapsed: this.state.seconds_elapsed + 1
             })
         }
-        
+
     };
     fetch_question = () => {
         this.setState({
@@ -373,7 +414,7 @@ export class Game extends React.Component {
                                             let index_to_remove = this.state.selected_answer_indexes.indexOf(
                                                 index
                                             );
-                                            console.log(index_to_remove);
+
                                             this.state.selected_answer_indexes.splice(
                                                 index_to_remove,
                                                 1
@@ -402,24 +443,7 @@ export class Game extends React.Component {
                         );
                     }
                 );
-                let scores_content;
-                if (this.state.scores != undefined) {
-                    scores_content = this.state.scores.map(
-                        (score_obj, index) => {
-                            return (
-                                <tr
-                                    className="user_score"
-                                    key={score_obj.username}
-                                >
-                                    <td scope="row">{score_obj.username}</td>
-                                    <td>{score_obj.score}</td>
-                                </tr>
-                            );
-                        }
-                    );
-                } else {
-                    scores_content = null;
-                }
+
 
                 let progress_bar_width_percentage = Math.floor(
                     (this.state.seconds_elapsed /
@@ -458,12 +482,12 @@ export class Game extends React.Component {
                                 </span>
                                 {
                                     this.state.current_question_obj.multi_choice === true ?
-                                    (
-                                        <span className="multi_choice_indicator">
-                                            Multiple Answers!
-                                        </span>
-                                    )
-                                    :null
+                                        (
+                                            <span className="multi_choice_indicator">
+                                                Multiple Answers!
+                                            </span>
+                                        )
+                                        : null
                                 }
                                 <div className="question_text_container">
                                     <span className="question_text">
@@ -473,38 +497,38 @@ export class Game extends React.Component {
                                         }
                                     </span>
                                 </div>
-        
-                                    {
-                                        this.state.current_question_obj.multi_choice === true && this.state.selected_answer_indexes.length > 0 ?
+
+                                {
+                                    this.state.current_question_obj.multi_choice === true && this.state.selected_answer_indexes.length > 0 ?
                                         (
                                             <button className="btn btn-primary multi_choice_submit" onClick={this.submit_answer}>
                                                 Submit
                                             </button>
                                         )
-                                        :null
-                                    }
-                                
+                                        : null
+                                }
+
                             </div>
 
-                            <div className="user_scores">
-                                <table className="table align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Username</th>
-                                            <th scope="col">Score</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>{scores_content}</tbody>
-                                </table>
-                            </div>
+                            <Score_board scores={this.state.scores}>
+
+                            </Score_board>
                         </div>
 
                         <div className="answer_choices">{answer_choices}</div>
                     </div>
                 );
-            } else {
-                content = <div className="quiz"></div>;
             }
+        }
+        else if (state = "results") {
+            console.log("reach")
+            content = (
+                <div className="game_results">
+                    <Score_board scores={this.state.scores}>
+
+                    </Score_board>
+                </div>
+            )
         }
         return <div className="game">{content}</div>;
     }

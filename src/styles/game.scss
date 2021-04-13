@@ -89,6 +89,14 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     font-size: $title_font_size;
     word-break: break-all;
 }
+.game_results{
+    width: 95%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 .quiz{
     width: 100%;
     height: 100%;
@@ -98,6 +106,15 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     
     *{
         font-size: $main_font_size;
+    }
+}
+.game_results{
+    *{
+        font-size: $main_font_size;
+    }
+    .user_scores{
+        width: 95%;
+        max-width: 650px;
     }
 }
 .question_info{
@@ -198,7 +215,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     justify-content: center;
     align-items: center;
     padding: 8px;
-    overflow: auto;
+   
 }
 .table{
     th, td{
