@@ -12,168 +12,15 @@ const request_ip = require("request-ip");
 let dist_path = path.join(__dirname, "dist");
 let app = express();
 const port = process.env.PORT || 3000;
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
 app.set("trust proxy", true);
 
-let dev_mode = false;
+let dev_mode = true;
 let quizzes = {
-    1: {
-        title: "Личная проверка",
-        quiz_id: 1,
-        description: "Sample",
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 4,
-        number_of_questions: 8,
-        category: "General",
-        difficulty: "Easy",
-    },
-    2: {
-        title: "Личная проверкаа",
-        description: "Sample",
-        quiz_id: 2,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 4,
-        number_of_questions: 8,
-        category: "General",
-        difficulty: "Easy",
-    },
-    3: {
-        title: "JS quiz",
-        description: "Sample sampleee",
-        quiz_id: 3,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 12,
-        number_of_questions: 20,
-        category: "Programming",
-        difficulty: "Medium",
-    },
-    4: {
-        title: "Differentiation",
-        description: "Differentiate with speed",
-        quiz_id: 4,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 10,
-        number_of_questions: 12,
-        category: "Mathematics",
-        difficulty: "Hard",
-    },
-    5: {
-        title: "Integration",
-        description: "Integrate with speed",
-        quiz_id: 5,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 10,
-        number_of_questions: 12,
-        category: "Mathematics",
-        difficulty: "Medium",
-    },
-    6: {
-        title: "Formulas",
-        description: "Test your knowledge in formulas",
-        quiz_id: 6,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 10,
-        number_of_questions: 12,
-        category: "Mathematics",
-        difficulty: "Medium",
-    },
-    7: {
-        title: "Formulas",
-        description: "Test your knowledge in formulas",
-        quiz_id: 7,
-        creators_name: "egorcik",
-        date_created: "03/04/2021",
-        time_to_complete: 10,
-        number_of_questions: 12,
-        category: "Mathematics",
-        difficulty: "Hard",
-    },
+    
 };
 let quiz_questions = {
-    1: {
-        1: {
-            multi_choice: false,
-            question_text:
-                "Кто является лучшим игроком на Джине в регионе Европы, в игре League of Legends?",
-            answer_choices: [
-                "Егор Чернышев Владимерович",
-                "Владислав Былёв Витальевич",
-                "Дмитрий Мысников Александрович",
-            ],
-            correct_answer_indexes: [0],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        2: {
-            multi_choice: false,
-            question_text:
-                "Как инструмент помогающий с поеданием пищи, что лучше: Ложка или Вилка?",
-            answer_choices: ["Ложка", "Вилка"],
-            correct_answer_indexes: [0],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        3: {
-            multi_choice: true,
-            question_text:
-                "Какой из нижеперечисленных ингредиентов пищи Егор Чернышев Владимерович ненавидит больше всего?",
-            answer_choices: ["Лук", "Изюм", "Киви"],
-            correct_answer_indexes: [0, 1],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        4: {
-            multi_choice: false,
-            question_text:
-                "Кто является худщим игроком на Пайке в регионе Европы, в игре League of Legends?",
-            answer_choices: ["Андрей Лихачёв", "Данил Воротников", "Владислав Былёв Витальевич", "Никто из перечисленных"],
-            correct_answer_indexes: [2],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        5: {
-            multi_choice: false,
-            question_text:
-                "Какая манга является лучшей в жанре \"Гарем\"?",
-            answer_choices: ["To Love-Ru", "Yuragi-Sou no Yuuna-San", "Temple", "5-toubun no Hanayome (Пять невест)"],
-            correct_answer_indexes: [3],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        6: {
-            multi_choice: false,
-            question_text:
-                "Является ли Владислав Былёв Витальевич (Дата рождения: 09/01/2002, Место проживания - Российская Федерация, Пермь, Микро-район Липовая Гора) предателем?",
-            answer_choices: ["Да", "Нет"],
-            correct_answer_indexes: [0],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        7: {
-            multi_choice: false,
-            question_text:
-                "Кто входит в Топ 100 лучших Шейкеров в регионе Европы, в игре Dota 2?",
-            answer_choices: ["Дмитрий Мысников Александрович", "Владислав Былёв Витальевич", "Егор Чернышев Владимерович", "Никто из перечисленных"],
-            correct_answer_indexes: [3],
-            time_allocated: 20,
-            points_base: 1000,
-        },
-        8: {
-            multi_choice: false,
-            question_text:
-                "Кто виноват что Владислав Былёв Витальевич не поднимает ММР в Доте?",
-            answer_choices: ["Дмитрий Мысников Александрович", "Егор Чернышев Владимерович", "Он сам (например: рубик пятерка с take aim)", "Агенты Габена"],
-            correct_answer_indexes: [2],
-            time_allocated: 25,
-            points_base: 1000,
-        },
-    },
+    
 };
 // join code => lobby info
 let lobbies = {};
@@ -197,7 +44,61 @@ const client = new Client({
 });
 
 client.connect();
+/*
+INSERT INTO quizzes (title, description, creators_name, date_created, time_to_complete, number_of_questions, category, difficulty)
+VALUES('Личная проверка', 'Проверка от Егора', 'Egorcik', '13/04/2021', 3, 8, 'General', 'Easy');
 
+INSERT INTO quiz_questions (quiz_id, question_number, multi_choice, question_text, answer_choices, correct_answer_indexes, time_allocated, points_base)
+VALUES(1, 8, false, 'Кто виноват что Владислав Былёв Витальевич не поднимает ММР в Доте?' , 
+'{"Дмитрий Мысников Александрович", "Егор Чернышев Владимерович", "Он сам (например: рубик пятерка с take aim)", "Агенты Габена"}',
+'{2}',
+25, 1000
+)
+*/
+
+function get_quizzes(){
+    return new Promise(resolve => {
+        client.query(
+         `
+            SELECT * FROM quizzes
+            ORDER BY quiz_id ASC
+        `
+        ).then(res => {
+            let rows = res.rows;
+            for(let i = 0; i < rows.length; i += 1){
+                let current_row = rows[i];
+                let quiz_id = current_row.quiz_id;
+                quizzes[quiz_id] = current_row;
+                quiz_questions[quiz_id] = {
+
+                }
+            }
+            resolve();
+        })
+    })
+}
+
+function get_quiz_questions(){
+    return new Promise(resolve => {
+        client.query(
+         `
+            SELECT * FROM quiz_questions
+            ORDER BY quiz_id ASC
+        `
+        ).then(res => {
+            let rows = res.rows;
+            for(let i = 0; i < rows.length; i += 1){
+                let current_row = rows[i];
+                let quiz_id = current_row.quiz_id;
+                let question_number = current_row.question_number;
+                
+                quiz_questions[quiz_id][question_number] = current_row;
+
+            }
+            resolve();
+        })
+    })
+}
 
 // Generates random secure token
 const generateToken = () => {
@@ -303,6 +204,9 @@ function get_scores(join_code){
     return scores_list;
 }
 async function main() {
+    let quizzes_promise = await get_quizzes();
+    let quiz_questions_promise = await get_quiz_questions();
+   
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({extended: true}));
     // To support json bodies
@@ -312,7 +216,7 @@ async function main() {
     app.use(express.static("dist"));
     var server = http.createServer(app);
     var io = socketio(server);
-
+    
     // When receive a request for quizzes data, send quizzes array
     app.get("/get_quizzes", (req, res) => {
         let quizzes_list = Object.values(quizzes);
