@@ -15,7 +15,7 @@ const port = process.env.PORT || 3000;
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
 app.set("trust proxy", true);
 
-let dev_mode = true;
+let dev_mode = false;
 let quizzes = {
     
 };
@@ -39,7 +39,7 @@ if (dev_mode === true) {
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
     },
 });
 
