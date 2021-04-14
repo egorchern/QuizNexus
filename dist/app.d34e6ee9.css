@@ -578,6 +578,12 @@
 .table tr {
   border-color: black;
 }
+.table td {
+  border-right: 1px solid black;
+}
+.table tbody tr {
+  border-left: 1px solid black;
+}
 
 .multi_choice_submit {
   margin-top: 20px;

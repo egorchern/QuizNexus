@@ -40746,11 +40746,12 @@ function (_super) {
     }
 
     var table_body = answers_list.map(function (answer_obj, index) {
-      console.log(answer_obj);
       var tds = [];
+      var keys = Object.keys(answer_obj.answers);
+      console.log(keys);
 
-      for (var i = 1; i <= number_of_questions; i += 1) {
-        var answer = answer_obj.answers[i];
+      for (var i = 0; i < keys.length; i += 1) {
+        var answer = answer_obj.answers[keys[i]];
         var class_list = "answer_td ";
 
         if (answer.is_correct) {
@@ -41612,7 +41613,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54309" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56708" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
