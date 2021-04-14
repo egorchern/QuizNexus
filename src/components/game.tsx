@@ -4,6 +4,75 @@ import { render } from "react-dom";
 import socketIo, { io } from "socket.io/client-dist/socket.io";
 // TODO make seconds_elapsed server-side
 
+class Answer_grid extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        let answers_list = this.props.answers_list;
+        let number_of_questions = this.props.number_of_questions;
+        let table_head = [(
+            <th key="0">
+                Question number
+                <br></br>
+                Username
+            </th>
+        )];
+        for(let i = 1; i <= number_of_questions; i += 1){
+            table_head.push((
+                <th key={i}>
+                    {i}
+                </th>
+            ))
+        }
+        let table_body = answers_list.map((answer_obj, index) => {
+            console.log(answer_obj);
+            let tds = [];
+            for(let i = 1; i <= number_of_questions; i += 1){
+                let answer = answer_obj.answers[i];
+                
+                let class_list = "answer_td ";
+                if(answer.is_correct){
+                    class_list += "correct ";
+                }
+                else{
+                    class_list += "incorrect ";
+                }
+                tds.push((
+                    <td className={class_list} key={i}>
+                        {answer.points_earned}
+                    </td>
+                ))
+            }
+            
+            return (
+                <tr key={answer_obj.username}>
+                    <td key="0">
+                        {answer_obj.username}
+                    </td>
+                    {tds}
+                </tr>
+            )
+        })
+        
+        return (
+            
+            <div className="answer_grid">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            {table_head}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {table_body}
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
+}
+
 class Score_board extends React.Component {
     constructor(props) {
         super(props);
@@ -66,6 +135,7 @@ export class Game extends React.Component {
             score: 0,
             correct_answer_indexes: [],
             selected_answer_indexes: [],
+            answers_list: []
         };
 
         // To prevent looping the history pushes i.e not pushing when location already at lobby
@@ -165,6 +235,7 @@ export class Game extends React.Component {
                     this.fetch_question();
                 } else {
                     lobby_state = "results";
+                    this.results_init();
                 }
             }
             this.setState({
@@ -182,6 +253,11 @@ export class Game extends React.Component {
                 alert("You are not authorized to start the game!");
             }
         });
+        this.socket.on("get_users_answers", data => {
+            this.setState({
+                answers_list: data
+            })
+        })
         let body = {
             join_code: this.join_code,
         };
@@ -207,6 +283,7 @@ export class Game extends React.Component {
             ) {
                 this.fetch_question();
             } else {
+                this.results_init();
                 this.setState({
                     game_state: "results",
                 });
@@ -289,6 +366,12 @@ export class Game extends React.Component {
                 }
             });
     };
+    results_init = () => {
+        this.socket.emit("request_users_answers", JSON.stringify({
+            join_code: this.join_code,
+            scope_of_request: 0
+        }))
+    }
     sort_scores() {
         let lst = this.state.scores;
         for (let i = 0; i < lst.length; i += 1) {
@@ -521,12 +604,15 @@ export class Game extends React.Component {
             }
         }
         else if (state = "results") {
-            console.log("reach")
+            
             content = (
                 <div className="game_results">
                     <Score_board scores={this.state.scores}>
 
                     </Score_board>
+                    <Answer_grid answers_list={this.state.answers_list} number_of_questions={this.state.quiz_descriptors.number_of_questions}>
+
+                    </Answer_grid>
                 </div>
             )
         }

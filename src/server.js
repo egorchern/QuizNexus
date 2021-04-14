@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const socketio = require("socket.io");
-const {Client} = require("pg");
+const { Client } = require("pg");
 const cookie_parser = require("cookie-parser");
 const body_parser = require("body-parser");
 const bcrypt = require("bcrypt");
@@ -17,10 +17,10 @@ app.set("trust proxy", true);
 
 let dev_mode = true;
 let quizzes = {
-    
+
 };
 let quiz_questions = {
-    
+
 };
 // join code => lobby info
 let lobbies = {};
@@ -56,16 +56,16 @@ VALUES(1, 8, false, 'Кто виноват что Владислав Былёв 
 )
 */
 
-function get_quizzes(){
+function get_quizzes() {
     return new Promise(resolve => {
         client.query(
-         `
+            `
             SELECT * FROM quizzes
             ORDER BY quiz_id ASC
         `
         ).then(res => {
             let rows = res.rows;
-            for(let i = 0; i < rows.length; i += 1){
+            for (let i = 0; i < rows.length; i += 1) {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
                 quizzes[quiz_id] = current_row;
@@ -78,20 +78,20 @@ function get_quizzes(){
     })
 }
 
-function get_quiz_questions(){
+function get_quiz_questions() {
     return new Promise(resolve => {
         client.query(
-         `
+            `
             SELECT * FROM quiz_questions
             ORDER BY quiz_id ASC
         `
         ).then(res => {
             let rows = res.rows;
-            for(let i = 0; i < rows.length; i += 1){
+            for (let i = 0; i < rows.length; i += 1) {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
                 let question_number = current_row.question_number;
-                
+
                 quiz_questions[quiz_id][question_number] = current_row;
 
             }
@@ -174,6 +174,23 @@ function is_username_free(join_code, username) {
     return true;
 }
 
+function get_all_answers(join_code) {
+    let return_list = [];
+    let participants = lobbies[join_code].participants;
+    let participants_keys = Object.keys(participants);
+    for (let i = 0; i < participants_keys.length; i += 1) {
+        let key = participants_keys[i];
+        let user_info = participants[key];
+        let answers = user_info.answers;
+        let new_obj = {
+            answers: answers,
+            username: user_info.username
+        }
+        return_list.push(new_obj);
+    }
+    return return_list;
+}
+
 // Returns a list of currently logged participants in a particular lobby
 function get_logged_participants(join_code) {
     let participants = lobbies[join_code].participants;
@@ -189,11 +206,11 @@ function get_logged_participants(join_code) {
     return logged_in_participants_list;
 }
 
-function get_scores(join_code){
+function get_scores(join_code) {
     let participants = lobbies[join_code].participants;
     let participants_keys = Object.keys(participants);
     let scores_list = [];
-    for(let i = 0; i < participants_keys.length; i += 1){
+    for (let i = 0; i < participants_keys.length; i += 1) {
         let user_info = participants[participants_keys[i]];
         let obj = {
             username: user_info.username,
@@ -206,9 +223,9 @@ function get_scores(join_code){
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
-   
+
     // To support URL-encoded bodies
-    app.use(body_parser.urlencoded({extended: true}));
+    app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
     app.use(body_parser.json());
     // To parse cookies from the HTTP Request
@@ -216,7 +233,7 @@ async function main() {
     app.use(express.static("dist"));
     var server = http.createServer(app);
     var io = socketio(server);
-    
+
     // When receive a request for quizzes data, send quizzes array
     app.get("/get_quizzes", (req, res) => {
         let quizzes_list = Object.values(quizzes);
@@ -288,7 +305,7 @@ async function main() {
         }
 
         let username_free = is_username_free(join_code, username);
-        
+
         // If username is not free, send code 1 to indicate that it is taken
         if (username_free === false) {
             res.send({
@@ -298,7 +315,7 @@ async function main() {
             // Set the username on the auth_token in the particular lobby
             lobbies[join_code].participants[auth_token].username = username;
             all_usernames[join_code].push(username);
-            
+
             res.send({
                 code: 2,
             });
@@ -318,7 +335,7 @@ async function main() {
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
-        
+
         let join_code = generate_join_code();
 
         let auth_token = generateToken();
@@ -349,16 +366,16 @@ async function main() {
         });
     });
     app.get("/browse", (req, res) => {
-        res.status(200).sendFile("index_page.html", {root: "dist"});
+        res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     app.get("/home", (req, res) => {
-        res.status(200).sendFile("index_page.html", {root: "dist"});
+        res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     app.get("/lobby/:join_code", (req, res) => {
-        res.status(200).sendFile("index_page.html", {root: "dist"});
+        res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     app.get("/", (req, res) => {
-        res.status(200).sendFile("index_page.html", {root: "dist"});
+        res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     io.on("connect", (socket) => {
         socket.on("connect_to_room", (data) => {
@@ -369,10 +386,10 @@ async function main() {
                 .auth_token;
             socket.join(`${join_code}`);
             lobbies[join_code].participants[auth_token].logged = true;
-            
+
             let logged_users = get_logged_participants(join_code);
             let scores_list = get_scores(join_code);
-            
+
             socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
             io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
@@ -384,6 +401,18 @@ async function main() {
             let quiz_obj = quizzes[quiz_id];
             socket.emit("get_quiz_descriptors", quiz_obj);
         });
+        socket.on("request_users_answers", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let scope_of_request = parsed.scope_of_request;
+            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let auth_token = regex.exec(socket.handshake.headers.cookie).groups
+                .auth_token;
+            if (scope_of_request === 0) {
+                let answers_list = get_all_answers(join_code);
+                socket.emit("get_users_answers", answers_list);
+            }
+        })
         socket.on("request_question", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
@@ -413,25 +442,26 @@ async function main() {
             let question_obj = quiz_questions[quiz_id][question_number];
             isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
             let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
-            if(time >= question_obj.time_allocated){
+            if (time >= question_obj.time_allocated) {
                 is_correct = false;
             }
             let points_earned;
             // Formula for points: points_base - (points_base / time_allocated * time);
-            if(is_correct){
+            if (is_correct) {
                 points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
             }
-            else{
+            else {
                 points_earned = 0;
             }
             lobbies[join_code].participants[auth_token].answers[question_number] = {
                 answer_indexes: answer_indexes,
+                correct_answer_indexes: question_obj.correct_answer_indexes,
                 is_correct: is_correct,
                 points_earned: points_earned
             }
             lobbies[join_code].participants[auth_token].question_pointer += 1;
             lobbies[join_code].participants[auth_token].score += points_earned;
-            if(points_earned != 0){
+            if (points_earned != 0) {
                 io.to(`${join_code}`).emit("score_update", {
                     username: username,
                     score: lobbies[join_code].participants[auth_token].score
@@ -439,7 +469,7 @@ async function main() {
             }
             socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
             console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
-            
+
         });
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
