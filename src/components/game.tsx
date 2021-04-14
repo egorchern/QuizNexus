@@ -26,10 +26,12 @@ class Answer_grid extends React.Component {
             ))
         }
         let table_body = answers_list.map((answer_obj, index) => {
-            console.log(answer_obj);
+            
             let tds = [];
-            for(let i = 1; i <= number_of_questions; i += 1){
-                let answer = answer_obj.answers[i];
+            let keys = Object.keys(answer_obj.answers);
+            console.log(keys);
+            for(let i = 0; i < keys.length; i += 1){
+                let answer = answer_obj.answers[keys[i]];
                 
                 let class_list = "answer_td ";
                 if(answer.is_correct){

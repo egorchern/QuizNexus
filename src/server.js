@@ -410,6 +410,7 @@ async function main() {
                 .auth_token;
             if (scope_of_request === 0) {
                 let answers_list = get_all_answers(join_code);
+                socket.join(`${join_code}_get_new_answers`);
                 socket.emit("get_users_answers", answers_list);
             }
         })
@@ -468,6 +469,8 @@ async function main() {
                 });
             }
             socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
+            let answers_list = get_all_answers(join_code);
+            io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
             console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
 
         });
