@@ -40723,6 +40723,64 @@ var React = __importStar(require("react"));
 var socket_io_1 = require("socket.io/client-dist/socket.io"); // TODO make seconds_elapsed server-side
 
 
+var Answer_grid =
+/** @class */
+function (_super) {
+  __extends(Answer_grid, _super);
+
+  function Answer_grid(props) {
+    return _super.call(this, props) || this;
+  }
+
+  Answer_grid.prototype.render = function () {
+    var answers_list = this.props.answers_list;
+    var number_of_questions = this.props.number_of_questions;
+    var table_head = [/*#__PURE__*/React.createElement("th", {
+      key: "0"
+    }, "Question number", /*#__PURE__*/React.createElement("br", null), "Username")];
+
+    for (var i = 1; i <= number_of_questions; i += 1) {
+      table_head.push( /*#__PURE__*/React.createElement("th", {
+        key: i
+      }, i));
+    }
+
+    var table_body = answers_list.map(function (answer_obj, index) {
+      console.log(answer_obj);
+      var tds = [];
+
+      for (var i = 1; i <= number_of_questions; i += 1) {
+        var answer = answer_obj.answers[i];
+        var class_list = "answer_td ";
+
+        if (answer.is_correct) {
+          class_list += "correct ";
+        } else {
+          class_list += "incorrect ";
+        }
+
+        tds.push( /*#__PURE__*/React.createElement("td", {
+          className: class_list,
+          key: i
+        }, answer.points_earned));
+      }
+
+      return /*#__PURE__*/React.createElement("tr", {
+        key: answer_obj.username
+      }, /*#__PURE__*/React.createElement("td", {
+        key: "0"
+      }, answer_obj.username), tds);
+    });
+    return /*#__PURE__*/React.createElement("div", {
+      className: "answer_grid"
+    }, /*#__PURE__*/React.createElement("table", {
+      className: "table"
+    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, table_head)), /*#__PURE__*/React.createElement("tbody", null, table_body)));
+  };
+
+  return Answer_grid;
+}(React.Component);
+
 var Score_board =
 /** @class */
 function (_super) {
@@ -40863,6 +40921,8 @@ function (_super) {
             _this.fetch_question();
           } else {
             lobby_state = "results";
+
+            _this.results_init();
           }
         }
 
@@ -40883,6 +40943,12 @@ function (_super) {
         } else {
           alert("You are not authorized to start the game!");
         }
+      });
+
+      _this.socket.on("get_users_answers", function (data) {
+        _this.setState({
+          answers_list: data
+        });
       });
 
       var body = {
@@ -40908,6 +40974,8 @@ function (_super) {
         if (_this.state.question_pointer < _this.state.quiz_descriptors.number_of_questions) {
           _this.fetch_question();
         } else {
+          _this.results_init();
+
           _this.setState({
             game_state: "results"
           });
@@ -40993,6 +41061,13 @@ function (_super) {
       });
     };
 
+    _this.results_init = function () {
+      _this.socket.emit("request_users_answers", JSON.stringify({
+        join_code: _this.join_code,
+        scope_of_request: 0
+      }));
+    };
+
     _this.join_code = _this.props.join_code;
     _this.wait_interval_between_questions = 2000;
     _this.state = {
@@ -41008,7 +41083,8 @@ function (_super) {
       question_pointer: 0,
       score: 0,
       correct_answer_indexes: [],
-      selected_answer_indexes: []
+      selected_answer_indexes: [],
+      answers_list: []
     }; // To prevent looping the history pushes i.e not pushing when location already at lobby
 
     var path_name = location.pathname;
@@ -41166,11 +41242,13 @@ function (_super) {
         }, answer_choices));
       }
     } else if (state = "results") {
-      console.log("reach");
       content = /*#__PURE__*/React.createElement("div", {
         className: "game_results"
       }, /*#__PURE__*/React.createElement(Score_board, {
         scores: this.state.scores
+      }), /*#__PURE__*/React.createElement(Answer_grid, {
+        answers_list: this.state.answers_list,
+        number_of_questions: this.state.quiz_descriptors.number_of_questions
       }));
     }
 
@@ -41534,7 +41612,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50979" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54309" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
