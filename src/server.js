@@ -27,10 +27,9 @@ let lobbies = {};
 let all_usernames = {};
 
 let global_users = {
-    "Egorcik": {
-        username: "Egorcik"
-    }
+
 }
+
 let auth_tokens = {
     "1e3140d794e76c48649b211609356168595dc9086dd69cfe3ceea0c470090138c1c2f571715a0b2db64047a79cf07b52508c0f1993e1d7ffd1271c108780fdd3048841c317e54004cecc6304c79f6e34": "Egorcik"
 }
@@ -108,6 +107,68 @@ function get_quiz_questions() {
     })
 }
 
+function get_global_users() {
+    return new Promise(resolve => {
+        client.query(
+            `
+            SELECT * FROM global_users
+            ORDER BY username ASC
+        `
+        ).then(res => {
+            let rows = res.rows;
+            for (let i = 0; i < rows.length; i += 1) {
+                let current_row = rows[i];
+                let username = current_row.username;
+                global_users[username] = current_row;
+            }
+            resolve();
+        })
+    })
+}
+
+function insert_global_user(username, password_hash){
+    
+    client.query(`
+    INSERT INTO global_users
+    VALUES('${username}', '${password_hash}')
+    `);
+    
+}
+
+// hash using bcrypt
+get_hashed_password = (password) => {
+    let hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+    return hash;
+};
+
+async function do_credentials_match(username, password) {
+    let index = find_username_index(username);
+    if (index != -1) {
+        let db_hash = users[index].passwordHash;
+
+        let match = await bcrypt.compare(password, db_hash);
+        if (match === true) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+}
+
+function register_user_globally(username, password) {
+    let password_hash = get_hashed_password(password);
+    global_users[username] = {
+        username: username,
+        password_hash: password_hash
+    }
+    insert_global_user(username, password_hash);
+}
+
 // Generates random secure token
 const generateToken = () => {
     return crypto.randomBytes(80).toString("hex");
@@ -120,17 +181,17 @@ function get_random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function get_global_user_info(auth_token){
+function get_global_user_info(auth_token) {
     let username = auth_tokens[auth_token];
     console.log(auth_token, username);
     let user_info = global_users[username];
     return user_info;
 }
 
-function attempt_register_global_user_in_lobby(auth_token, join_code){
+function attempt_register_global_user_in_lobby(auth_token, join_code) {
     let global_user_info = get_global_user_info(auth_token);
-    if(global_user_info != undefined){
-        if(lobbies[join_code].participants[auth_token] === undefined){
+    if (global_user_info != undefined) {
+        if (lobbies[join_code].participants[auth_token] === undefined) {
             lobbies[join_code].participants[auth_token] = {
                 role: "participant",
                 score: 0,
@@ -141,7 +202,7 @@ function attempt_register_global_user_in_lobby(auth_token, join_code){
             };
             all_usernames[join_code].push(global_user_info.username);
         }
-        
+
     }
 }
 
@@ -195,16 +256,33 @@ function generate_join_code() {
     return join_code;
 }
 
-// Returns a boolean on whether the selected username in a particular lobby is free
-function is_username_free(join_code, username) {
-    let usernames = all_usernames[join_code];
-
-    for (let i = 0; i < usernames.length; i += 1) {
-        if (usernames[i].toLowerCase() === username.toLowerCase()) {
-            return false;
+// Returns a boolean on whether the selected username is free (not used by global users and lobby users)
+function is_username_free(username, join_code = undefined) {
+    let global_usernames = Object.keys(global_users);
+    let is_globally_used = false
+    for(let i = 0; i < global_usernames.length; i += 1){
+        if(global_usernames[i].toLowerCase() === username.toLowerCase()){
+            is_globally_used = true;
+            break;
         }
     }
-    return true;
+    if(is_globally_used === true){
+        return false;
+    }
+    if(join_code != undefined){
+        let usernames = all_usernames[join_code];
+
+        for (let i = 0; i < usernames.length; i += 1) {
+            if (usernames[i].toLowerCase() === username.toLowerCase()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else{
+        return true;
+    }
+    
 }
 
 function get_all_answers(join_code) {
@@ -253,10 +331,12 @@ function get_scores(join_code) {
     }
     return scores_list;
 }
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
-
+    let global_users_promise = await get_global_users();
+    
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -337,7 +417,7 @@ async function main() {
             };
         }
 
-        let username_free = is_username_free(join_code, username);
+        let username_free = is_username_free(username, join_code);
 
         // If username is not free, send code 1 to indicate that it is taken
         if (username_free === false) {
@@ -367,13 +447,32 @@ async function main() {
         });
     });
 
+    // Response codes: 1 - username is not free, 2 - registration successful
+    app.post("/register_user_globally", (req, res) => {
+        let username = req.body.username;
+        let password = req.body.password;
+        let is_free = is_username_free(username);
+        if(is_free === true){
+            register_user_globally(username, password);
+            console.log(global_users);
+            res.send({
+                code: 2
+            })
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
+    })
+
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
 
         let join_code = generate_join_code();
         let auth_token = req.cookies.auth_token;
-        if(auth_token === undefined){
+        if (auth_token === undefined) {
             auth_token = generateToken();
         }
         // Issue host auth_token
@@ -383,10 +482,10 @@ async function main() {
         });
         let global_user_info = get_global_user_info(auth_token);
         let new_username = undefined;
-        if(global_user_info != undefined){
+        if (global_user_info != undefined) {
             new_username = global_user_info.username;
         }
-        
+
         // Lobby states: lobby - game not started, game - game in progress, finished - game finished
         lobbies[join_code] = {
             participants: {
@@ -554,4 +653,5 @@ async function main() {
     server.listen(port);
     console.log(`Listening on port: ${port}`);
 }
+
 main();
