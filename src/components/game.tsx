@@ -18,7 +18,7 @@ class Answer_grid extends React.Component {
                 Username
             </th>
         )];
-        for(let i = 1; i <= number_of_questions; i += 1){
+        for (let i = 1; i <= number_of_questions; i += 1) {
             table_head.push((
                 <th key={i}>
                     {i}
@@ -26,18 +26,18 @@ class Answer_grid extends React.Component {
             ))
         }
         let table_body = answers_list.map((answer_obj, index) => {
-            
+
             let tds = [];
             let keys = Object.keys(answer_obj.answers);
             console.log(keys);
-            for(let i = 0; i < keys.length; i += 1){
+            for (let i = 0; i < keys.length; i += 1) {
                 let answer = answer_obj.answers[keys[i]];
-                
+
                 let class_list = "answer_td ";
-                if(answer.is_correct){
+                if (answer.is_correct) {
                     class_list += "correct ";
                 }
-                else{
+                else {
                     class_list += "incorrect ";
                 }
                 tds.push((
@@ -46,7 +46,7 @@ class Answer_grid extends React.Component {
                     </td>
                 ))
             }
-            
+
             return (
                 <tr key={answer_obj.username}>
                     <td key="0">
@@ -56,9 +56,9 @@ class Answer_grid extends React.Component {
                 </tr>
             )
         })
-        
+
         return (
-            
+
             <div className="answer_grid">
                 <table className="table">
                     <thead>
@@ -309,12 +309,12 @@ export class Game extends React.Component {
             .then((result) => result.json())
             .then((result) => {
                 let user_info = result.user_info;
-                if (user_info.role === "host") {
+                if (user_info != undefined && user_info.role === "host") {
                     this.setState({
                         is_host: true,
                     });
                 }
-                if (user_info.username != undefined) {
+                if (user_info != undefined && user_info.username != undefined) {
                     this.join_io_room();
                     this.setState({
                         game_state: "lobby",
@@ -339,34 +339,40 @@ export class Game extends React.Component {
         );
     };
     on_submit_username = () => {
-        let fetch_body = {
-            join_code: this.join_code,
-            username: this.state.username_value,
-        };
-        fetch_body = JSON.stringify(fetch_body);
-        fetch("/register_user_in_lobby", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: fetch_body,
-        })
-            .then((result) => result.json())
-            .then((result) => {
-                let code = result.code;
-                // Codes: 1 - username taken, 2 - good to go
-                if (code === 2) {
-                    this.join_io_room();
-                    this.setState({
-                        username: this.state.username_value,
-                        game_state: "lobby",
-                    });
-                } else {
-                    alert(
-                        `Username: ${this.state.username_value} is already taken! Please choose another username`
-                    );
-                }
-            });
+        if (this.state.username_value != "") {
+            let fetch_body = {
+                join_code: this.join_code,
+                username: this.state.username_value,
+            };
+            fetch_body = JSON.stringify(fetch_body);
+            fetch("/register_user_in_lobby", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: fetch_body,
+            })
+                .then((result) => result.json())
+                .then((result) => {
+                    let code = result.code;
+                    // Codes: 1 - username taken, 2 - good to go
+                    if (code === 2) {
+                        this.join_io_room();
+                        this.setState({
+                            username: this.state.username_value,
+                            game_state: "lobby",
+                        });
+                    } else {
+                        alert(
+                            `Username: ${this.state.username_value} is already taken! Please choose another username`
+                        );
+                    }
+                });
+        }
+        else{
+            alert("You left the username field empty! Please select a username");
+        }
+
     };
     results_init = () => {
         this.socket.emit("request_users_answers", JSON.stringify({
@@ -606,7 +612,7 @@ export class Game extends React.Component {
             }
         }
         else if (state = "results") {
-            
+
             content = (
                 <div className="game_results">
                     <Score_board scores={this.state.scores}>

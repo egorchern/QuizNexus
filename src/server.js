@@ -26,6 +26,14 @@ let quiz_questions = {
 let lobbies = {};
 let all_usernames = {};
 
+let global_users = {
+    "Egorcik": {
+        username: "Egorcik"
+    }
+}
+let auth_tokens = {
+    "1e3140d794e76c48649b211609356168595dc9086dd69cfe3ceea0c470090138c1c2f571715a0b2db64047a79cf07b52508c0f1993e1d7ffd1271c108780fdd3048841c317e54004cecc6304c79f6e34": "Egorcik"
+}
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
     let database_url = fs.readFileSync("connection_string.txt", "utf8");
@@ -110,6 +118,31 @@ function get_random_int(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function get_global_user_info(auth_token){
+    let username = auth_tokens[auth_token];
+    console.log(auth_token, username);
+    let user_info = global_users[username];
+    return user_info;
+}
+
+function attempt_register_global_user_in_lobby(auth_token, join_code){
+    let global_user_info = get_global_user_info(auth_token);
+    if(global_user_info != undefined){
+        if(lobbies[join_code].participants[auth_token] === undefined){
+            lobbies[join_code].participants[auth_token] = {
+                role: "participant",
+                score: 0,
+                username: global_user_info.username,
+                question_pointer: 0,
+                logged: false,
+                answers: {}
+            };
+            all_usernames[join_code].push(global_user_info.username);
+        }
+        
+    }
 }
 
 // Generates a new join code from the charlist
@@ -326,7 +359,9 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
+        attempt_register_global_user_in_lobby(auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
+        console.log(user_info);
         res.send({
             user_info: user_info,
         });
@@ -337,19 +372,27 @@ async function main() {
         let quiz_id = req.body.quiz_id;
 
         let join_code = generate_join_code();
-
-        let auth_token = generateToken();
+        let auth_token = req.cookies.auth_token;
+        if(auth_token === undefined){
+            auth_token = generateToken();
+        }
         // Issue host auth_token
         res.cookie("auth_token", auth_token, {
             maxAge: 725760000,
             expires: 725760000,
         });
+        let global_user_info = get_global_user_info(auth_token);
+        let new_username = undefined;
+        if(global_user_info != undefined){
+            new_username = global_user_info.username;
+        }
+        
         // Lobby states: lobby - game not started, game - game in progress, finished - game finished
         lobbies[join_code] = {
             participants: {
                 [auth_token]: {
                     role: "host",
-                    username: undefined,
+                    username: new_username,
                     score: 0,
                     question_pointer: 0,
                     logged: false,
