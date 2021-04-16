@@ -147,6 +147,7 @@ class App extends React.Component {
             content = (
                 <Game
                 join_code={this.state.join_code}
+                assets={assets}
                 >
 
                 </Game>

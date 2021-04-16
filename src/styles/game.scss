@@ -95,6 +95,12 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    /*
+    > div{
+        flex: 1 1 0px;
+        overflow: auto;
+    }
+    */
 }
 .quiz {
     width: 100%;
@@ -248,11 +254,36 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     align-items: center;
     color: var(--bs-secondary);
 }
+.height_full{
+    height: 100% !important;
+}
+.your_answer{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
 .answer_grid{
     overflow-x: auto;
     max-width: 1100px;
     padding: 12px;
     width: 100%;
+}
+.answers_breakdown{
+    margin-top: 15px;
+    width: 100%;
+    max-width: 1100px;
+}
+.your_answer_mark{
+    width: 25px;
+    height: 25px;
+    margin-left: 10px;
+}
+.answer_breakdown{
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
 }
 @media screen and (max-width: 750px) {
     .quiz {

@@ -2,7 +2,97 @@ import { user } from "pg/lib/defaults";
 import * as React from "react";
 import { render } from "react-dom";
 import socketIo, { io } from "socket.io/client-dist/socket.io";
-// TODO make seconds_elapsed server-side
+
+
+class Answers_breakdown extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        let all_answers = this.props.all_answers;
+        let username = this.props.username;
+        let questions = this.props.questions;
+        let assets = this.props.assets;
+        let own_answers_index;
+        let content = null;
+        if(all_answers.length > 0){
+            console.log(all_answers, questions);
+            for (let i = 0; i < all_answers.length; i += 1) {
+                if (all_answers[i].username === username) {
+                    own_answers_index = i;
+                }
+            }
+            
+            let own_answers = all_answers[own_answers_index].answers;
+            let own_answers_keys = Object.keys(own_answers);
+            content = own_answers_keys.map((key, index) => {
+                let current_question_obj = questions[index];
+                console.log(current_question_obj);
+                
+                let answer = own_answers[key];
+                let is_correct = answer.is_correct;
+                let own_answer_string = ``;
+                for(let i = 0; i < answer.answer_indexes.length; i += 1){
+                    let answer_index = answer.answer_indexes[i];
+                    let answer_string = current_question_obj.answer_choices[answer_index];
+                    if(i === answer.answer_indexes.length - 1){
+                        own_answer_string += answer_string
+                    }
+                    else{
+                        own_answer_string += `${answer_string}, `;
+                    }
+                }
+                let correct_answer_string = ``;
+                for(let i = 0; i < answer.correct_answer_indexes.length; i += 1){
+                    let answer_index = answer.correct_answer_indexes[i];
+                    let answer_string = current_question_obj.answer_choices[answer_index];
+                    if(i === answer.correct_answer_indexes.length - 1){
+                        correct_answer_string += answer_string
+                    }
+                    else{
+                        correct_answer_string += `${answer_string}, `;
+                    }
+                }
+                let mark_src;
+                if(is_correct){
+                    mark_src = assets.tick;
+                }
+                else{
+                    mark_src = assets.cross;
+                }
+                return (
+                    <div className="answer_breakdown" key={key}>
+                        <span>Question {index + 1}) {current_question_obj.question_text}</span>
+                        <div className="your_answer">
+                            <span>
+                                Your answer: {own_answer_string}
+                            </span>
+                            <img className="your_answer_mark" src={mark_src}>
+                            </img>
+                        </div>
+                        
+                        {
+                            is_correct === false ? (
+                                <span>
+                                    Correct answer: {correct_answer_string}
+                                </span>
+                            )
+                            :null
+                        }
+                    </div>
+                )
+            })
+            
+        }
+        return (
+            <div className="answers_breakdown">
+                {content}
+            </div>
+        )
+        
+    }
+}
+
 
 class Answer_grid extends React.Component {
     constructor(props) {
@@ -29,7 +119,7 @@ class Answer_grid extends React.Component {
 
             let tds = [];
             let keys = Object.keys(answer_obj.answers);
-            console.log(keys);
+            
             for (let i = 0; i < keys.length; i += 1) {
                 let answer = answer_obj.answers[keys[i]];
 
@@ -119,6 +209,8 @@ export class Game extends React.Component {
     join_code: any;
     wait_interval_between_questions: number;
     socket: any;
+    all_questions: any[];
+    timer: NodeJS.Timeout;
     constructor(props) {
         super(props);
         this.join_code = this.props.join_code;
@@ -139,7 +231,7 @@ export class Game extends React.Component {
             selected_answer_indexes: [],
             answers_list: []
         };
-
+        this.all_questions = [];
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
@@ -171,7 +263,9 @@ export class Game extends React.Component {
             correct_answer_indexes: [],
             selected_answer_indexes: [],
         });
+        
         this.state.question_pointer += 1;
+        
         this.socket.emit(
             "request_question",
             JSON.stringify({
@@ -268,6 +362,8 @@ export class Game extends React.Component {
         this.socket.emit("connect_to_room", body);
     };
     submit_answer = () => {
+        this.all_questions.push(this.state.current_question_obj);
+        
         this.socket.emit(
             "submit_answer",
             JSON.stringify({
@@ -369,7 +465,7 @@ export class Game extends React.Component {
                     }
                 });
         }
-        else{
+        else {
             alert("You left the username field empty! Please select a username");
         }
 
@@ -397,6 +493,12 @@ export class Game extends React.Component {
     render() {
         let content;
         let state = this.state.game_state;
+        if(state != "results"){
+            document.querySelector(".app_container").classList.remove("height_full");
+        }
+        else{
+            document.querySelector(".app_container").classList.add("height_full");
+        }
         if (state === "username_prompt") {
             content = (
                 <div className="username_prompt">
@@ -621,9 +723,17 @@ export class Game extends React.Component {
                     <Answer_grid answers_list={this.state.answers_list} number_of_questions={this.state.quiz_descriptors.number_of_questions}>
 
                     </Answer_grid>
+                    <Answers_breakdown all_answers={this.state.answers_list} username={this.state.username} questions={this.all_questions} assets={this.props.assets}>
+
+                    </Answers_breakdown>
+
                 </div>
             )
+            
         }
         return <div className="game">{content}</div>;
+    }
+    componentWillUnmount(){
+        document.querySelector(".app_container").classList.remove("height_full");
     }
 }
