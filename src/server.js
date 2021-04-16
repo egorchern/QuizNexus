@@ -183,7 +183,7 @@ function get_random_int(min, max) {
 
 function get_global_user_info(auth_token) {
     let username = auth_tokens[auth_token];
-    console.log(auth_token, username);
+    
     let user_info = global_users[username];
     return user_info;
 }
@@ -201,6 +201,7 @@ function attempt_register_global_user_in_lobby(auth_token, join_code) {
                 answers: {}
             };
             all_usernames[join_code].push(global_user_info.username);
+            
         }
 
     }
@@ -313,7 +314,7 @@ function get_logged_participants(join_code) {
             logged_in_participants_list.push(user_info.username);
         }
     }
-    console.log(logged_in_participants_list);
+    
     return logged_in_participants_list;
 }
 
@@ -441,7 +442,7 @@ async function main() {
         let auth_token = req.cookies.auth_token;
         attempt_register_global_user_in_lobby(auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
-        console.log(user_info);
+        
         res.send({
             user_info: user_info,
         });
@@ -454,7 +455,7 @@ async function main() {
         let is_free = is_username_free(username);
         if(is_free === true){
             register_user_globally(username, password);
-            console.log(global_users);
+            
             res.send({
                 code: 2
             })
@@ -502,7 +503,7 @@ async function main() {
             state: "lobby",
         };
         all_usernames[join_code] = [];
-
+        
         res.send({
             join_code: join_code,
         });
@@ -523,10 +524,11 @@ async function main() {
         socket.on("connect_to_room", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             socket.join(`${join_code}`);
+            
             lobbies[join_code].participants[auth_token].logged = true;
 
             let logged_users = get_logged_participants(join_code);
@@ -547,7 +549,7 @@ async function main() {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
             let scope_of_request = parsed.scope_of_request;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             if (scope_of_request === 0) {
@@ -574,7 +576,7 @@ async function main() {
         socket.on("submit_answer", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             let username = lobbies[join_code].participants[auth_token].username;
@@ -619,7 +621,7 @@ async function main() {
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             // Authorization, only a host is allowed to start a game
@@ -636,7 +638,7 @@ async function main() {
         });
         socket.on("disconnecting", () => {
             let socket_rooms = [...socket.rooms];
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             if (socket_rooms.length > 1) {
