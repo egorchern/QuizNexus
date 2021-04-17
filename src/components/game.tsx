@@ -15,7 +15,7 @@ class Answers_breakdown extends React.Component {
         let assets = this.props.assets;
         let own_answers_index;
         let content = null;
-        if(all_answers.length > 0){
+        if(all_answers.length > 0 && questions.length > 0){
             console.log(all_answers, questions);
             for (let i = 0; i < all_answers.length; i += 1) {
                 if (all_answers[i].username === username) {
@@ -209,7 +209,7 @@ export class Game extends React.Component {
     join_code: any;
     wait_interval_between_questions: number;
     socket: any;
-    all_questions: any[];
+    
     timer: NodeJS.Timeout;
     constructor(props) {
         super(props);
@@ -229,9 +229,10 @@ export class Game extends React.Component {
             score: 0,
             correct_answer_indexes: [],
             selected_answer_indexes: [],
-            answers_list: []
+            answers_list: [],
+            questions: []
         };
-        this.all_questions = [];
+        
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
@@ -354,6 +355,11 @@ export class Game extends React.Component {
                 answers_list: data
             })
         })
+        this.socket.on("get_all_questions", data => {
+            this.setState({
+                questions: data
+            })
+        })
         let body = {
             join_code: this.join_code,
         };
@@ -362,7 +368,7 @@ export class Game extends React.Component {
         this.socket.emit("connect_to_room", body);
     };
     submit_answer = () => {
-        this.all_questions.push(this.state.current_question_obj);
+        
         
         this.socket.emit(
             "submit_answer",
@@ -474,6 +480,9 @@ export class Game extends React.Component {
         this.socket.emit("request_users_answers", JSON.stringify({
             join_code: this.join_code,
             scope_of_request: 0
+        }))
+        this.socket.emit("request_all_questions", JSON.stringify({
+            join_code: this.join_code
         }))
     }
     sort_scores() {
@@ -723,7 +732,7 @@ export class Game extends React.Component {
                     <Answer_grid answers_list={this.state.answers_list} number_of_questions={this.state.quiz_descriptors.number_of_questions}>
 
                     </Answer_grid>
-                    <Answers_breakdown all_answers={this.state.answers_list} username={this.state.username} questions={this.all_questions} assets={this.props.assets}>
+                    <Answers_breakdown all_answers={this.state.answers_list} username={this.state.username} questions={this.state.questions} assets={this.props.assets}>
 
                     </Answers_breakdown>
 

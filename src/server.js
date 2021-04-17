@@ -333,6 +333,18 @@ function get_scores(join_code) {
     return scores_list;
 }
 
+function get_all_questions(quiz_id){
+    let output_list = [];
+    let quiz_questions_obj = quiz_questions[quiz_id];
+    let keys = Object.keys(quiz_questions_obj);
+    for(let i = 0; i < keys.length; i += 1){
+        let key = keys[i];
+        let question_obj = quiz_questions_obj[key];
+        output_list.push(question_obj);
+    }
+    return output_list;
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
@@ -573,6 +585,20 @@ async function main() {
             };
             socket.emit("get_question", answer_body);
         });
+        socket.on("request_all_questions", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
+            let auth_token = regex.exec(socket.handshake.headers.cookie).groups
+                .auth_token;
+            let quiz_id = lobbies[join_code].quiz_id;
+            let question_number = lobbies[join_code].participants[auth_token].question_pointer;
+            let number_of_questions = quizzes[quiz_id].number_of_questions;
+            if(question_number >= number_of_questions){
+                let all_questions = get_all_questions(quiz_id);
+                socket.emit("get_all_questions", all_questions);
+            }
+        })
         socket.on("submit_answer", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
