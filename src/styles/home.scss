@@ -44,18 +44,21 @@ $home_title_font_size: calc(1.25rem + 0.65vw);
             }
         }
     }
-    .join_input {
-        font-size: $home_title_font_size;
-        background: transparent;
-        border: none;
-        padding: 0;
-        border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
-        border-radius: 0;
-        transition: border-bottom 0.3s;
-    }
-    .join_input:focus {
-        border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
-        box-shadow: none;
-        color: black;
-    }
+    
+}
+
+.join_input {
+    font-size: $home_title_font_size;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
+    border-radius: 0;
+    transition: border-bottom 0.3s;
+}
+.join_input:focus {
+    border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
+    box-shadow: none;
+    color: black;
 }

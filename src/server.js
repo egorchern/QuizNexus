@@ -526,6 +526,12 @@ async function main() {
     app.get("/home", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
+    app.get("/register", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/login", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
     app.get("/lobby/:join_code", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });

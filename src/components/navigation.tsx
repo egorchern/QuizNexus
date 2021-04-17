@@ -55,10 +55,12 @@ export class Navigation extends React.Component {
                                 }}>
                                     <span>Browse</span>
                                 </div>
-                                <div>
+                                <div >
                                     <span>Log in</span>
                                 </div>
-                                <div>
+                                <div onClick={() => {
+                                    this.props.switch_page_state("register");
+                                }}>
                                     <span>Register</span>
                                 </div>
                             </div>
@@ -77,10 +79,12 @@ export class Navigation extends React.Component {
                     }}>
                         <span>Browse</span>
                     </div>
-                    <div>
+                    <div >
                         <span>Log in</span>
                     </div>
-                    <div>
+                    <div onClick={() => {
+                        this.props.switch_page_state("register");
+                    }}>
                         <span>Register</span>
                     </div>
                 </div>
