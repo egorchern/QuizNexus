@@ -31,7 +31,11 @@ let global_users = {
 }
 
 let auth_tokens = {
-    "1e3140d794e76c48649b211609356168595dc9086dd69cfe3ceea0c470090138c1c2f571715a0b2db64047a79cf07b52508c0f1993e1d7ffd1271c108780fdd3048841c317e54004cecc6304c79f6e34": "Egorcik"
+    "c36cd89d50f6244effced311c6cd50c559fa9aeda1f15fbd1f2edeb837295c30e28ef5fcc62c0819dab582e2d3af19da444eee97054d535199c2556fa6152380f983325a35c5bdceebb67b86b3417d09": {
+        username: "Egorcik",
+        client_ip: "::ffff:127.0.0.1",
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36"
+    }
 }
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
@@ -126,13 +130,17 @@ function get_global_users() {
     })
 }
 
-function insert_global_user(username, password_hash){
-    
+function insert_global_user(username, password_hash) {
+
     client.query(`
     INSERT INTO global_users
     VALUES('${username}', '${password_hash}')
     `);
-    
+
+}
+
+function insert_auth_token(username, auth_token, client_ip, user_agent){
+
 }
 
 // hash using bcrypt
@@ -142,9 +150,9 @@ get_hashed_password = (password) => {
 };
 
 async function do_credentials_match(username, password) {
-    let index = find_username_index(username);
-    if (index != -1) {
-        let db_hash = users[index].passwordHash;
+    let user_obj = global_users[username];
+    if (user_obj != undefined) {
+        let db_hash = user_obj.password_hash;
 
         let match = await bcrypt.compare(password, db_hash);
         if (match === true) {
@@ -183,7 +191,7 @@ function get_random_int(min, max) {
 
 function get_global_user_info(auth_token) {
     let username = auth_tokens[auth_token];
-    
+
     let user_info = global_users[username];
     return user_info;
 }
@@ -201,7 +209,7 @@ function attempt_register_global_user_in_lobby(auth_token, join_code) {
                 answers: {}
             };
             all_usernames[join_code].push(global_user_info.username);
-            
+
         }
 
     }
@@ -257,20 +265,50 @@ function generate_join_code() {
     return join_code;
 }
 
+function delete_redundant_auth_token(username, client_ip, user_agent) {
+    return new Promise(resolve => {
+        let auth_token;
+        client.query(`
+        SELECT authtoken
+        FROM authtokens
+        WHERE username='${username}' AND client_ip='${client_ip}' AND useragent='${user_agent}';
+        `).then(res => {
+
+            if (res.rows.length > 0) {
+                auth_token = res.rows[0].authtoken
+            }
+
+
+            client.query(`
+            DELETE FROM authtokens
+            WHERE username='${username}' AND client_ip='${client_ip}' AND useragent='${user_agent}';
+            `).then(res => {
+
+                resolve(auth_token);
+            })
+        })
+
+
+
+    })
+
+
+}
+
 // Returns a boolean on whether the selected username is free (not used by global users and lobby users)
 function is_username_free(username, join_code = undefined) {
     let global_usernames = Object.keys(global_users);
     let is_globally_used = false
-    for(let i = 0; i < global_usernames.length; i += 1){
-        if(global_usernames[i].toLowerCase() === username.toLowerCase()){
+    for (let i = 0; i < global_usernames.length; i += 1) {
+        if (global_usernames[i].toLowerCase() === username.toLowerCase()) {
             is_globally_used = true;
             break;
         }
     }
-    if(is_globally_used === true){
+    if (is_globally_used === true) {
         return false;
     }
-    if(join_code != undefined){
+    if (join_code != undefined) {
         let usernames = all_usernames[join_code];
 
         for (let i = 0; i < usernames.length; i += 1) {
@@ -280,10 +318,10 @@ function is_username_free(username, join_code = undefined) {
         }
         return true;
     }
-    else{
+    else {
         return true;
     }
-    
+
 }
 
 function get_all_answers(join_code) {
@@ -314,7 +352,7 @@ function get_logged_participants(join_code) {
             logged_in_participants_list.push(user_info.username);
         }
     }
-    
+
     return logged_in_participants_list;
 }
 
@@ -333,11 +371,11 @@ function get_scores(join_code) {
     return scores_list;
 }
 
-function get_all_questions(quiz_id){
+function get_all_questions(quiz_id) {
     let output_list = [];
     let quiz_questions_obj = quiz_questions[quiz_id];
     let keys = Object.keys(quiz_questions_obj);
-    for(let i = 0; i < keys.length; i += 1){
+    for (let i = 0; i < keys.length; i += 1) {
         let key = keys[i];
         let question_obj = quiz_questions_obj[key];
         output_list.push(question_obj);
@@ -349,7 +387,7 @@ async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
-    
+
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -357,6 +395,24 @@ async function main() {
     // To parse cookies from the HTTP Request
     app.use(cookie_parser());
     app.use(express.static("dist"));
+
+    app.use((req, res, next) => {
+        let client_ip = request_ip.getClientIp(req);
+        req.client_ip = client_ip;
+        let user_agent = req.headers['user-agent'];
+        req.user_agent = user_agent;
+        let auth_token = req.cookies.auth_token;
+        let auth_token_output = auth_tokens[auth_token];
+        
+        if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
+            req.username = auth_token_output.username;
+        }
+        else {
+            req.username = null;
+        }
+        console.log(req.username);
+        next();
+    })
     var server = http.createServer(app);
     var io = socketio(server);
 
@@ -420,6 +476,7 @@ async function main() {
             res.cookie("auth_token", auth_token, {
                 maxAge: 725760000,
                 expires: 725760000,
+                httpOnly: true
             });
             lobbies[join_code].participants[auth_token] = {
                 role: "participant",
@@ -454,7 +511,7 @@ async function main() {
         let auth_token = req.cookies.auth_token;
         attempt_register_global_user_in_lobby(auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
-        
+
         res.send({
             user_info: user_info,
         });
@@ -465,20 +522,55 @@ async function main() {
         let username = req.body.username;
         let password = req.body.password;
         let is_free = is_username_free(username);
-        if(is_free === true){
+        if (is_free === true) {
             register_user_globally(username, password);
             console.log(global_users);
             res.send({
                 code: 2
             })
         }
-        else{
+        else {
             res.send({
                 code: 1
             })
         }
     })
 
+    // Response codes: 1 - invalid credentials, 2 - authenticated
+    app.post("/log_in", (req, res) => {
+        let username = req.body.username;
+        let password = req.body.password;
+        do_credentials_match(username, password).then(match => {
+            if (match) {
+                let auth_token = generateToken();
+                auth_tokens[auth_token] = {
+                    username: username,
+                    client_ip: req.client_ip,
+                    user_agent: req.user_agent
+                }
+                /*
+                let deleted_auth_token = delete_redundant_auth_token(username, client_ip, user_agent);
+                delete auth_tokens[deleted_auth_token];
+                */
+                res.cookie("auth_token", {
+                    maxAge: 725760000,
+                    expires: 725760000,
+                    httpOnly: true
+                }
+
+                )
+                res.send({
+                    code: 2
+                })
+            }
+            else {
+                res.send({
+                    code: 1
+                })
+            }
+        })
+        let auth_token = req.cookies.auth_token;
+    })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
@@ -492,6 +584,7 @@ async function main() {
         res.cookie("auth_token", auth_token, {
             maxAge: 725760000,
             expires: 725760000,
+            httpOnly: true
         });
         let global_user_info = get_global_user_info(auth_token);
         let new_username = undefined;
@@ -515,7 +608,7 @@ async function main() {
             state: "lobby",
         };
         all_usernames[join_code] = [];
-        
+
         res.send({
             join_code: join_code,
         });
@@ -546,7 +639,7 @@ async function main() {
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             socket.join(`${join_code}`);
-            
+
             lobbies[join_code].participants[auth_token].logged = true;
 
             let logged_users = get_logged_participants(join_code);
@@ -600,7 +693,7 @@ async function main() {
             let quiz_id = lobbies[join_code].quiz_id;
             let question_number = lobbies[join_code].participants[auth_token].question_pointer;
             let number_of_questions = quizzes[quiz_id].number_of_questions;
-            if(question_number >= number_of_questions){
+            if (question_number >= number_of_questions) {
                 let all_questions = get_all_questions(quiz_id);
                 socket.emit("get_all_questions", all_questions);
             }
@@ -628,6 +721,9 @@ async function main() {
                 points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
             }
             else {
+                points_earned = 0;
+            }
+            if(points_earned > question_obj.points_base){
                 points_earned = 0;
             }
             lobbies[join_code].participants[auth_token].answers[question_number] = {

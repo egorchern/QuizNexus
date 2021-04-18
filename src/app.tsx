@@ -62,7 +62,7 @@ class App extends React.Component {
         if (temp != null) {
             this.join(temp.groups.join_code);
         }
-
+        
 
     }
     join = (join_code) => {
@@ -140,6 +140,23 @@ class App extends React.Component {
             })
         })
         
+    }
+    log_in = (username, password) => {
+        return new Promise(resolve => {
+            fetch("/log_in", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }).then(result => result.json())
+            .then(result => {
+                console.log(result);
+            })
+        })
     }
     switch_page_state = (state) => {
         //To prevent unneeded switches from same state
