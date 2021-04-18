@@ -1,5 +1,7 @@
+import { use } from 'bcrypt/promises';
 import * as React from 'react';
 import { render } from 'react-dom';
+import {Alert_message} from "./alert";
 
 export class Register extends React.Component{
     constructor(props){
@@ -7,7 +9,10 @@ export class Register extends React.Component{
         this.state = {
             username_value: "",
             password_value: "",
-            confirm_password_value: ""
+            confirm_password_value: "",
+            alert_color: undefined,
+            alert_message: undefined,
+            alert_visibility: false
         }
         // This is to prevent pushing into history when the state is already at browse
         let path_name = location.pathname;
@@ -23,14 +28,29 @@ export class Register extends React.Component{
         let confirm_password = this.state.confirm_password_value;
         if(username != "" && password != "" && confirm_password != ""){
             if(password === confirm_password){
-                this.props.register(username, password);
+                if(password.length >= 9){
+                    let register_promise = this.props.register(username, password);
+                    register_promise.then(code => {
+                        if(code === 1){
+                            this.push_alert(`An account with username: "${username}" already exsts. Please select a different username`, "red");
+    
+                        }
+                        else{
+                            this.push_alert(`Account with username: "${username}" successfully created`, "green");
+                        }
+                    })
+                    
+                }
+                else{
+                    this.push_alert("Password has to be equal to or longer than 9 characters. Please select a longer password", "red");
+                }
             }
             else{
-                alert("Passwords don't match. Please make sure that password is typed correctly in the Confirm password field");
+                this.push_alert("Passwords don't match. Please make sure that password is typed correctly in the Confirm password field", "red");
             }
         }
         else{
-            alert("Some fields were left empty. Please fill-in all of the fields")
+            this.push_alert("Some fields were left empty. Please fill-in all of the fields", "red");
         }
     }
     on_username_value_change = (ev) => {
@@ -48,11 +68,31 @@ export class Register extends React.Component{
             confirm_password_value: ev.target.value
         })
     }
+    push_alert = (message, color) => {
+        this.setState({
+            alert_message: message,
+            alert_color: color,
+            alert_visibility: true
+        })
+    }
+    dismiss_alert = () => {
+        this.setState({
+            alert_visibility: false
+        })
+    }
     render(){
         return (
             <div className="register">
+                <Alert_message
+                message={this.state.alert_message}
+                color={this.state.alert_color}
+                alert_visibility={this.state.alert_visibility}
+                dismiss_alert={this.dismiss_alert}
+                >
+
+                </Alert_message>
                 <div className="register_container">
-                    <div className="register_benefits">
+                    <div className="register_benefits animate__animated animate__zoomInLeft">
                         <div className="register_benefits_row">
                             <h2>If you register:</h2>
                         </div>
@@ -83,7 +123,7 @@ export class Register extends React.Component{
                         
                     </div>
                     <div className="register_form_container">
-                        <div className="register_form">
+                        <div className="register_form animate__animated animate__zoomInRight">
                             <span>
                                 Username
                             </span>

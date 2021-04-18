@@ -8,7 +8,12 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    position: relative;
     padding: 8px;
+    .animate__animated{
+        animation-duration: 0.5s;
+        
+    }
 }
 .register_benefits{
     display: flex;
@@ -23,7 +28,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
     width: 100%;
     display: flex;
     flex-direction: row;
-
+    position: relative;
 }
 .register_form_container{
     flex-grow: 1;
@@ -52,7 +57,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
 .register_form{
     width: 100%;
     max-width: 650px;
-    
+    padding: 8px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -79,6 +84,10 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
         margin-right: 0;
         margin-bottom: 30px;
         width: 100%;
+        order: 2;
         max-width: none;
+    }
+    .register_form_container{
+        order: 1;
     }
 }

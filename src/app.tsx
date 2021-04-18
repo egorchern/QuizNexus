@@ -123,7 +123,23 @@ class App extends React.Component {
             });
     };
     register = (username, password) => {
-        console.log(username, password);
+        return new Promise(resolve => {
+            fetch("/register_user_globally", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }).then(result => result.json())
+            .then(result => {
+                let code = result.code;
+                resolve(code);
+            })
+        })
+        
     }
     switch_page_state = (state) => {
         //To prevent unneeded switches from same state

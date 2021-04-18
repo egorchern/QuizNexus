@@ -467,7 +467,7 @@ async function main() {
         let is_free = is_username_free(username);
         if(is_free === true){
             register_user_globally(username, password);
-            
+            console.log(global_users);
             res.send({
                 code: 2
             })
