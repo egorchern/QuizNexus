@@ -36,7 +36,8 @@ class App extends React.Component {
         }
         this.state = {
             page_state: page_state,
-            join_code: undefined
+            join_code: undefined,
+            global_username: null
         };
         window.onpopstate = (ev) => {
             let state = ev.state;
@@ -55,14 +56,30 @@ class App extends React.Component {
 
         // Get information from url and switch state appropriately
 
-        console.log(path_name);
+        
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
 
         if (temp != null) {
             this.join(temp.groups.join_code);
         }
-        this.log_in("Egorcik", "123qweasdzxc");
+        
+        fetch("/get_global_username", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(result => result.json())
+        .then(result => {
+            let username = result.username;
+            if(username != null){
+                this.setState({
+                    global_username: username
+                })
+            }
+            
+        })
+        
 
     }
     join = (join_code) => {
@@ -211,6 +228,7 @@ class App extends React.Component {
                 <Navigation
                     icon={assets.icon}
                     switch_page_state={this.switch_page_state}
+                    username={this.state.global_username}
                 ></Navigation>
                 {content}
             </div>

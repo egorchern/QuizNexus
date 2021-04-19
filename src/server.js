@@ -626,6 +626,12 @@ async function main() {
         })
         
     })
+
+    app.post("/get_global_username", (req, res) => {
+        res.send({
+            username: req.username
+        })
+    })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
