@@ -30236,6 +30236,7 @@ function (_super) {
     var _this = this;
 
     var nav_button_class_list = "ham hamRotate ham1 mobile_nav ";
+    var username = this.props.username;
 
     if (this.state.is_mobile_nav_opened === true) {
       nav_button_class_list += "active ";
@@ -30270,24 +30271,78 @@ function (_super) {
     }, this.state.is_mobile_nav_opened === true ? /*#__PURE__*/React.createElement("div", {
       className: "navigation_buttons_container"
     }, /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
       onClick: function onClick() {
         _this.props.switch_page_state("home");
       }
     }, /*#__PURE__*/React.createElement("span", null, "Home")), /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
       onClick: function onClick() {
         _this.props.switch_page_state("browse");
       }
-    }, /*#__PURE__*/React.createElement("span", null, "Browse")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Log in")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Register"))) : null), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("span", null, "Browse")), username === null ? /*#__PURE__*/React.createElement("div", {
+      className: "login_container"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("login");
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "Log in")), /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("register");
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "Register"))) : /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex_horizontal"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      className: "person_icon",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+    }), /*#__PURE__*/React.createElement("path", {
+      fillRule: "evenodd",
+      d: "M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"
+    })), /*#__PURE__*/React.createElement("span", null, username)))) : null), /*#__PURE__*/React.createElement("div", {
       className: "navigation_buttons_container desktop_nav"
     }, /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
       onClick: function onClick() {
         _this.props.switch_page_state("home");
       }
     }, /*#__PURE__*/React.createElement("span", null, "Home")), /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
       onClick: function onClick() {
         _this.props.switch_page_state("browse");
       }
-    }, /*#__PURE__*/React.createElement("span", null, "Browse")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Log in")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Register"))));
+    }, /*#__PURE__*/React.createElement("span", null, "Browse")), username === null ? /*#__PURE__*/React.createElement("div", {
+      className: "login_container"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("login");
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "Log in")), /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("register");
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "Register"))) : /*#__PURE__*/React.createElement("div", {
+      className: "navigation_button"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex_horizontal"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      className: "person_icon",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+    }), /*#__PURE__*/React.createElement("path", {
+      fillRule: "evenodd",
+      d: "M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"
+    })), /*#__PURE__*/React.createElement("span", null, username)))));
   };
 
   return Navigation;
@@ -40720,8 +40775,94 @@ exports.Game = void 0;
 
 var React = __importStar(require("react"));
 
-var socket_io_1 = require("socket.io/client-dist/socket.io"); // TODO make seconds_elapsed server-side
+var socket_io_1 = require("socket.io/client-dist/socket.io");
 
+var Answers_breakdown =
+/** @class */
+function (_super) {
+  __extends(Answers_breakdown, _super);
+
+  function Answers_breakdown(props) {
+    return _super.call(this, props) || this;
+  }
+
+  Answers_breakdown.prototype.render = function () {
+    var all_answers = this.props.all_answers;
+    var username = this.props.username;
+    var questions = this.props.questions;
+    var assets = this.props.assets;
+    var own_answers_index;
+    var content = null;
+
+    if (all_answers.length > 0 && questions.length > 0) {
+      console.log(all_answers, questions);
+
+      for (var i = 0; i < all_answers.length; i += 1) {
+        if (all_answers[i].username === username) {
+          own_answers_index = i;
+        }
+      }
+
+      var own_answers_1 = all_answers[own_answers_index].answers;
+      var own_answers_keys = Object.keys(own_answers_1);
+      content = own_answers_keys.map(function (key, index) {
+        var current_question_obj = questions[index];
+        console.log(current_question_obj);
+        var answer = own_answers_1[key];
+        var is_correct = answer.is_correct;
+        var own_answer_string = "";
+
+        for (var i = 0; i < answer.answer_indexes.length; i += 1) {
+          var answer_index = answer.answer_indexes[i];
+          var answer_string = current_question_obj.answer_choices[answer_index];
+
+          if (i === answer.answer_indexes.length - 1) {
+            own_answer_string += answer_string;
+          } else {
+            own_answer_string += answer_string + ", ";
+          }
+        }
+
+        var correct_answer_string = "";
+
+        for (var i = 0; i < answer.correct_answer_indexes.length; i += 1) {
+          var answer_index = answer.correct_answer_indexes[i];
+          var answer_string = current_question_obj.answer_choices[answer_index];
+
+          if (i === answer.correct_answer_indexes.length - 1) {
+            correct_answer_string += answer_string;
+          } else {
+            correct_answer_string += answer_string + ", ";
+          }
+        }
+
+        var mark_src;
+
+        if (is_correct) {
+          mark_src = assets.tick;
+        } else {
+          mark_src = assets.cross;
+        }
+
+        return /*#__PURE__*/React.createElement("div", {
+          className: "answer_breakdown",
+          key: key
+        }, /*#__PURE__*/React.createElement("span", null, "Question ", index + 1, ") ", current_question_obj.question_text), /*#__PURE__*/React.createElement("div", {
+          className: "your_answer"
+        }, /*#__PURE__*/React.createElement("span", null, "Your answer: ", own_answer_string), /*#__PURE__*/React.createElement("img", {
+          className: "your_answer_mark",
+          src: mark_src
+        })), is_correct === false ? /*#__PURE__*/React.createElement("span", null, "Correct answer: ", correct_answer_string) : null);
+      });
+    }
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: "answers_breakdown"
+    }, content);
+  };
+
+  return Answers_breakdown;
+}(React.Component);
 
 var Answer_grid =
 /** @class */
@@ -40748,7 +40889,6 @@ function (_super) {
     var table_body = answers_list.map(function (answer_obj, index) {
       var tds = [];
       var keys = Object.keys(answer_obj.answers);
-      console.log(keys);
 
       for (var i = 0; i < keys.length; i += 1) {
         var answer = answer_obj.answers[keys[i]];
@@ -40952,6 +41092,12 @@ function (_super) {
         });
       });
 
+      _this.socket.on("get_all_questions", function (data) {
+        _this.setState({
+          questions: data
+        });
+      });
+
       var body = {
         join_code: _this.join_code
       };
@@ -41001,13 +41147,13 @@ function (_super) {
       }).then(function (result) {
         var user_info = result.user_info;
 
-        if (user_info.role === "host") {
+        if (user_info != undefined && user_info.role === "host") {
           _this.setState({
             is_host: true
           });
         }
 
-        if (user_info.username != undefined) {
+        if (user_info != undefined && user_info.username != undefined) {
           _this.join_io_room();
 
           _this.setState({
@@ -41033,39 +41179,47 @@ function (_super) {
     };
 
     _this.on_submit_username = function () {
-      var fetch_body = {
-        join_code: _this.join_code,
-        username: _this.state.username_value
-      };
-      fetch_body = JSON.stringify(fetch_body);
-      fetch("/register_user_in_lobby", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: fetch_body
-      }).then(function (result) {
-        return result.json();
-      }).then(function (result) {
-        var code = result.code; // Codes: 1 - username taken, 2 - good to go
+      if (_this.state.username_value != "") {
+        var fetch_body = {
+          join_code: _this.join_code,
+          username: _this.state.username_value
+        };
+        fetch_body = JSON.stringify(fetch_body);
+        fetch("/register_user_in_lobby", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: fetch_body
+        }).then(function (result) {
+          return result.json();
+        }).then(function (result) {
+          var code = result.code; // Codes: 1 - username taken, 2 - good to go
 
-        if (code === 2) {
-          _this.join_io_room();
+          if (code === 2) {
+            _this.join_io_room();
 
-          _this.setState({
-            username: _this.state.username_value,
-            game_state: "lobby"
-          });
-        } else {
-          alert("Username: " + _this.state.username_value + " is already taken! Please choose another username");
-        }
-      });
+            _this.setState({
+              username: _this.state.username_value,
+              game_state: "lobby"
+            });
+          } else {
+            alert("Username: " + _this.state.username_value + " is already taken! Please choose another username");
+          }
+        });
+      } else {
+        alert("You left the username field empty! Please select a username");
+      }
     };
 
     _this.results_init = function () {
       _this.socket.emit("request_users_answers", JSON.stringify({
         join_code: _this.join_code,
         scope_of_request: 0
+      }));
+
+      _this.socket.emit("request_all_questions", JSON.stringify({
+        join_code: _this.join_code
       }));
     };
 
@@ -41085,7 +41239,8 @@ function (_super) {
       score: 0,
       correct_answer_indexes: [],
       selected_answer_indexes: [],
-      answers_list: []
+      answers_list: [],
+      questions: []
     }; // To prevent looping the history pushes i.e not pushing when location already at lobby
 
     var path_name = location.pathname;
@@ -41126,6 +41281,12 @@ function (_super) {
 
     var content;
     var state = this.state.game_state;
+
+    if (state != "results") {
+      document.querySelector(".app_container").classList.remove("height_full");
+    } else {
+      document.querySelector(".app_container").classList.add("height_full");
+    }
 
     if (state === "username_prompt") {
       content = /*#__PURE__*/React.createElement("div", {
@@ -41250,6 +41411,11 @@ function (_super) {
       }), /*#__PURE__*/React.createElement(Answer_grid, {
         answers_list: this.state.answers_list,
         number_of_questions: this.state.quiz_descriptors.number_of_questions
+      }), /*#__PURE__*/React.createElement(Answers_breakdown, {
+        all_answers: this.state.answers_list,
+        username: this.state.username,
+        questions: this.state.questions,
+        assets: this.props.assets
       }));
     }
 
@@ -41258,17 +41424,579 @@ function (_super) {
     }, content);
   };
 
+  Game.prototype.componentWillUnmount = function () {
+    document.querySelector(".app_container").classList.remove("height_full");
+  };
+
   return Game;
 }(React.Component);
 
 exports.Game = Game;
-},{"react":"../node_modules/react/index.js","socket.io/client-dist/socket.io":"../node_modules/socket.io/client-dist/socket.io.js"}],"assets/icon.png":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","socket.io/client-dist/socket.io":"../node_modules/socket.io/client-dist/socket.io.js"}],"components/alert.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Alert_message = void 0;
+
+var React = __importStar(require("react"));
+
+var Alert_message =
+/** @class */
+function (_super) {
+  __extends(Alert_message, _super);
+
+  function Alert_message(props) {
+    return _super.call(this, props) || this;
+  }
+
+  Alert_message.prototype.render = function () {
+    var color = this.props.color;
+    var background_color;
+    var border_color;
+
+    if (color === "red") {
+      color = "hsl(355deg, 61%, 32%)";
+      background_color = "#f8d7da";
+      border_color = "#f5c2c7";
+    } else if (color === "green") {
+      color = "hsl(152deg, 69%, 19%)";
+      background_color = "#d1e7dd";
+      border_color = "#badbcc";
+    }
+
+    var alert_style = {
+      color: color,
+      backgroundColor: background_color,
+      borderColor: border_color
+    };
+    var message = this.props.message;
+    var animate = this.props.alert_visibility === true;
+    var class_list = "alert_message";
+
+    if (animate === true) {
+      class_list += " animate_fade_in";
+    } else {
+      class_list += " animate_fade_out";
+    }
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: class_list,
+      style: alert_style
+    }, message != undefined ? /*#__PURE__*/React.createElement("div", {
+      className: "flex_horizontal"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "margin_right"
+    }, message), /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "24",
+      height: "24",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "black",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: "close_alert",
+      onClick: this.props.dismiss_alert
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: "18",
+      y1: "6",
+      x2: "6",
+      y2: "18"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "6",
+      y1: "6",
+      x2: "18",
+      y2: "18"
+    }))) : null);
+  };
+
+  return Alert_message;
+}(React.Component);
+
+exports.Alert_message = Alert_message;
+},{"react":"../node_modules/react/index.js"}],"components/register.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Register = void 0;
+
+var React = __importStar(require("react"));
+
+var alert_1 = require("./alert");
+
+var Register =
+/** @class */
+function (_super) {
+  __extends(Register, _super);
+
+  function Register(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.on_register_button_click = function () {
+      var username = _this.state.username_value;
+      var password = _this.state.password_value;
+      var confirm_password = _this.state.confirm_password_value;
+
+      if (username != "" && password != "" && confirm_password != "") {
+        if (password === confirm_password) {
+          if (password.length >= 9) {
+            var register_promise = _this.props.register(username, password);
+
+            register_promise.then(function (code) {
+              if (code === 1) {
+                _this.push_alert("An account with username: \"" + username + "\" already exsts. Please select a different username", "red");
+              } else {
+                _this.push_alert("Account with username: \"" + username + "\" successfully created", "green");
+              }
+            });
+          } else {
+            _this.push_alert("Password has to be equal to or longer than 9 characters. Please select a longer password", "red");
+          }
+        } else {
+          _this.push_alert("Passwords don't match. Please make sure that password is typed correctly in the Confirm password field", "red");
+        }
+      } else {
+        _this.push_alert("Some fields were left empty. Please fill-in all of the fields", "red");
+      }
+    };
+
+    _this.on_username_value_change = function (ev) {
+      _this.setState({
+        username_value: ev.target.value
+      });
+    };
+
+    _this.on_password_value_change = function (ev) {
+      _this.setState({
+        password_value: ev.target.value
+      });
+    };
+
+    _this.on_confirm_password_value_change = function (ev) {
+      _this.setState({
+        confirm_password_value: ev.target.value
+      });
+    };
+
+    _this.push_alert = function (message, color) {
+      _this.setState({
+        alert_message: message,
+        alert_color: color,
+        alert_visibility: true
+      });
+    };
+
+    _this.dismiss_alert = function () {
+      _this.setState({
+        alert_visibility: false
+      });
+    };
+
+    _this.state = {
+      username_value: "",
+      password_value: "",
+      confirm_password_value: "",
+      alert_color: undefined,
+      alert_message: undefined,
+      alert_visibility: false
+    }; // This is to prevent pushing into history when the state is already at browse
+
+    var path_name = location.pathname;
+    var regex = new RegExp("^/register$");
+    var temp = regex.exec(path_name);
+
+    if (temp === null) {
+      history.pushState({
+        page_state: "register"
+      }, "Register", "/register");
+    }
+
+    return _this;
+  }
+
+  Register.prototype.render = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "register"
+    }, /*#__PURE__*/React.createElement(alert_1.Alert_message, {
+      message: this.state.alert_message,
+      color: this.state.alert_color,
+      alert_visibility: this.state.alert_visibility,
+      dismiss_alert: this.dismiss_alert
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "register_container"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "register_benefits animate__animated animate__zoomInLeft"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "register_benefits_row"
+    }, /*#__PURE__*/React.createElement("h2", null, "If you register:")), /*#__PURE__*/React.createElement("div", {
+      className: "register_benefits_row"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "plus_svg",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+    })), /*#__PURE__*/React.createElement("span", null, "Your username will be reserved and you won't have to enter a username after joining a quiz")), /*#__PURE__*/React.createElement("div", {
+      className: "register_benefits_row"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "plus_svg",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+    })), /*#__PURE__*/React.createElement("span", null, "You will be able to create your own quizzes. You will also be able to give a like or dislike to a quiz")), /*#__PURE__*/React.createElement("div", {
+      className: "register_benefits_row"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "plus_svg",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+    })), /*#__PURE__*/React.createElement("span", null, "Your quiz results will be saved, and you would be able to view your account-wide statistics"))), /*#__PURE__*/React.createElement("div", {
+      className: "register_form_container"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "register_form animate__animated animate__zoomInRight"
+    }, /*#__PURE__*/React.createElement("span", null, "Username"), /*#__PURE__*/React.createElement("input", {
+      className: "form_control join_input",
+      value: this.state.username_value,
+      onChange: this.on_username_value_change
+    }), /*#__PURE__*/React.createElement("span", null, "Password"), /*#__PURE__*/React.createElement("input", {
+      className: "form_control join_input",
+      type: "password",
+      value: this.state.password_value,
+      onChange: this.on_password_value_change
+    }), /*#__PURE__*/React.createElement("span", null, "Confirm password"), /*#__PURE__*/React.createElement("input", {
+      className: "form_control join_input",
+      type: "password",
+      value: this.state.confirm_password_value,
+      onChange: this.on_confirm_password_value_change
+    }), /*#__PURE__*/React.createElement("button", {
+      className: "btn btn-primary",
+      onClick: this.on_register_button_click
+    }, "Register")))));
+  };
+
+  return Register;
+}(React.Component);
+
+exports.Register = Register;
+},{"react":"../node_modules/react/index.js","./alert":"components/alert.tsx"}],"components/login.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Login = void 0;
+
+var React = __importStar(require("react"));
+
+var alert_1 = require("./alert");
+
+var Login =
+/** @class */
+function (_super) {
+  __extends(Login, _super);
+
+  function Login(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.push_alert = function (message, color) {
+      _this.setState({
+        alert_message: message,
+        alert_color: color,
+        alert_visibility: true
+      });
+    };
+
+    _this.dismiss_alert = function () {
+      _this.setState({
+        alert_visibility: false
+      });
+    };
+
+    _this.on_login_click = function () {
+      if (_this.state.username_value != "" && _this.state.password_value != "") {
+        _this.props.log_in(_this.state.username_value, _this.state.password_value).then(function (code) {
+          if (code === 1) {
+            _this.push_alert("Invalid credentials. An account with that username either does not exist, or the password is wrong", "red");
+          } else {
+            location.reload();
+          }
+        });
+      } else {
+        _this.push_alert("Some fields were left empty. Please fill-in all of the fields", "red");
+      }
+    };
+
+    _this.on_username_value_change = function (ev) {
+      _this.setState({
+        username_value: ev.target.value
+      });
+    };
+
+    _this.on_password_value_change = function (ev) {
+      _this.setState({
+        password_value: ev.target.value
+      });
+    };
+
+    _this.state = {
+      username_value: "",
+      password_value: "",
+      alert_message: undefined,
+      alert_visibility: false,
+      alert_color: undefined
+    }; // This is to prevent pushing into history when the state is already at browse
+
+    var path_name = location.pathname;
+    var regex = new RegExp("^/login$");
+    var temp = regex.exec(path_name);
+
+    if (temp === null) {
+      history.pushState({
+        page_state: "login"
+      }, "Login", "/login");
+    }
+
+    return _this;
+  }
+
+  Login.prototype.render = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "login"
+    }, /*#__PURE__*/React.createElement(alert_1.Alert_message, {
+      message: this.state.alert_message,
+      color: this.state.alert_color,
+      alert_visibility: this.state.alert_visibility,
+      dismiss_alert: this.dismiss_alert
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "register_form animate__animated animate__zoomInDown"
+    }, /*#__PURE__*/React.createElement("span", null, "Username"), /*#__PURE__*/React.createElement("input", {
+      className: "form_control join_input",
+      value: this.state.username_value,
+      onChange: this.on_username_value_change
+    }), /*#__PURE__*/React.createElement("span", null, "Password"), /*#__PURE__*/React.createElement("input", {
+      className: "form_control join_input",
+      type: "password",
+      value: this.state.password_value,
+      onChange: this.on_password_value_change
+    }), /*#__PURE__*/React.createElement("button", {
+      className: "btn btn-primary",
+      onClick: this.on_login_click
+    }, "Log in")));
+  };
+
+  return Login;
+}(React.Component);
+
+exports.Login = Login;
+},{"react":"../node_modules/react/index.js","./alert":"components/alert.tsx"}],"assets/cross.png":[function(require,module,exports) {
+module.exports = "/cross.d4ffee38.png";
+},{}],"assets/icon.png":[function(require,module,exports) {
 module.exports = "/icon.9c86b69e.png";
+},{}],"assets/tick.png":[function(require,module,exports) {
+module.exports = "/tick.85123a95.png";
 },{}],"assets/*.png":[function(require,module,exports) {
 module.exports = {
-  "icon": require("./icon.png")
+  "cross": require("./cross.png"),
+  "icon": require("./icon.png"),
+  "tick": require("./tick.png")
 };
-},{"./icon.png":"assets/icon.png"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"./cross.png":"assets/cross.png","./icon.png":"assets/icon.png","./tick.png":"assets/tick.png"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -41427,6 +42155,10 @@ var browse_1 = require("./components/browse");
 
 var game_1 = require("./components/game");
 
+var register_1 = require("./components/register");
+
+var login_1 = require("./components/login");
+
 var __png_1 = __importDefault(require("./assets/*.png"));
 
 require("animate.css");
@@ -41504,6 +42236,46 @@ function (_super) {
       });
     };
 
+    _this.register = function (username, password) {
+      return new Promise(function (resolve) {
+        fetch("/register_user_globally", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        }).then(function (result) {
+          return result.json();
+        }).then(function (result) {
+          var code = result.code;
+          resolve(code);
+        });
+      });
+    };
+
+    _this.log_in = function (username, password) {
+      return new Promise(function (resolve) {
+        fetch("/log_in", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        }).then(function (result) {
+          return result.json();
+        }).then(function (result) {
+          var code = result.code;
+          resolve(code);
+        });
+      });
+    };
+
     _this.switch_page_state = function (state) {
       //To prevent unneeded switches from same state
       if (_this.state.page_state != state) {
@@ -41520,9 +42292,18 @@ function (_super) {
       page_state = "browse";
     }
 
+    if (path_name === "/register") {
+      page_state = "register";
+    }
+
+    if (path_name === "/login") {
+      page_state = "login";
+    }
+
     _this.state = {
       page_state: page_state,
-      join_code: undefined
+      join_code: undefined,
+      global_username: null
     };
 
     window.onpopstate = function (ev) {
@@ -41541,7 +42322,6 @@ function (_super) {
     }; // Get information from url and switch state appropriately
 
 
-    console.log(path_name);
     var lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
     var temp = lobby_regex.exec(path_name);
 
@@ -41549,6 +42329,22 @@ function (_super) {
       _this.join(temp.groups.join_code);
     }
 
+    fetch("/get_global_username", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then(function (result) {
+      return result.json();
+    }).then(function (result) {
+      var username = result.username;
+
+      if (username != null) {
+        _this.setState({
+          global_username: username
+        });
+      }
+    });
     return _this;
   }
 
@@ -41569,7 +42365,16 @@ function (_super) {
       });
     } else if (state === "game") {
       content = /*#__PURE__*/React.createElement(game_1.Game, {
-        join_code: this.state.join_code
+        join_code: this.state.join_code,
+        assets: __png_1.default
+      });
+    } else if (state === "register") {
+      content = /*#__PURE__*/React.createElement(register_1.Register, {
+        register: this.register
+      });
+    } else if (state === "login") {
+      content = /*#__PURE__*/React.createElement(login_1.Login, {
+        log_in: this.log_in
       });
     }
 
@@ -41577,7 +42382,8 @@ function (_super) {
       className: "app_container"
     }, /*#__PURE__*/React.createElement(navigation_1.Navigation, {
       icon: __png_1.default.icon,
-      switch_page_state: this.switch_page_state
+      switch_page_state: this.switch_page_state,
+      username: this.state.global_username
     }), content);
   };
 
@@ -41585,7 +42391,7 @@ function (_super) {
 }(React.Component);
 
 react_dom_1.render( /*#__PURE__*/React.createElement(App, null), root);
-},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","./components/navigation":"components/navigation.tsx","./components/home":"components/home.tsx","./components/browse":"components/browse.tsx","./components/game":"components/game.tsx","./assets/*.png":"assets/*.png","animate.css":"../node_modules/animate.css/animate.css"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","./components/navigation":"components/navigation.tsx","./components/home":"components/home.tsx","./components/browse":"components/browse.tsx","./components/game":"components/game.tsx","./components/register":"components/register.tsx","./components/login":"components/login.tsx","./assets/*.png":"assets/*.png","animate.css":"../node_modules/animate.css/animate.css"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -41613,7 +42419,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56708" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64941" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
