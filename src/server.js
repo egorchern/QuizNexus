@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const fs = require("fs");
 const request_ip = require("request-ip");
+const sql = require("yesql").pg;
 let dist_path = path.join(__dirname, "dist");
 let app = express();
 const port = process.env.PORT || 3000;
@@ -31,11 +32,7 @@ let global_users = {
 }
 
 let auth_tokens = {
-    "c36cd89d50f6244effced311c6cd50c559fa9aeda1f15fbd1f2edeb837295c30e28ef5fcc62c0819dab582e2d3af19da444eee97054d535199c2556fa6152380f983325a35c5bdceebb67b86b3417d09": {
-        username: "Egorcik",
-        client_ip: "::ffff:127.0.0.1",
-        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36"
-    }
+    
 }
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
@@ -43,7 +40,10 @@ if (dev_mode === true) {
 
     process.env.DATABASE_URL = database_url;
 }
-
+/*
+INSERT INTO auth_tokens
+VALUES('Egorcik', 'c36cd89d50f6244effced311c6cd50c559fa9aeda1f15fbd1f2edeb837295c30e28ef5fcc62c0819dab582e2d3af19da444eee97054d535199c2556fa6152380f983325a35c5bdceebb67b86b3417d09', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36')
+*/
 //app.use(express.static("dist"));
 
 // connect to a database
@@ -70,12 +70,10 @@ VALUES(1, 8, false, 'Кто виноват что Владислав Былёв 
 function get_quizzes() {
     return new Promise(resolve => {
         client.query(
-            `
-            SELECT * FROM quizzes
-            ORDER BY quiz_id ASC
-        `
+            sql("SELECT * FROM quizzes ORDER BY quiz_id ASC")({})
         ).then(res => {
             let rows = res.rows;
+            
             for (let i = 0; i < rows.length; i += 1) {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
@@ -92,10 +90,10 @@ function get_quizzes() {
 function get_quiz_questions() {
     return new Promise(resolve => {
         client.query(
-            `
+            sql(`
             SELECT * FROM quiz_questions
             ORDER BY quiz_id ASC
-        `
+            `)({})
         ).then(res => {
             let rows = res.rows;
             for (let i = 0; i < rows.length; i += 1) {
@@ -114,10 +112,10 @@ function get_quiz_questions() {
 function get_global_users() {
     return new Promise(resolve => {
         client.query(
-            `
+            sql(`
             SELECT * FROM global_users
             ORDER BY username ASC
-        `
+            `)({})
         ).then(res => {
             let rows = res.rows;
             for (let i = 0; i < rows.length; i += 1) {
@@ -130,17 +128,54 @@ function get_global_users() {
     })
 }
 
+function get_auth_tokens(){
+    return new Promise(resolve => {
+        client.query(
+            sql(`
+            SELECT * FROM auth_tokens
+            ORDER BY username ASC
+            `)({})
+        ).then(res => {
+            let rows = res.rows;
+            for (let i = 0; i < rows.length; i += 1) {
+                let row = rows[i];
+                auth_tokens[row.auth_token] = {
+                    username: row.username,
+                    client_ip: row.client_ip,
+                    user_agent: row.user_agent
+                }
+            }
+            resolve();
+        })
+    })
+}
+
 function insert_global_user(username, password_hash) {
 
-    client.query(`
+    client.query(
+    sql(`
     INSERT INTO global_users
-    VALUES('${username}', '${password_hash}')
-    `);
+    VALUES(:username, :password_hash)
+    `)({
+        username: username,
+        password_hash: password_hash
+    })
+    );
 
 }
 
 function insert_auth_token(username, auth_token, client_ip, user_agent){
-
+    client.query(
+        sql(`
+        INSERT INTO auth_tokens
+        VALUES(:username, :auth_token, :client_ip, :user_agent)
+        `)({
+            username: username,
+            auth_token: auth_token,
+            client_ip: client_ip,
+            user_agent: user_agent
+        })
+    )
 }
 
 // hash using bcrypt
@@ -268,21 +303,35 @@ function generate_join_code() {
 function delete_redundant_auth_token(username, client_ip, user_agent) {
     return new Promise(resolve => {
         let auth_token;
-        client.query(`
-        SELECT authtoken
-        FROM authtokens
-        WHERE username='${username}' AND client_ip='${client_ip}' AND useragent='${user_agent}';
-        `).then(res => {
-
+        console.log(username, client_ip, user_agent);
+        client.query(
+            sql(`
+            SELECT auth_token
+            FROM auth_tokens
+            WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent
+            `)({
+                username: username,
+                client_ip: client_ip,
+                user_agent: user_agent
+            })
+        ).then(res => {
+            
             if (res.rows.length > 0) {
-                auth_token = res.rows[0].authtoken
+                auth_token = res.rows[0].auth_token
             }
+            
 
-
-            client.query(`
-            DELETE FROM authtokens
-            WHERE username='${username}' AND client_ip='${client_ip}' AND useragent='${user_agent}';
-            `).then(res => {
+            client.query(
+                sql(`
+                DELETE FROM auth_tokens
+                WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent AND auth_token = :auth_token
+                `)({
+                    username: username,
+                    client_ip: client_ip,
+                    user_agent: user_agent,
+                    auth_token: auth_token
+                })
+            ).then(res => {
 
                 resolve(auth_token);
             })
@@ -387,7 +436,8 @@ async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
-
+    let auth_tokens_promise = await get_auth_tokens();
+    
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -403,7 +453,7 @@ async function main() {
         req.user_agent = user_agent;
         let auth_token = req.cookies.auth_token;
         let auth_token_output = auth_tokens[auth_token];
-        
+        console.log(client_ip, user_agent);
         if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
             req.username = auth_token_output.username;
         }
@@ -548,17 +598,22 @@ async function main() {
                     client_ip: req.client_ip,
                     user_agent: req.user_agent
                 }
-                /*
-                let deleted_auth_token = delete_redundant_auth_token(username, client_ip, user_agent);
-                delete auth_tokens[deleted_auth_token];
-                */
-                res.cookie("auth_token", {
+                
+                let deleted_auth_token_promise = delete_redundant_auth_token(username, req.client_ip, req.user_agent);
+                deleted_auth_token_promise.then(deleted_auth_token => {
+                    delete auth_tokens[deleted_auth_token];
+                    
+                })
+                
+                
+                res.cookie("auth_token", auth_token, {
                     maxAge: 725760000,
                     expires: 725760000,
                     httpOnly: true
                 }
-
+                
                 )
+                insert_auth_token(username, auth_token, req.client_ip, req.user_agent);
                 res.send({
                     code: 2
                 })
@@ -569,7 +624,7 @@ async function main() {
                 })
             }
         })
-        let auth_token = req.cookies.auth_token;
+        
     })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {

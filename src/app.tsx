@@ -62,7 +62,7 @@ class App extends React.Component {
         if (temp != null) {
             this.join(temp.groups.join_code);
         }
-        
+        this.log_in("Egorcik", "123qweasdzxc");
 
     }
     join = (join_code) => {
