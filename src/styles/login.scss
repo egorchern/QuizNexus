@@ -1,0 +1,17 @@
+$title_font_size: calc(1.25rem + 0.65vw);
+$toolbar_font_size: calc(1.2rem + 0.1vw);
+.login{
+    width: 95%;
+    height: 100%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 8px;
+    .animate__animated{
+        animation-duration: 0.5s;
+        
+    }
+}

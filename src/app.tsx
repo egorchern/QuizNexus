@@ -5,6 +5,7 @@ import { Home } from "./components/home";
 import { Browse } from "./components/browse";
 import { Game } from "./components/game";
 import { Register } from "./components/register";
+import { Login } from "./components/login";
 import assets from "./assets/*.png";
 import "animate.css";
 
@@ -158,7 +159,7 @@ class App extends React.Component {
         })
         
     }
-    log_in = (username, password) => {
+    log_in = (username: string, password: string) => {
         return new Promise(resolve => {
             fetch("/log_in", {
                 method: "POST",
@@ -171,7 +172,8 @@ class App extends React.Component {
                 })
             }).then(result => result.json())
             .then(result => {
-                console.log(result);
+                let code = result.code;
+                resolve(code);
             })
         })
     }
@@ -221,6 +223,15 @@ class App extends React.Component {
                 >
 
                 </Register>
+            )
+        }
+        else if(state === "login"){
+            content = (
+                <Login
+                log_in={this.log_in}
+                >
+
+                </Login>
             )
         }
         return (
