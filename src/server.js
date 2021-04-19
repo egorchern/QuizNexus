@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const fs = require("fs");
 const request_ip = require("request-ip");
+const sql = require("yesql").pg;
 let dist_path = path.join(__dirname, "dist");
 let app = express();
 const port = process.env.PORT || 3000;
@@ -26,13 +27,23 @@ let quiz_questions = {
 let lobbies = {};
 let all_usernames = {};
 
+let global_users = {
+
+}
+
+let auth_tokens = {
+    
+}
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
     let database_url = fs.readFileSync("connection_string.txt", "utf8");
 
     process.env.DATABASE_URL = database_url;
 }
-
+/*
+INSERT INTO auth_tokens
+VALUES('Egorcik', 'c36cd89d50f6244effced311c6cd50c559fa9aeda1f15fbd1f2edeb837295c30e28ef5fcc62c0819dab582e2d3af19da444eee97054d535199c2556fa6152380f983325a35c5bdceebb67b86b3417d09', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36')
+*/
 //app.use(express.static("dist"));
 
 // connect to a database
@@ -59,12 +70,10 @@ VALUES(1, 8, false, 'Кто виноват что Владислав Былёв 
 function get_quizzes() {
     return new Promise(resolve => {
         client.query(
-            `
-            SELECT * FROM quizzes
-            ORDER BY quiz_id ASC
-        `
+            sql("SELECT * FROM quizzes ORDER BY quiz_id ASC")({})
         ).then(res => {
             let rows = res.rows;
+            
             for (let i = 0; i < rows.length; i += 1) {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
@@ -81,10 +90,10 @@ function get_quizzes() {
 function get_quiz_questions() {
     return new Promise(resolve => {
         client.query(
-            `
+            sql(`
             SELECT * FROM quiz_questions
             ORDER BY quiz_id ASC
-        `
+            `)({})
         ).then(res => {
             let rows = res.rows;
             for (let i = 0; i < rows.length; i += 1) {
@@ -100,6 +109,109 @@ function get_quiz_questions() {
     })
 }
 
+function get_global_users() {
+    return new Promise(resolve => {
+        client.query(
+            sql(`
+            SELECT * FROM global_users
+            ORDER BY username ASC
+            `)({})
+        ).then(res => {
+            let rows = res.rows;
+            for (let i = 0; i < rows.length; i += 1) {
+                let current_row = rows[i];
+                let username = current_row.username;
+                global_users[username] = current_row;
+            }
+            resolve();
+        })
+    })
+}
+
+function get_auth_tokens(){
+    return new Promise(resolve => {
+        client.query(
+            sql(`
+            SELECT * FROM auth_tokens
+            ORDER BY username ASC
+            `)({})
+        ).then(res => {
+            let rows = res.rows;
+            for (let i = 0; i < rows.length; i += 1) {
+                let row = rows[i];
+                auth_tokens[row.auth_token] = {
+                    username: row.username,
+                    client_ip: row.client_ip,
+                    user_agent: row.user_agent
+                }
+            }
+            resolve();
+        })
+    })
+}
+
+function insert_global_user(username, password_hash) {
+
+    client.query(
+    sql(`
+    INSERT INTO global_users
+    VALUES(:username, :password_hash)
+    `)({
+        username: username,
+        password_hash: password_hash
+    })
+    );
+
+}
+
+function insert_auth_token(username, auth_token, client_ip, user_agent){
+    client.query(
+        sql(`
+        INSERT INTO auth_tokens
+        VALUES(:username, :auth_token, :client_ip, :user_agent)
+        `)({
+            username: username,
+            auth_token: auth_token,
+            client_ip: client_ip,
+            user_agent: user_agent
+        })
+    )
+}
+
+// hash using bcrypt
+get_hashed_password = (password) => {
+    let hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+    return hash;
+};
+
+async function do_credentials_match(username, password) {
+    let user_obj = global_users[username];
+    if (user_obj != undefined) {
+        let db_hash = user_obj.password_hash;
+
+        let match = await bcrypt.compare(password, db_hash);
+        if (match === true) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+}
+
+function register_user_globally(username, password) {
+    let password_hash = get_hashed_password(password);
+    global_users[username] = {
+        username: username,
+        password_hash: password_hash
+    }
+    insert_global_user(username, password_hash);
+}
+
 // Generates random secure token
 const generateToken = () => {
     return crypto.randomBytes(80).toString("hex");
@@ -110,6 +222,32 @@ function get_random_int(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function get_global_user_info(auth_token) {
+    let username = auth_tokens[auth_token].username;
+
+    let user_info = global_users[username];
+    return user_info;
+}
+
+function attempt_register_global_user_in_lobby(auth_token, join_code) {
+    let global_user_info = get_global_user_info(auth_token);
+    if (global_user_info != undefined) {
+        if (lobbies[join_code].participants[auth_token] === undefined) {
+            lobbies[join_code].participants[auth_token] = {
+                role: "participant",
+                score: 0,
+                username: global_user_info.username,
+                question_pointer: 0,
+                logged: false,
+                answers: {}
+            };
+            all_usernames[join_code].push(global_user_info.username);
+
+        }
+
+    }
 }
 
 // Generates a new join code from the charlist
@@ -162,16 +300,77 @@ function generate_join_code() {
     return join_code;
 }
 
-// Returns a boolean on whether the selected username in a particular lobby is free
-function is_username_free(join_code, username) {
-    let usernames = all_usernames[join_code];
+function delete_redundant_auth_token(username, client_ip, user_agent) {
+    return new Promise(resolve => {
+        let auth_token;
+        console.log(username, client_ip, user_agent);
+        client.query(
+            sql(`
+            SELECT auth_token
+            FROM auth_tokens
+            WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent
+            `)({
+                username: username,
+                client_ip: client_ip,
+                user_agent: user_agent
+            })
+        ).then(res => {
+            
+            if (res.rows.length > 0) {
+                auth_token = res.rows[0].auth_token
+            }
+            
 
-    for (let i = 0; i < usernames.length; i += 1) {
-        if (usernames[i].toLowerCase() === username.toLowerCase()) {
-            return false;
+            client.query(
+                sql(`
+                DELETE FROM auth_tokens
+                WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent AND auth_token = :auth_token
+                `)({
+                    username: username,
+                    client_ip: client_ip,
+                    user_agent: user_agent,
+                    auth_token: auth_token
+                })
+            ).then(res => {
+
+                resolve(auth_token);
+            })
+        })
+
+
+
+    })
+
+
+}
+
+// Returns a boolean on whether the selected username is free (not used by global users and lobby users)
+function is_username_free(username, join_code = undefined) {
+    let global_usernames = Object.keys(global_users);
+    let is_globally_used = false
+    for (let i = 0; i < global_usernames.length; i += 1) {
+        if (global_usernames[i].toLowerCase() === username.toLowerCase()) {
+            is_globally_used = true;
+            break;
         }
     }
-    return true;
+    if (is_globally_used === true) {
+        return false;
+    }
+    if (join_code != undefined) {
+        let usernames = all_usernames[join_code];
+
+        for (let i = 0; i < usernames.length; i += 1) {
+            if (usernames[i].toLowerCase() === username.toLowerCase()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else {
+        return true;
+    }
+
 }
 
 function get_all_answers(join_code) {
@@ -202,7 +401,7 @@ function get_logged_participants(join_code) {
             logged_in_participants_list.push(user_info.username);
         }
     }
-    console.log(logged_in_participants_list);
+
     return logged_in_participants_list;
 }
 
@@ -220,10 +419,25 @@ function get_scores(join_code) {
     }
     return scores_list;
 }
+
+function get_all_questions(quiz_id) {
+    let output_list = [];
+    let quiz_questions_obj = quiz_questions[quiz_id];
+    let keys = Object.keys(quiz_questions_obj);
+    for (let i = 0; i < keys.length; i += 1) {
+        let key = keys[i];
+        let question_obj = quiz_questions_obj[key];
+        output_list.push(question_obj);
+    }
+    return output_list;
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
-
+    let global_users_promise = await get_global_users();
+    let auth_tokens_promise = await get_auth_tokens();
+    
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -231,6 +445,24 @@ async function main() {
     // To parse cookies from the HTTP Request
     app.use(cookie_parser());
     app.use(express.static("dist"));
+
+    app.use((req, res, next) => {
+        let client_ip = request_ip.getClientIp(req);
+        req.client_ip = client_ip;
+        let user_agent = req.headers['user-agent'];
+        req.user_agent = user_agent;
+        let auth_token = req.cookies.auth_token;
+        let auth_token_output = auth_tokens[auth_token];
+        console.log(client_ip, user_agent);
+        if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
+            req.username = auth_token_output.username;
+        }
+        else {
+            req.username = null;
+        }
+        console.log(req.username);
+        next();
+    })
     var server = http.createServer(app);
     var io = socketio(server);
 
@@ -294,6 +526,7 @@ async function main() {
             res.cookie("auth_token", auth_token, {
                 maxAge: 725760000,
                 expires: 725760000,
+                httpOnly: true
             });
             lobbies[join_code].participants[auth_token] = {
                 role: "participant",
@@ -304,7 +537,7 @@ async function main() {
             };
         }
 
-        let username_free = is_username_free(join_code, username);
+        let username_free = is_username_free(username, join_code);
 
         // If username is not free, send code 1 to indicate that it is taken
         if (username_free === false) {
@@ -326,30 +559,106 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
+        attempt_register_global_user_in_lobby(auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
+
         res.send({
             user_info: user_info,
         });
     });
 
+    // Response codes: 1 - username is not free, 2 - registration successful
+    app.post("/register_user_globally", (req, res) => {
+        let username = req.body.username;
+        let password = req.body.password;
+        let is_free = is_username_free(username);
+        if (is_free === true) {
+            register_user_globally(username, password);
+            console.log(global_users);
+            res.send({
+                code: 2
+            })
+        }
+        else {
+            res.send({
+                code: 1
+            })
+        }
+    })
+
+    // Response codes: 1 - invalid credentials, 2 - authenticated
+    app.post("/log_in", (req, res) => {
+        let username = req.body.username;
+        let password = req.body.password;
+        do_credentials_match(username, password).then(match => {
+            if (match) {
+                let auth_token = generateToken();
+                auth_tokens[auth_token] = {
+                    username: username,
+                    client_ip: req.client_ip,
+                    user_agent: req.user_agent
+                }
+                
+                let deleted_auth_token_promise = delete_redundant_auth_token(username, req.client_ip, req.user_agent);
+                deleted_auth_token_promise.then(deleted_auth_token => {
+                    delete auth_tokens[deleted_auth_token];
+                    
+                })
+                
+                
+                res.cookie("auth_token", auth_token, {
+                    maxAge: 725760000,
+                    expires: 725760000,
+                    httpOnly: true
+                }
+                
+                )
+                insert_auth_token(username, auth_token, req.client_ip, req.user_agent);
+                res.send({
+                    code: 2
+                })
+            }
+            else {
+                res.send({
+                    code: 1
+                })
+            }
+        })
+        
+    })
+
+    app.post("/get_global_username", (req, res) => {
+        res.send({
+            username: req.username
+        })
+    })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
 
         let join_code = generate_join_code();
-
-        let auth_token = generateToken();
+        let auth_token = req.cookies.auth_token;
+        if (auth_token === undefined) {
+            auth_token = generateToken();
+        }
         // Issue host auth_token
         res.cookie("auth_token", auth_token, {
             maxAge: 725760000,
             expires: 725760000,
+            httpOnly: true
         });
+        let global_user_info = get_global_user_info(auth_token);
+        let new_username = undefined;
+        if (global_user_info != undefined) {
+            new_username = global_user_info.username;
+        }
+
         // Lobby states: lobby - game not started, game - game in progress, finished - game finished
         lobbies[join_code] = {
             participants: {
                 [auth_token]: {
                     role: "host",
-                    username: undefined,
+                    username: new_username,
                     score: 0,
                     question_pointer: 0,
                     logged: false,
@@ -371,6 +680,12 @@ async function main() {
     app.get("/home", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
+    app.get("/register", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/login", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
     app.get("/lobby/:join_code", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
@@ -381,10 +696,11 @@ async function main() {
         socket.on("connect_to_room", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             socket.join(`${join_code}`);
+
             lobbies[join_code].participants[auth_token].logged = true;
 
             let logged_users = get_logged_participants(join_code);
@@ -405,7 +721,7 @@ async function main() {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
             let scope_of_request = parsed.scope_of_request;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             if (scope_of_request === 0) {
@@ -429,10 +745,24 @@ async function main() {
             };
             socket.emit("get_question", answer_body);
         });
+        socket.on("request_all_questions", data => {
+            let parsed = JSON.parse(data);
+            let join_code = parsed.join_code;
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
+            let auth_token = regex.exec(socket.handshake.headers.cookie).groups
+                .auth_token;
+            let quiz_id = lobbies[join_code].quiz_id;
+            let question_number = lobbies[join_code].participants[auth_token].question_pointer;
+            let number_of_questions = quizzes[quiz_id].number_of_questions;
+            if (question_number >= number_of_questions) {
+                let all_questions = get_all_questions(quiz_id);
+                socket.emit("get_all_questions", all_questions);
+            }
+        })
         socket.on("submit_answer", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             let username = lobbies[join_code].participants[auth_token].username;
@@ -452,6 +782,9 @@ async function main() {
                 points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
             }
             else {
+                points_earned = 0;
+            }
+            if(points_earned > question_obj.points_base){
                 points_earned = 0;
             }
             lobbies[join_code].participants[auth_token].answers[question_number] = {
@@ -477,7 +810,7 @@ async function main() {
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
             let join_code = parsed.join_code;
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             // Authorization, only a host is allowed to start a game
@@ -494,7 +827,7 @@ async function main() {
         });
         socket.on("disconnecting", () => {
             let socket_rooms = [...socket.rooms];
-            let regex = new RegExp("auth_token=(?<auth_token>.+)");
+            let regex = new RegExp("auth_token=(?<auth_token>[^;]+)");
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             if (socket_rooms.length > 1) {
@@ -511,4 +844,5 @@ async function main() {
     server.listen(port);
     console.log(`Listening on port: ${port}`);
 }
+
 main();

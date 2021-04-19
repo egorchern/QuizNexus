@@ -16,9 +16,11 @@ export class Navigation extends React.Component {
     }
     render() {
         let nav_button_class_list = "ham hamRotate ham1 mobile_nav ";
+        let username = this.props.username;
         if (this.state.is_mobile_nav_opened === true) {
             nav_button_class_list += "active ";
         }
+
         return (
             <div className="navigation">
                 <div className="flex_horizontal">
@@ -45,46 +47,95 @@ export class Navigation extends React.Component {
                     {
                         this.state.is_mobile_nav_opened === true ? (
                             <div className="navigation_buttons_container">
-                                <div onClick={() => {
+                                <div className="navigation_button" onClick={() => {
                                     this.props.switch_page_state("home");
                                 }}>
                                     <span>Home</span>
                                 </div>
-                                <div onClick={() => {
+                                <div className="navigation_button" onClick={() => {
                                     this.props.switch_page_state("browse");
                                 }}>
                                     <span>Browse</span>
                                 </div>
-                                <div>
-                                    <span>Log in</span>
-                                </div>
-                                <div>
-                                    <span>Register</span>
-                                </div>
+                                {
+                                    username === null ? (
+                                        <div className="login_container">
+                                            <div className="navigation_button" onClick={() => {
+                                                this.props.switch_page_state("login");
+                                            }} >
+                                                <span>Log in</span>
+                                            </div>
+                                            <div className="navigation_button" onClick={() => {
+                                                this.props.switch_page_state("register");
+                                            }}>
+                                                <span>Register</span>
+                                            </div>
+                                        </div>
+                                    )
+                                        : (
+                                            <div className="navigation_button">
+                                                <div className="flex_horizontal">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="person_icon" viewBox="0 0 16 16">
+                                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                                        <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                                    </svg>
+                                                    <span>
+                                                        {username}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )
+
+                                }
+
                             </div>
                         )
                             : null
                     }
                 </SlideDown>
                 <div className="navigation_buttons_container desktop_nav">
-                    <div onClick={() => {
+                    <div className="navigation_button" onClick={() => {
                         this.props.switch_page_state("home");
                     }}>
                         <span>Home</span>
                     </div>
-                    <div onClick={() => {
+                    <div className="navigation_button" onClick={() => {
                         this.props.switch_page_state("browse");
                     }}>
                         <span>Browse</span>
                     </div>
-                    <div>
-                        <span>Log in</span>
-                    </div>
-                    <div>
-                        <span>Register</span>
-                    </div>
-                </div>
+                    {
+                        username === null ? (
+                            <div className="login_container">
+                                <div className="navigation_button" onClick={() => {
+                                    this.props.switch_page_state("login");
+                                }} >
+                                    <span>Log in</span>
+                                </div>
+                                <div className="navigation_button" onClick={() => {
+                                    this.props.switch_page_state("register");
+                                }}>
+                                    <span>Register</span>
+                                </div>
+                            </div>
+                        )
+                            : (
+                                <div className="navigation_button">
+                                    <div className="flex_horizontal">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="person_icon" viewBox="0 0 16 16">
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                            <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                        </svg>
+                                        <span>
+                                            {username}
+                                        </span>
+                                    </div>
+                                </div>
+                            )
 
+                    }
+
+                </div>
             </div>
         )
     }

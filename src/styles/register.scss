@@ -1,0 +1,93 @@
+$title_font_size: calc(1.25rem + 0.65vw);
+$toolbar_font_size: calc(1.2rem + 0.1vw);
+.register{
+    width: 95%;
+    height: 100%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 8px;
+    .animate__animated{
+        animation-duration: 0.5s;
+        
+    }
+}
+.register_benefits{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 40%;
+    margin-right: 30px;
+    max-width: 450px;
+}
+.register_container{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+}
+.register_form_container{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.plus_svg{
+    min-width: 40px;
+    width: 40vw;
+    max-width: 60px;
+    height: auto;
+    fill: var(--bs-success);
+}
+.register_benefits_row{
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    span{
+        font-size: $toolbar_font_size;
+    }
+}
+.register_form{
+    width: 100%;
+    max-width: 650px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    * {
+        font-size: $title_font_size;
+    }
+    input{
+        width: 100%;
+        max-width: 550px;
+        margin-bottom: 45px;
+    }
+    button {
+        margin-top: 20px;
+        width: 50%;
+        max-width: 175px;
+    }
+}
+@media screen and (max-width: 750px){
+    .register_container{
+        flex-direction: column;
+    }
+    .register_benefits{
+        margin-right: 0;
+        margin-bottom: 30px;
+        width: 100%;
+        order: 2;
+        max-width: none;
+    }
+    .register_form_container{
+        order: 1;
+    }
+}
