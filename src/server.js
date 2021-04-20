@@ -225,7 +225,11 @@ function get_random_int(min, max) {
 }
 
 function get_global_user_info(auth_token) {
-    let username = auth_tokens[auth_token].username;
+    let auth_token_obj = auth_tokens[auth_token];
+    if(auth_token_obj === undefined){
+        return undefined;
+    }
+    let username = auth_token_obj
 
     let user_info = global_users[username];
     return user_info;
