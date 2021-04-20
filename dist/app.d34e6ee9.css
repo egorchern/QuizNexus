@@ -221,6 +221,7 @@
 .join_input:focus {
   border-bottom: 2px solid black;
   box-shadow: none;
+  background: transparent;
   color: black;
 }
 
