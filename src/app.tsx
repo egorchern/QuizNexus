@@ -8,6 +8,7 @@ import { Register } from "./components/register";
 import { Login } from "./components/login";
 import assets from "./assets/*.png";
 import "animate.css";
+import { User_profile } from "./components/user_profile";
 
 let root = document.querySelector("#root");
 let categories = [
@@ -34,6 +35,9 @@ class App extends React.Component {
         }
         if (path_name === "/login") {
             page_state = "login";
+        }
+        if(path_name === "/user_profile"){
+            page_state = "user_profile"
         }
         this.state = {
             page_state: page_state,
@@ -232,6 +236,13 @@ class App extends React.Component {
                 >
 
                 </Login>
+            )
+        }
+        else if(state === "user_profile"){
+            content = (
+                <User_profile>
+
+                </User_profile>
             )
         }
         return (

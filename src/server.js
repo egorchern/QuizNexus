@@ -10,6 +10,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const request_ip = require("request-ip");
 const sql = require("yesql").pg;
+const cloneDeep = require("lodash.clonedeep");
 let dist_path = path.join(__dirname, "dist");
 let app = express();
 const port = process.env.PORT || 3000;
@@ -122,6 +123,7 @@ function get_global_users() {
                 let current_row = rows[i];
                 let username = current_row.username;
                 global_users[username] = current_row;
+                global_users[username].created_quiz_ids = [];
             }
             resolve();
         })
@@ -178,6 +180,15 @@ function insert_auth_token(username, auth_token, client_ip, user_agent){
     )
 }
 
+function assign_quizzes_to_creators(){
+    let quiz_keys = Object.keys(quizzes);
+    quiz_keys.forEach(key => {
+        let quiz = quizzes[key];
+        let creators_name = quiz.creators_name;
+        global_users[creators_name].created_quiz_ids.push(quiz.quiz_id);
+    })
+}
+
 // hash using bcrypt
 get_hashed_password = (password) => {
     let hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
@@ -224,19 +235,17 @@ function get_random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function get_global_user_info(auth_token) {
-    let auth_token_obj = auth_tokens[auth_token];
-    if(auth_token_obj === undefined){
+function get_global_user_info(username) {
+    
+    if(username === undefined){
         return undefined;
     }
-    let username = auth_token_obj
-
     let user_info = global_users[username];
     return user_info;
 }
 
-function attempt_register_global_user_in_lobby(auth_token, join_code) {
-    let global_user_info = get_global_user_info(auth_token);
+function attempt_register_global_user_in_lobby(username, join_code) {
+    let global_user_info = get_global_user_info(username);
     if (global_user_info != undefined) {
         if (lobbies[join_code].participants[auth_token] === undefined) {
             lobbies[join_code].participants[auth_token] = {
@@ -441,6 +450,7 @@ async function main() {
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
+    assign_quizzes_to_creators();
     
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
@@ -471,10 +481,19 @@ async function main() {
     var io = socketio(server);
 
     // When receive a request for quizzes data, send quizzes array
-    app.get("/get_quizzes", (req, res) => {
-        let quizzes_list = Object.values(quizzes);
+    app.post("/get_quizzes", (req, res) => {
+
+        let quiz_list = [];
+        if(req.body.quiz_ids === undefined){
+            quiz_list = Object.values(quizzes);
+        }
+        else{
+            req.body.quiz_ids.forEach(quiz_id => {
+                quiz_list.push(quizzes[quiz_id]);
+            })
+        }
         res.send({
-            quizzes: quizzes_list,
+            quizzes: quiz_list,
         });
     });
 
@@ -563,7 +582,7 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
-        attempt_register_global_user_in_lobby(auth_token, join_code);
+        attempt_register_global_user_in_lobby(req.username, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
 
         res.send({
@@ -636,6 +655,25 @@ async function main() {
             username: req.username
         })
     })
+
+    app.post("/get_global_user_info", (req, res) => {
+        let username = req.username;
+        if(username != null){
+            let user_info = get_global_user_info(username);
+            let new_user_info = cloneDeep(user_info);
+            delete new_user_info.password_hash;
+            
+            res.send({
+                code: 2,
+                user_info: new_user_info
+            })
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
+    })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
@@ -688,6 +726,9 @@ async function main() {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     app.get("/login", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/user_profile", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
     app.get("/lobby/:join_code", (req, res) => {

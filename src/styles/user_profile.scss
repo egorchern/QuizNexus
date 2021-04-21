@@ -1,0 +1,15 @@
+.user_profile{
+    width: 95%;
+    height: 100%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 8px;
+    .animate__animated{
+        animation-duration: 0.5s;
+        
+    }
+}
