@@ -70,7 +70,8 @@ export class User_profile extends React.Component<IProps, IState> {
                 <div>
 
                 </div>
-                <div className="created_quizzes">
+                <div className="created_quizzes animate__animated animate__zoomInRight">
+                    <h2>Created Quizzes</h2>
                     {
                         this.state.created_quizzes != undefined ?
                         <Quizzes_container

@@ -145,14 +145,19 @@ export class Browse extends React.Component {
                     </div>
                 </div>
                 <div className="browse_results animate__animated animate__zoomInRight">
-                    <Quizzes_container
-                    quizzes={matching_results}
-                    action={this.props.start_quiz}
-                    button_text="Start"
-                    add_new={false}
-                    >
+                    {
+                        matching_results != undefined || matching_results.length > 0 ?
+                            <Quizzes_container
+                                quizzes={matching_results}
+                                action={this.props.start_quiz}
+                                button_text="Start"
+                                add_new={false}
+                            >
 
-                    </Quizzes_container>
+                            </Quizzes_container>
+                        :null
+                    }
+                    
                 </div>
             </div>
         );

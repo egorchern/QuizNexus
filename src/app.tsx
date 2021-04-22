@@ -10,6 +10,7 @@ import assets from "./assets/*.png";
 import "animate.css";
 import { User_profile } from "./components/user_profile";
 
+
 let root = document.querySelector("#root");
 let categories = [
     "Programming",
@@ -87,6 +88,7 @@ class App extends React.Component {
         
 
     }
+    
     join = (join_code) => {
         let fetch_body = {
             join_code: join_code

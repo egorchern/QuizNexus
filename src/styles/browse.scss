@@ -12,6 +12,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     display: grid;
     grid-template-columns: 1fr 4fr;
     column-gap: 20px;
+    
     .animate__animated{
         animation-duration: 0.5s;
     }
@@ -75,5 +76,21 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     }
     .browse{
         grid-template-columns: 1fr !important;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .browse .quizz {
+        --browse_item_width_percentage: 42%;
+    }
+}
+@media screen and (min-width: 1200.01px) {
+    .browse .quizz {
+        --browse_item_width_percentage: 28%;
+    }
+}
+@media screen and (max-width: 750px) {
+    .browse .quizz {
+        --browse_item_width_percentage: 95%;
     }
 }
