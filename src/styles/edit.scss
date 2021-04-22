@@ -1,0 +1,11 @@
+.edit{
+    width: 95%;
+    flex-grow: 1;
+    height: -webkit-fill-available;
+    padding: 8px;
+    margin: auto;
+    .animate__animated{
+        animation-duration: 0.5s;
+        
+    }
+}

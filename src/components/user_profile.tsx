@@ -2,7 +2,7 @@ import * as React from "react";
 import {render} from "react-dom";
 import { Quizzes_container } from "./quizzes_container";
 interface IProps {
-    
+    edit: Function;
 }
 
 interface IState {
@@ -58,8 +58,8 @@ export class User_profile extends React.Component<IProps, IState> {
             })
         })
     }
-    on_quiz_button_click = () => {
-
+    on_quiz_button_click = (quiz_id) => {
+        this.props.edit(quiz_id);
     }
     render(){
         return (

@@ -80,17 +80,17 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
 }
 
 @media screen and (max-width: 1200px) {
-    .browse .quizz {
+    .browse {
         --browse_item_width_percentage: 42%;
     }
 }
 @media screen and (min-width: 1200.01px) {
-    .browse .quizz {
+    .browse {
         --browse_item_width_percentage: 28%;
     }
 }
 @media screen and (max-width: 750px) {
-    .browse .quizz {
+    .browse {
         --browse_item_width_percentage: 95%;
     }
 }

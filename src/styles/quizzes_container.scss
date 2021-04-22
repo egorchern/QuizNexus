@@ -9,7 +9,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
-    align-items: flex-start;
+    
     /*
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -56,10 +56,11 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    flex-grow: 1;
+    
     transition: 0.3s box-shadow;
     cursor: pointer;
-    margin:6px;
+    margin: 18px;
+    width: var(--browse_item_width_percentage);
 }
 .create_new_quiz:hover{
     box-shadow: 0px 0px 5px 3px #43adef;

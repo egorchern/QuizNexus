@@ -1,9 +1,6 @@
 import * as React from "react";
 import { render } from "react-dom";
 
-
-
-
 interface IProps {
     quizzes: { title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string }[];
     action: Function;
@@ -15,7 +12,6 @@ interface IProps {
 interface IState {
 
 }
-
 
 export class Quizzes_container extends React.Component<IProps, IState>{
     constructor(props: IProps) {
@@ -83,7 +79,9 @@ export class Quizzes_container extends React.Component<IProps, IState>{
         });
         if (this.props.add_new) {
             let add_btn = (
-                <div key={this.props.quizzes.length} className="create_new_quiz">
+                <div key={this.props.quizzes.length} className="create_new_quiz" onClick={() => {
+                    this.props.action(0);
+                }}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="plus_svg" viewBox="0 0 16 16">
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                     </svg>

@@ -674,6 +674,15 @@ async function main() {
             })
         }
     })
+
+    app.post("/get_quiz_questions", (req, res) => {
+        let quiz_id = req.body.quiz_id;
+        console.log(quiz_id);
+        let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
+        if(is_allowed){
+            let questions = get_all_questions(quiz_id);
+        }
+    })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
@@ -734,8 +743,11 @@ async function main() {
     app.get("/lobby/:join_code", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
-    app.get("/", (req, res) => {
+    app.get("/edit/:edit_quiz_id", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/", (req, res) => {
+        res.redirect("/home");
     });
     io.on("connect", (socket) => {
         socket.on("connect_to_room", (data) => {
