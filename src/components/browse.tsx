@@ -149,6 +149,7 @@ export class Browse extends React.Component {
                     quizzes={matching_results}
                     action={this.props.start_quiz}
                     button_text="Start"
+                    add_new={false}
                     >
 
                     </Quizzes_container>

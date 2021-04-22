@@ -1,15 +1,23 @@
 .user_profile{
     width: 95%;
-    height: 100%;
+    
     margin: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+    display: grid;
+    grid-template-columns: 40fr 60fr;
+    grid-template-rows: 1fr 1fr;
+    flex-grow: 1;
+    height: -webkit-fill-available;
     padding: 8px;
     .animate__animated{
         animation-duration: 0.5s;
         
     }
+}
+.created_quizzes{
+    grid-row-start: 1;
+    grid-row-end: 3;
+    grid-column-start: 2;
+    overflow-y: auto;
+    grid-column-end: 3;
+    height: 90%;
 }

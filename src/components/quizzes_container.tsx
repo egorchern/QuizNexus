@@ -1,12 +1,17 @@
 import * as React from "react";
 import { render } from "react-dom";
+import ResizeSensor from "css-element-queries/src/ResizeSensor";
+import ElementQueries from "css-element-queries/src/ElementQueries";
+
 
 
 interface IProps {
     quizzes: { title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string }[];
     action: Function;
-    button_text: string
+    button_text: string;
+    add_new: boolean;
 }
+
 
 interface IState {
 
@@ -19,9 +24,15 @@ export class Quizzes_container extends React.Component<IProps, IState>{
         this.state = {
 
         }
-
+        
+        
+        
+    }
+    componentDidMount(){
+        ElementQueries.init();
     }
     render() {
+        
         let quizzes = this.props.quizzes.map((quiz, index) => {
             return (
                 <div className="quizz" key={index}>

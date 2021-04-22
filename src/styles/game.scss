@@ -2,7 +2,8 @@ $main_font_size: calc(1.2rem + 0.4vw);
 $title_font_size: calc(1.25rem + 0.65vw);
 $heading_font_size: calc(1.5rem + 0.9vw);
 .game {
-    height: 100%;
+    flex-grow: 1;
+    height: -webkit-fill-available;
     width: 100%;
     padding: 12px;
     margin-left: auto;

@@ -64,16 +64,26 @@ export class User_profile extends React.Component<IProps, IState> {
     render(){
         return (
             <div className="user_profile">
-                {
-                    this.state.created_quizzes != undefined ?
-                    <Quizzes_container
-                    button_text="Edit"
-                    quizzes={this.state.created_quizzes}
-                    action={this.on_quiz_button_click}
-                    >
-                    </Quizzes_container>
-                    :null
-                }
+                <div>
+
+                </div>
+                <div>
+
+                </div>
+                <div className="created_quizzes">
+                    {
+                        this.state.created_quizzes != undefined ?
+                        <Quizzes_container
+                        button_text="Edit"
+                        quizzes={this.state.created_quizzes}
+                        action={this.on_quiz_button_click}
+                        add_new={true}
+                        >
+                        </Quizzes_container>
+                        :null
+                    }
+                </div>
+                
             </div>
         )
     }

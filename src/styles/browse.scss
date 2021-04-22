@@ -3,7 +3,8 @@ $result_title_font_size: calc(1.5rem + 0.25vw);
 $result_text_font_size: calc(1.1rem + 0.05vw);
 
 .browse {
-    height: 100%;
+    flex-grow: 1;
+    height: -webkit-fill-available;
     width: 95%;
     padding: 4px;
     margin-left: auto;
@@ -41,7 +42,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
                 background-color: transparent;
                 border: none;
                 padding: 0;
-
+                padding: 3px;
                 border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
                 border-radius: 0;
                 transition: border-bottom 0.3s;

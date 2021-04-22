@@ -244,7 +244,7 @@ function get_global_user_info(username) {
     return user_info;
 }
 
-function attempt_register_global_user_in_lobby(username, join_code) {
+function attempt_register_global_user_in_lobby(username, auth_token, join_code) {
     let global_user_info = get_global_user_info(username);
     if (global_user_info != undefined) {
         if (lobbies[join_code].participants[auth_token] === undefined) {
@@ -582,7 +582,7 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
-        attempt_register_global_user_in_lobby(req.username, join_code);
+        attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
 
         res.send({
@@ -689,7 +689,7 @@ async function main() {
             expires: 725760000,
             httpOnly: true
         });
-        let global_user_info = get_global_user_info(auth_token);
+        let global_user_info = get_global_user_info(req.username);
         let new_username = undefined;
         if (global_user_info != undefined) {
             new_username = global_user_info.username;
