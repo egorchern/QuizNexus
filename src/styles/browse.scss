@@ -42,7 +42,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
                 font-size: $toolbar_font_size;
                 background-color: transparent;
                 border: none;
-                padding: 0;
+                cursor: pointer;
                 padding: 3px;
                 border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
                 border-radius: 0;

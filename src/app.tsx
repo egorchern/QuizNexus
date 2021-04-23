@@ -279,6 +279,7 @@ class App extends React.Component {
             content = (
                 <Edit
                     edit_quiz_id={this.state.edit_quiz_id}
+                    categories={categories}
                 >
 
                 </Edit>

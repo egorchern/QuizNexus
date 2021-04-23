@@ -95,7 +95,7 @@ export class Browse extends React.Component {
             <div className="browse">
                 <div className="browse_toolbar animate__animated animate__zoomInLeft">
                     <div className="browse_input_container">
-                        <span>Title:</span>
+                        <span>Title</span>
                         <input
                             className="form-control"
                             value={this.state.title_value}
@@ -103,24 +103,24 @@ export class Browse extends React.Component {
                         ></input>
                     </div>
                     <div className="browse_input_container">
-                        <span>Time to complete (minutes):</span>
+                        <span>Time to complete (minutes)</span>
                         <div className="two_column_grid">
                             <input
                                 className="form-control"
-                                placeholder="min:"
+                                placeholder="min"
                                 value={this.state.time_min_value}
                                 onChange={this.on_time_min_change}
                             ></input>
                             <input
                                 className="form-control"
-                                placeholder="max:"
+                                placeholder="max"
                                 value={this.state.time_max_value}
                                 onChange={this.on_time_max_change}
                             ></input>
                         </div>
                     </div>
                     <div className="browse_input_container">
-                        <span>Difficulty:</span>
+                        <span>Difficulty</span>
                         <select
                             className="form-select"
                             value={this.state.difficulty_value}
@@ -133,7 +133,7 @@ export class Browse extends React.Component {
                         </select>
                     </div>
                     <div className="browse_input_container">
-                        <span>Category:</span>
+                        <span>Category</span>
                         <select
                             className="form-select"
                             value={this.state.category_value}

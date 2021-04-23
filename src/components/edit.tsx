@@ -2,7 +2,8 @@ import * as React from "react";
 import { render } from "react-dom";
 
 interface Edit_props {
-    edit_quiz_id: number
+    edit_quiz_id: number,
+    categories: string[]
 }
 
 interface Edit_state {
@@ -12,19 +13,28 @@ interface Edit_state {
 
 interface Quiz_descriptors_edit_props {
     quiz_descriptors: { category: string, creators_name: string, date_created: string, description: string, difficulty: string, number_of_questions: number, quiz_id: number, time_to_complete: number, title: string };
+    categories: string[];
 }
 
 interface Quiz_descriptors_edit_state {
     title_value: string;
     description_value: string;
+    category_value: string;
+    difficulty_value: string;
 }
 class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props, Quiz_descriptors_edit_state>{
+    categories: JSX.Element[];
     constructor(props: Quiz_descriptors_edit_props) {
         super(props);
         this.state = {
             title_value: this.props.quiz_descriptors.title,
-            description_value: this.props.quiz_descriptors.description
+            description_value: this.props.quiz_descriptors.description,
+            difficulty_value: this.props.quiz_descriptors.difficulty,
+            category_value: this.props.quiz_descriptors.category
         }
+        this.categories = this.props.categories.map((category, index) => {
+            return <option key={index}>{category}</option>;
+        });
     }
     on_title_value_change = (ev) => {
         this.setState({
@@ -34,6 +44,16 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
     on_description_value_change = (ev) => {
         this.setState({
             description_value: ev.target.value
+        })
+    }
+    on_difficulty_value_change = (ev) => {
+        this.setState({
+            difficulty_value: ev.target.value
+        })
+    }
+    on_category_value_change = (ev) => {
+        this.setState({
+            category_value: ev.target.value
         })
     }
     render() {
@@ -51,7 +71,29 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
                     <textarea className="form-control description reset_input" value={this.state.description_value} onChange={this.on_description_value_change}>
 
                     </textarea>
-                    
+
+                </div>
+                <div className="quiz_descriptors_item two_column_grid">
+                    <div className="flex_vertical">
+                        <span className="quiz_heading">
+                            Category
+                        </span>
+                        <select className="form-select select" value={this.state.category_value} onChange={this.on_category_value_change}>
+                            {this.categories}
+                        </select>
+                    </div>
+                    <div className="flex_vertical">
+                        <span className="quiz_heading">
+                            Difficulty
+                        </span>
+                        <select className="form-select select" value={this.state.difficulty_value} onChange={this.on_difficulty_value_change}>
+
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select>
+                    </div>
+
                 </div>
             </div>
         )
@@ -135,6 +177,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                         (
                             <Quiz_descriptors_edit
                                 quiz_descriptors={this.state.quiz_descriptors}
+                                categories={this.props.categories}
                             >
 
                             </Quiz_descriptors_edit>

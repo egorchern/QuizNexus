@@ -26,13 +26,26 @@ $main_font_size: calc(1.2rem + 0.4vw);
 }
 
 .quiz_descriptors_item {
-    margin-top: 40px;
-}
-
-.description_container {
+    margin-top: 45px;
     width: 95%;
     max-width: 700px;
-    
+}
+
+.select {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: $main_font_size;
+    padding: 3px;
+    border-bottom: 2px solid hsla(0, 0%, 0%, 20%);
+    border-radius: 0;
+    transition: border-bottom 0.3s;
+}
+
+.select:focus {
+    border-bottom: 2px solid hsla(0, 0%, 0%, 100%);
+    box-shadow: none;
+    color: black;
 }
 
 .reset_input {
@@ -50,9 +63,9 @@ $main_font_size: calc(1.2rem + 0.4vw);
 
 .description {
     resize: none;
-    
+
     border: 2px solid hsla(0, 0%, 0%, 20%);
-    
+
     height: clamp(90px, 13vh, 150px);
     font-size: $main_font_size;
     border-radius: 12px;
