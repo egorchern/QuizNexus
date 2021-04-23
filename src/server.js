@@ -451,7 +451,7 @@ async function main() {
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
     assign_quizzes_to_creators();
-    
+    console.log(global_users, auth_tokens);
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -459,7 +459,7 @@ async function main() {
     // To parse cookies from the HTTP Request
     app.use(cookie_parser());
     app.use(express.static("dist"));
-
+    // Middleware for authenticating users. Looks up auth_token in auth_tokens and affixes the username to the req, req.username
     app.use((req, res, next) => {
         let client_ip = request_ip.getClientIp(req);
         req.client_ip = client_ip;
@@ -467,14 +467,14 @@ async function main() {
         req.user_agent = user_agent;
         let auth_token = req.cookies.auth_token;
         let auth_token_output = auth_tokens[auth_token];
-        console.log(client_ip, user_agent);
+        
         if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
             req.username = auth_token_output.username;
         }
         else {
             req.username = null;
         }
-        console.log(req.username);
+        
         next();
     })
     var server = http.createServer(app);
@@ -650,12 +650,14 @@ async function main() {
         
     })
 
+    // Used to relay whether user is authenticated to the App component. If not authenticated send username = null, otherwise send username.
     app.post("/get_global_username", (req, res) => {
         res.send({
             username: req.username
         })
     })
 
+    // Used when User_profile page requests information for display. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_global_user_info", (req, res) => {
         let username = req.username;
         if(username != null){
@@ -675,14 +677,26 @@ async function main() {
         }
     })
 
+    // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
-        console.log(quiz_id);
+        
         let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
+        
         if(is_allowed){
             let questions = get_all_questions(quiz_id);
+            res.send({
+                code: 2,
+                questions: questions
+            })
+        }
+        else{
+            res.send({
+                code: 1
+            })
         }
     })
+
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;

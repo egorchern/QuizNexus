@@ -1,11 +1,78 @@
-.edit{
+$title_font_size: calc(2rem + 1.2vw);
+$heading_font_size: calc(1.35rem + 0.65vw);
+$main_font_size: calc(1.2rem + 0.4vw);
+
+.edit {
     width: 95%;
     flex-grow: 1;
     height: -webkit-fill-available;
     padding: 8px;
     margin: auto;
-    .animate__animated{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    .animate__animated {
         animation-duration: 0.5s;
-        
     }
+}
+
+.quiz_descriptors {
+    width: 100%;
+}
+
+.quiz_heading {
+    font-size: $heading_font_size;
+}
+
+.quiz_descriptors_item {
+    margin-top: 40px;
+}
+
+.description_container {
+    width: 95%;
+    max-width: 700px;
+    
+}
+
+.reset_input {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+.reset_input:focus {
+    box-shadow: none;
+    background-color: transparent;
+}
+
+.description {
+    resize: none;
+    
+    border: 2px solid hsla(0, 0%, 0%, 20%);
+    
+    height: clamp(90px, 13vh, 150px);
+    font-size: $main_font_size;
+    border-radius: 12px;
+    padding: 8px;
+    transition: border 0.3s;
+}
+/* Hide scrollbar for Chrome, Safari and Opera */
+.description::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.description {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.description:focus {
+    border: 2px solid hsla(0, 0%, 0%, 100%);
+}
+.title {
+    font-size: $title_font_size;
+    text-align: center;
 }

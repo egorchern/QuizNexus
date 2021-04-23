@@ -90,7 +90,7 @@ class App extends React.Component {
         temp = edit_regex.exec(path_name);
         if (temp != null) {
             console.log("reach");
-            this.edit(temp.groups.edit_quiz_id);
+            this.edit(Number(temp.groups.edit_quiz_id));
         }
 
         fetch("/get_global_username", {
