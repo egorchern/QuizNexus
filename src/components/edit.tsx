@@ -1,5 +1,6 @@
 import * as React from "react";
 import { render } from "react-dom";
+import { SlideDown } from "react-slidedown";
 
 interface Edit_props {
     edit_quiz_id: number,
@@ -14,53 +15,189 @@ interface Edit_state {
 interface Quiz_descriptors_edit_props {
     quiz_descriptors: { category: string, creators_name: string, date_created: string, description: string, difficulty: string, number_of_questions: number, quiz_id: number, time_to_complete: number, title: string };
     categories: string[];
+    change_quiz_property: Function;
+
 }
 
 interface Quiz_descriptors_edit_state {
-    title_value: string;
-    description_value: string;
-    category_value: string;
-    difficulty_value: string;
+
 }
+
+interface Quiz_questions_edit_props {
+    questions: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number }[];
+    change_quiz_propery: Function
+}
+
+interface Quiz_questions_edit_state {
+    selected_index: number;
+
+}
+
+interface Question_props {
+    question: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number };
+    is_expanded: boolean;
+    change_quiz_property: Function;
+    select_question: Function;
+}
+
+interface Question_state {
+
+}
+
+class Question extends React.Component<Question_props, Question_state>{
+    index: number;
+    constructor(props: Question_props) {
+        super(props);
+
+        this.index = this.props.question.question_number - 1;
+    }
+    on_question_click = () => {
+        this.props.select_question(this.index);
+    }
+    on_question_text_value_change = (ev) => {
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("question_text", this.index, new_value);
+    }
+    on_points_base_value_change = (ev) => {
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("points_base", this.index, new_value);
+    }
+    on_time_allocated_value_change = (ev) => {
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("time_allocated", this.index, new_value);
+    }
+    render() {
+        let question_classlist = "question flex_vertical ";
+        if (this.props.is_expanded === true) {
+            question_classlist += "expanded ";
+        }
+        return (
+            <div className={question_classlist} onClick={this.on_question_click}>
+                <span className="quiz_heading">
+                    Question {this.props.question.question_number}
+                </span>
+                <SlideDown className="question_details_container">
+                    {
+                        this.props.is_expanded === true ? (
+                            <div className="question_details">
+                                <span className="quiz_heading">
+                                    Question text
+                                </span>
+                                <textarea className="form-control description reset_input" value={this.props.question.question_text} onChange={this.on_question_text_value_change}>
+
+                                </textarea>
+                                <span className="points_explanation">
+                                    Points earned for answering the question correctly is calculated with: P = B - (B / TA * TT)
+                                    <br></br>
+                                    Where: P - points earned, B - points base, TA - time allocated, TT - time taken to answer the quetion.
+                                </span>
+                                <div className="two_column_grid points_edit">
+                                    <div className="flex_vertical"> 
+                                        <span className="quiz_heading">
+                                            Points base
+                                        </span>
+                                        <input className="join_input" value={this.props.question.points_base} onChange={this.on_points_base_value_change}>
+                                        </input>
+                                    </div>
+                                    <div className="flex_vertical">
+                                        <span className="quiz_heading">
+                                            Time allocated (seconds)
+                                        </span>
+                                        <input className="join_input" value={this.props.question.time_allocated} onChange={this.on_time_allocated_value_change}>
+                                        </input>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                            : null
+                    }
+                </SlideDown>
+            </div>
+        )
+    }
+}
+
+class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Quiz_questions_edit_state>{
+    constructor(props: Quiz_questions_edit_props) {
+        super(props);
+
+        this.state = {
+            selected_index: -1
+        }
+    }
+    select_question = (index: number) => {
+        if (index != this.state.selected_index) {
+            this.setState({
+                selected_index: index
+            })
+        }
+    }
+   
+    render() {
+        let questions = this.props.questions.map((question, index) => {
+            return (
+                <Question
+                    question={question}
+                    key={index}
+                    select_question={this.select_question}
+                    is_expanded={this.state.selected_index === index}
+                    change_quiz_property={this.props.change_quiz_propery}
+                >
+
+                </Question>
+            )
+        })
+        let add_new = (
+            <div className="question flex_horizontal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="plus_svg" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                </svg>
+                <span className="quiz_heading">
+                    Create new
+                </span>
+            </div>
+        )
+        return (
+            <div className="quiz_questions flex_vertical">
+                {questions}
+                {add_new}
+            </div>
+        )
+    }
+}
+
 class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props, Quiz_descriptors_edit_state>{
     categories: JSX.Element[];
     constructor(props: Quiz_descriptors_edit_props) {
         super(props);
         this.state = {
-            title_value: this.props.quiz_descriptors.title,
-            description_value: this.props.quiz_descriptors.description,
-            difficulty_value: this.props.quiz_descriptors.difficulty,
-            category_value: this.props.quiz_descriptors.category
+
         }
         this.categories = this.props.categories.map((category, index) => {
             return <option key={index}>{category}</option>;
         });
     }
     on_title_value_change = (ev) => {
-        this.setState({
-            title_value: ev.target.value
-        })
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("title", -1, new_value);
     }
     on_description_value_change = (ev) => {
-        this.setState({
-            description_value: ev.target.value
-        })
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("description", -1, new_value);
     }
     on_difficulty_value_change = (ev) => {
-        this.setState({
-            difficulty_value: ev.target.value
-        })
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("difficulty", -1, new_value);
     }
     on_category_value_change = (ev) => {
-        this.setState({
-            category_value: ev.target.value
-        })
+        let new_value = ev.target.value;
+        this.props.change_quiz_property("category", -1, new_value);
     }
     render() {
         return (
             <div className="quiz_descriptors flex_vertical">
                 <input className="form-control title reset_input"
-                    value={this.state.title_value}
+                    value={this.props.quiz_descriptors.title}
                     onChange={this.on_title_value_change}
                 >
                 </input>
@@ -68,7 +205,7 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
                     <span className="quiz_heading">
                         Description
                     </span>
-                    <textarea className="form-control description reset_input" value={this.state.description_value} onChange={this.on_description_value_change}>
+                    <textarea className="form-control description reset_input" value={this.props.quiz_descriptors.description} onChange={this.on_description_value_change}>
 
                     </textarea>
 
@@ -78,7 +215,7 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
                         <span className="quiz_heading">
                             Category
                         </span>
-                        <select className="form-select select" value={this.state.category_value} onChange={this.on_category_value_change}>
+                        <select className="form-select select" value={this.props.quiz_descriptors.category} onChange={this.on_category_value_change}>
                             {this.categories}
                         </select>
                     </div>
@@ -86,7 +223,7 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
                         <span className="quiz_heading">
                             Difficulty
                         </span>
-                        <select className="form-select select" value={this.state.difficulty_value} onChange={this.on_difficulty_value_change}>
+                        <select className="form-select select" value={this.props.quiz_descriptors.difficulty} onChange={this.on_difficulty_value_change}>
 
                             <option>Easy</option>
                             <option>Medium</option>
@@ -115,17 +252,51 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }
 
     }
+    change_quiz_property = (property: string, index: number, new_value: any): void => {
+        if (property === "question_text") {
+            this.state.quiz_questions[index].question_text = new_value;
+        }
+        else if (property === "title") {
+            this.state.quiz_descriptors.title = new_value;
+        }
+        else if (property === "description") {
+            this.state.quiz_descriptors.description = new_value;
+        }
+        else if (property === "category") {
+            this.state.quiz_descriptors.category = new_value;
+        }
+        else if (property === "difficulty") {
+            this.state.quiz_descriptors.difficulty = new_value;
+        }
+        else if(property === "points_base"){
+            let number_only = new RegExp("^[1-9][0-9]*$");
+            let matches = number_only.exec(new_value) != null;
+            if(matches === true){
+                this.state.quiz_questions[index].points_base = Number(new_value);
+            }
+        }
+        else if(property === "time_allocated"){
+            let number_only = new RegExp("^[1-9][0-9]*$");
+            let matches = number_only.exec(new_value) != null;
+            if(matches === true){
+                this.state.quiz_questions[index].time_allocated = Number(new_value);
+            }
+        }
+        this.forceUpdate();
+    }
 
     componentDidMount() {
+        document.querySelector(".app_container").classList.add("height_full");
         // Prevents fetching of quiz details when creating a new quiz (since quiz_id = 0)
         if (this.props.edit_quiz_id != 0) {
-            this.fetch_quiz_descriptors();
             this.fetch_quiz_questions();
 
         }
 
     }
-
+    componentWillUnmount() {
+        document.querySelector(".app_container").classList.remove("height_full");
+    }
     // Fetches quiz_questions from server and handles the response code
     fetch_quiz_questions = () => {
 
@@ -139,9 +310,11 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
             })
         }).then(result => result.json())
             .then(result => {
-                console.log(result);
+
                 let code = result.code;
                 if (code === 2) {
+                    // This is here so that if the user is not allowed to edit the quiz, the front-end does not recieve quiz descriptors
+                    this.fetch_quiz_descriptors();
                     this.setState({
                         quiz_questions: result.questions
                     })
@@ -178,9 +351,22 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                             <Quiz_descriptors_edit
                                 quiz_descriptors={this.state.quiz_descriptors}
                                 categories={this.props.categories}
+                                change_quiz_property={this.change_quiz_property}
                             >
 
                             </Quiz_descriptors_edit>
+                        )
+                        : null
+                }
+                {
+                    this.state.quiz_questions != undefined ?
+                        (
+                            <Quiz_questions_edit
+                                questions={this.state.quiz_questions}
+                                change_quiz_propery={this.change_quiz_property}
+                            >
+
+                            </Quiz_questions_edit>
                         )
                         : null
                 }

@@ -15,6 +15,8 @@ $main_font_size: calc(1.2rem + 0.4vw);
     .animate__animated {
         animation-duration: 0.5s;
     }
+    margin-top: 8vh;
+    margin-bottom: 8vh;
 }
 
 .quiz_descriptors {
@@ -88,4 +90,53 @@ $main_font_size: calc(1.2rem + 0.4vw);
 .title {
     font-size: $title_font_size;
     text-align: center;
+}
+.quiz_questions{
+    margin-top: 40px;
+    width: 100%;
+}
+.question{
+    margin-top: 45px;
+    width: 95%;
+    max-width: 850px;
+    transition: 0.3s box-shadow;
+    cursor: pointer;
+    padding: 24px;
+    z-index: 1;
+    
+}
+.question:hover{
+    box-shadow: 0px 0px 5px 3px #43adef;
+}
+.question.expanded{
+    box-shadow: 0px 0px 5px 3px #43adef;
+    cursor:default;
+    > * {
+        cursor: auto;
+        z-index: 2;
+    }
+}
+.question_details_container{
+    width: 100%;
+}
+.question_details{
+    width: 100%;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+}
+.points_explanation{
+    font-size: 1rem;
+    color: var(--bs-dark-gray);
+    margin-top: 30px;
+}
+.points_edit{
+    margin-top: 30px;
+    .join_input{
+        width: 100%;
+        font-size: $main_font_size;
+    }
+    .flex_vertical{
+        justify-content: flex-end;
+    }
 }

@@ -61,11 +61,28 @@ export class User_profile extends React.Component<IProps, IState> {
     on_quiz_button_click = (quiz_id) => {
         this.props.edit(quiz_id);
     }
+    log_out = () => {
+        fetch("/log_out", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+
+        }).then(result => result.json())
+        .then(result => {
+            let code = result.code;
+            if(code === 2){
+                location.reload();
+            }
+        })
+    }
     render(){
         return (
             <div className="user_profile">
                 <div>
-
+                    <button className="btn btn-danger log_out" onClick={this.log_out}>
+                        Log out
+                    </button>
                 </div>
                 <div>
 

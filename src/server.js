@@ -479,7 +479,13 @@ async function main() {
     })
     var server = http.createServer(app);
     var io = socketio(server);
-
+    app.post("/log_out", (req, res) => {
+        
+        res.clearCookie("auth_token");
+        res.send({
+            code: 2
+        })
+    })
     // When receive a request for quizzes data, send quizzes array
     app.post("/get_quizzes", (req, res) => {
 
