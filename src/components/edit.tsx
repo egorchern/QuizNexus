@@ -28,6 +28,8 @@ interface Quiz_questions_edit_props {
     change_quiz_propery: Function;
     add_new_question: Function;
     delete_question: Function;
+    add_new_answer_choice: Function;
+    delete_answer_choice: Function;
 }
 
 interface Quiz_questions_edit_state {
@@ -41,10 +43,130 @@ interface Question_props {
     change_quiz_property: Function;
     select_question: Function;
     delete_question: Function;
+    add_new_answer_choice: Function;
+    delete_answer_choice: Function;
 }
 
 interface Question_state {
 
+}
+
+interface Answer_choices_props{
+    answer_choices: string[];
+    correct_answer_indexes: number[];
+    on_answer_choice_change: Function;
+    add_new_answer_choice: Function;
+    delete_answer_choice: Function;
+}
+
+interface Answer_choices_state{
+    selected_index: number;
+}
+
+class Answer_choices extends React.Component<Answer_choices_props, Answer_choices_state>{
+    constructor(props: Answer_choices_props){
+        super(props);
+        this.state = {
+
+            selected_index: -1
+        }
+       
+    }
+    on_answer_choice_click = (index: number) => {
+        if(index != this.state.selected_index){
+            this.setState({
+                selected_index: index
+            })
+        }
+    }
+    on_answer_choice_value_change = (ev) => {
+        let new_value = ev.target.value;
+        this.props.on_answer_choice_change(this.state.selected_index, new_value);
+    }
+    on_create_new = () => {
+        this.props.add_new_answer_choice();
+        this.setState({
+            selected_index: this.props.answer_choices.length - 1
+        })
+    }
+    on_delete_click = (index) => {
+        this.props.delete_answer_choice(index);
+        this.setState({
+            selected_index: -1
+        })
+    }
+    render(){
+        let answer_choices_list_items = this.props.answer_choices.map((answer_choice, index) => {
+            let class_list = "edit_answer_choice ";
+            if(index === this.state.selected_index){
+                class_list += "expanded ";
+            }
+            return (
+                <div className={class_list} key={index} onClick={() => {
+                    this.on_answer_choice_click(index);
+                }}>
+                    {
+                        this.state.selected_index != index ? (
+                            <div>
+                                <span className="quiz_main">
+                                    {index + 1}) 
+                                </span>
+                                <span className="quiz_main margin-left">
+                                    {answer_choice}
+                                </span>
+                            </div>
+                        )
+                        : null
+                    }
+                    
+                    <SlideDown className="question_details_container">
+                        {
+                            this.state.selected_index === index ? (
+                                <div className="answer_choice_details">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="delete_question_svg_smaller" viewBox="0 0 16 16" onClick={() => {
+                                        this.on_delete_click(index);
+                                    }}>
+                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                    </svg>
+                                    <span className="quiz_main">
+                                        Answer choice
+                                    </span>
+                                    <textarea className="form-control description reset_input" value={answer_choice} onChange={this.on_answer_choice_value_change}>
+
+                                    </textarea>
+                                </div>
+                            )
+                            : null
+                        }
+                    </SlideDown>
+                </div>
+            )
+        })
+        let add_new = (
+            <div className="edit_answer_choice flex_horizontal add_new_answer_choice" key={this.props.answer_choices.length} onClick={() => {
+                this.on_create_new();
+            }}>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="plus_svg_smaller" viewBox="0 0 16 16" preserveAspectRatio="xMidYMin slice">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                </svg>
+                
+                
+                <span className="quiz_main">
+                    Create new
+                </span>
+            </div>
+        )
+        answer_choices_list_items.push(add_new);
+        return (
+            <div className="edit_answer_choices flex-vertical">
+                <span className="quiz_heading">
+                    Answer choices
+                </span>
+                {answer_choices_list_items}
+            </div>
+        )
+    }
 }
 
 class Question extends React.Component<Question_props, Question_state>{
@@ -72,6 +194,15 @@ class Question extends React.Component<Question_props, Question_state>{
     on_question_delete_click = () => {
         this.props.delete_question(this.index);
     }
+    on_answer_choice_change = (second_index: number, new_value: string) => {
+        this.props.change_quiz_property("answer_choice", this.index, new_value, second_index);
+    }
+    add_new_answer_choice = () => {
+        this.props.add_new_answer_choice(this.index);
+    }
+    delete_answer_choice = (answer_choice_index: number) => {
+        this.props.delete_answer_choice(this.index, answer_choice_index);
+    }
     render() {
         let question_classlist = "question flex_vertical ";
         if (this.props.is_expanded === true) {
@@ -95,6 +226,15 @@ class Question extends React.Component<Question_props, Question_state>{
                                 <textarea className="form-control description reset_input" value={this.props.question.question_text} onChange={this.on_question_text_value_change}>
 
                                 </textarea>
+                                <Answer_choices
+                                answer_choices={this.props.question.answer_choices}
+                                correct_answer_indexes={this.props.question.correct_answer_indexes}
+                                on_answer_choice_change={this.on_answer_choice_change}
+                                add_new_answer_choice={this.add_new_answer_choice}
+                                delete_answer_choice={this.delete_answer_choice}
+                                >
+
+                                </Answer_choices>
                                 <span className="points_explanation">
                                     Points earned for answering the question correctly is calculated with: P = B - (B / TA * TT)
                                     <br></br>
@@ -147,7 +287,13 @@ class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Qui
             selected_index: -1
         })
         this.props.delete_question(index);
-    } 
+    }
+    add_new_question = () => {
+        this.props.add_new_question();
+        this.setState({
+            selected_index: this.props.questions.length - 1
+        })
+    }
     render() {
         let questions = this.props.questions.map((question, index) => {
             return (
@@ -158,13 +304,15 @@ class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Qui
                     is_expanded={this.state.selected_index === index}
                     change_quiz_property={this.props.change_quiz_propery}
                     delete_question={this.on_question_delete}
+                    add_new_answer_choice={this.props.add_new_answer_choice}
+                    delete_answer_choice={this.props.delete_answer_choice}
                 >
 
                 </Question>
             )
         })
         let add_new = (
-            <div className="question flex_horizontal" onClick={() => {this.props.add_new_question()}}>
+            <div className="question flex_horizontal" onClick={() => {this.add_new_question()}}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="plus_svg" viewBox="0 0 16 16">
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                 </svg>
@@ -268,7 +416,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }
 
     }
-    change_quiz_property = (property: string, index: number, new_value: any): void => {
+    change_quiz_property = (property: string, index: number, new_value: any, second_index = -1): void => {
         if (property === "question_text") {
             this.state.quiz_questions[index].question_text = new_value;
         }
@@ -298,6 +446,9 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                 this.state.quiz_questions[index].time_allocated = Number(new_value);
             }
         }
+        else if(property === "answer_choice"){
+            this.state.quiz_questions[index].answer_choices[second_index] = new_value;
+        }
         this.forceUpdate();
     }
     add_new_question = () => {
@@ -326,6 +477,27 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }
         this.state.quiz_descriptors.number_of_questions -= 1;
         this.state.quiz_questions.splice(index, 1);
+        this.forceUpdate();
+    }
+    add_new_answer_choice = (question_index: number) => {
+        this.state.quiz_questions[question_index].answer_choices.push("");
+        this.forceUpdate();
+    }
+    delete_answer_choice = (question_index: number, answer_choice_index: number) => {
+        let correct_answer_indexes = this.state.quiz_questions[question_index].correct_answer_indexes
+        for(let i = 0; i < correct_answer_indexes.length; i += 1){
+            let correct_answer_index = correct_answer_indexes[i];
+            if(correct_answer_index > answer_choice_index){
+                console.log(correct_answer_indexes);
+                correct_answer_indexes[i] -= 1;
+                console.log(correct_answer_indexes);
+            }
+        }
+        let delete_index = correct_answer_indexes.indexOf(answer_choice_index);
+        if(delete_index != -1){
+            correct_answer_indexes.splice(delete_index, 1);
+        }
+        this.state.quiz_questions[question_index].answer_choices.splice(answer_choice_index, 1);
         this.forceUpdate();
     }
     componentDidMount() {
@@ -409,6 +581,8 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                                 change_quiz_propery={this.change_quiz_property}
                                 add_new_question={this.add_new_question}
                                 delete_question={this.delete_question}
+                                add_new_answer_choice={this.add_new_answer_choice}
+                                delete_answer_choice={this.delete_answer_choice}
                             >
 
                             </Quiz_questions_edit>

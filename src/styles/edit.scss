@@ -2,8 +2,8 @@ $title_font_size: calc(2rem + 1.2vw);
 $heading_font_size: calc(1.35rem + 0.65vw);
 $main_font_size: calc(1.2rem + 0.4vw);
 $primary_hover_box_shadow: 0px 0px 5px 3px #43adef;
-$secondary_hover_box_shadow: 0px 0px 5px 3px #fabb00;
-$third_hover_box_shadow: 0px 0px 5px 3px #13e73d;
+$secondary_hover_box_shadow: 0px 0px 4px 2px hsl(0, 100%, 55%);
+$third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
 .edit {
     width: 95%;
     flex-grow: 1;
@@ -139,6 +139,7 @@ $third_hover_box_shadow: 0px 0px 5px 3px #13e73d;
     .join_input{
         width: 100%;
         font-size: $main_font_size;
+        text-align: center;
     }
     .flex_vertical{
         justify-content: flex-end;
@@ -148,11 +149,65 @@ $third_hover_box_shadow: 0px 0px 5px 3px #13e73d;
     position: absolute;
     top: 12px;
     right: 12px;
+    border-radius: 8px;
     width: clamp(30px, 5vw, 40px);
     cursor: pointer;
     padding: 4px;
     height: auto;
 }
+.delete_question_svg_smaller{
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border-radius: 8px;
+    width: clamp(20px, 3vw, 30px);
+    cursor: pointer;
+    padding: 2px;
+    height: auto;
+}
+.delete_question_svg_smaller:hover{
+    box-shadow: $third_hover_box_shadow;
+}
 .delete_question_svg:hover{
     box-shadow: $secondary_hover_box_shadow;
+}
+.edit_answer_choices{
+    margin-top: 30px;
+}
+.quiz_main{
+    font-size: $main_font_size;
+}
+.edit_answer_choice{
+    margin-top: 11px;
+    margin-bottom: 11px;
+    padding: 12px;
+    cursor:pointer;
+    position: relative;
+    border-radius: 12px;
+    transition: 0.3s box-shadow;
+}
+.edit_answer_choice.expanded{
+    box-shadow: $secondary_hover_box_shadow;
+    cursor:default;
+    > * {
+        cursor: auto;
+        z-index: 3;
+    }
+}
+.edit_answer_choice:hover{
+    box-shadow: $secondary_hover_box_shadow;
+}
+.margin-left{
+    margin-left: 10px;
+}
+.add_new_answer_choice{
+    justify-content: flex-start !important;
+}
+.plus_svg_smaller{
+    width: clamp(30px, 5vw, 50px);
+    fill: var(--bs-success);
+}
+
+.answer_choice_details{
+    
 }
