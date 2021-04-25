@@ -25,7 +25,9 @@ interface Quiz_descriptors_edit_state {
 
 interface Quiz_questions_edit_props {
     questions: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number }[];
-    change_quiz_propery: Function
+    change_quiz_propery: Function;
+    add_new_question: Function;
+    delete_question: Function;
 }
 
 interface Quiz_questions_edit_state {
@@ -38,6 +40,7 @@ interface Question_props {
     is_expanded: boolean;
     change_quiz_property: Function;
     select_question: Function;
+    delete_question: Function;
 }
 
 interface Question_state {
@@ -66,6 +69,9 @@ class Question extends React.Component<Question_props, Question_state>{
         let new_value = ev.target.value;
         this.props.change_quiz_property("time_allocated", this.index, new_value);
     }
+    on_question_delete_click = () => {
+        this.props.delete_question(this.index);
+    }
     render() {
         let question_classlist = "question flex_vertical ";
         if (this.props.is_expanded === true) {
@@ -80,6 +86,9 @@ class Question extends React.Component<Question_props, Question_state>{
                     {
                         this.props.is_expanded === true ? (
                             <div className="question_details">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="delete_question_svg" viewBox="0 0 16 16" onClick={this.on_question_delete_click}>
+                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                </svg>
                                 <span className="quiz_heading">
                                     Question text
                                 </span>
@@ -132,7 +141,13 @@ class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Qui
             })
         }
     }
-   
+    on_question_delete = (index: number) => {
+        
+        this.setState({
+            selected_index: -1
+        })
+        this.props.delete_question(index);
+    } 
     render() {
         let questions = this.props.questions.map((question, index) => {
             return (
@@ -142,13 +157,14 @@ class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Qui
                     select_question={this.select_question}
                     is_expanded={this.state.selected_index === index}
                     change_quiz_property={this.props.change_quiz_propery}
+                    delete_question={this.on_question_delete}
                 >
 
                 </Question>
             )
         })
         let add_new = (
-            <div className="question flex_horizontal">
+            <div className="question flex_horizontal" onClick={() => {this.props.add_new_question()}}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="plus_svg" viewBox="0 0 16 16">
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                 </svg>
@@ -284,7 +300,34 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }
         this.forceUpdate();
     }
+    add_new_question = () => {
+        console.log("new question reached");
+        let next_question_num = this.state.quiz_descriptors.number_of_questions + 1;
+        this.state.quiz_descriptors.number_of_questions += 1;
+        let new_question: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number };
+        new_question = {
+            question_number: next_question_num,
+            question_text: "",
+            answer_choices: [],
+            correct_answer_indexes: [],
+            quiz_id: this.state.quiz_descriptors.quiz_id,
+            points_base: 1000,
+            time_allocated: 20,
+            multi_choice: false,
 
+        }
+        this.state.quiz_questions.push(new_question);
+        this.forceUpdate();
+    }
+    delete_question = (index: number) => {
+        // Reduce question number of questions that come after the deleted question. if question num 4 is deleted, questions 5 6 7 become 4 5 6
+        for(let i = index; i < this.state.quiz_questions.length; i += 1){
+            this.state.quiz_questions[i].question_number -= 1;
+        }
+        this.state.quiz_descriptors.number_of_questions -= 1;
+        this.state.quiz_questions.splice(index, 1);
+        this.forceUpdate();
+    }
     componentDidMount() {
         document.querySelector(".app_container").classList.add("height_full");
         // Prevents fetching of quiz details when creating a new quiz (since quiz_id = 0)
@@ -364,6 +407,8 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                             <Quiz_questions_edit
                                 questions={this.state.quiz_questions}
                                 change_quiz_propery={this.change_quiz_property}
+                                add_new_question={this.add_new_question}
+                                delete_question={this.delete_question}
                             >
 
                             </Quiz_questions_edit>
