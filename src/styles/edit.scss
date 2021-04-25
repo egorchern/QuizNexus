@@ -17,8 +17,8 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
     .animate__animated {
         animation-duration: 0.5s;
     }
-    margin-top: 8vh;
-    margin-bottom: 8vh;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
 }
 
 .quiz_descriptors {
@@ -207,7 +207,25 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
     width: clamp(30px, 5vw, 50px);
     fill: var(--bs-success);
 }
-
-.answer_choice_details{
+.form-check-input{
+    margin-top: 0;
+}
+.answer_choice_line{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.is_correct_check{
     
+    margin-left: 10px;
+}
+.save_btn{
+    font-size: $title_font_size;
+    margin-top: 20px;
+    width: clamp(100px, 95%, 200px);
+    
+}
+.bottom_panel{
+    margin-top: 40px;
+    width: 100%;
 }
