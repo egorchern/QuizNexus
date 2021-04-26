@@ -4,6 +4,7 @@ import {Alert_message} from "./alert";
 
 interface IProps {
     log_in?: Function;
+    switch_page_state: Function;
 }
 
 interface IState {
@@ -51,6 +52,7 @@ export class Login extends React.Component<IProps, IState> {
             this.push_alert("Invalid credentials. An account with that username either does not exist, or the password is wrong", "red");
           }
           else{
+            this.props.switch_page_state("home");
             location.reload();
           }
         })

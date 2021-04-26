@@ -261,6 +261,7 @@ class App extends React.Component {
             content = (
                 <Login
                     log_in={this.log_in}
+                    switch_page_state={this.switch_page_state}
                 >
 
                 </Login>
@@ -280,6 +281,7 @@ class App extends React.Component {
                 <Edit
                     edit_quiz_id={this.state.edit_quiz_id}
                     categories={categories}
+                    switch_page_state={this.switch_page_state}
                 >
 
                 </Edit>

@@ -4,8 +4,9 @@ import { SlideDown } from "react-slidedown";
 import assets from "../assets/*.png";
 console.log(assets);
 interface Edit_props {
-    edit_quiz_id: number,
-    categories: string[]
+    edit_quiz_id: number;
+    categories: string[];
+    switch_page_state: Function;
 }
 
 interface Edit_state {
@@ -17,7 +18,7 @@ interface Quiz_descriptors_edit_props {
     quiz_descriptors: { category: string, creators_name: string, date_created: string, description: string, difficulty: string, number_of_questions: number, quiz_id: number, time_to_complete: number, title: string };
     categories: string[];
     change_quiz_property: Function;
-
+    delete_quiz: Function;
 }
 
 interface Quiz_descriptors_edit_state {
@@ -69,6 +70,8 @@ interface Answer_choices_state {
 
 interface Bottom_panel_props {
     questions: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number }[];
+    totals: {points_total: number, time_total: number};
+    submit_edit: Function;
 }
 
 interface Bottom_panel_state {
@@ -105,17 +108,19 @@ class Bottom_panel extends React.Component<Bottom_panel_props, Bottom_panel_stat
                 <div className="two_column_grid">
                     <div className="flex_horizontal">
                         <span className="quiz_heading">
-                            Total points (max): {totals.points_total}
+                            Total points (max): {this.props.totals.points_total}
                         </span>
                         
                     </div>
                     <div className="flex_horizontal">
                         <span className="quiz_heading">
-                            Time to complete (mins): {totals.time_total}
+                            Time to complete (mins): {this.props.totals.time_total}
                         </span>
                     </div>
                 </div>
-                <button className="save_btn btn btn-primary">
+                <button className="save_btn btn btn-primary" onClick={() => {
+                    this.props.submit_edit();
+                }}>
                     Save
                 </button>
             </div>
@@ -448,6 +453,11 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
     render() {
         return (
             <div className="quiz_descriptors flex_vertical">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="delete_question_svg_bigger" viewBox="0 0 16 16" onClick={() => {
+                    this.props.delete_quiz();
+                }}>
+                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+                </svg>
                 <input className="form-control title reset_input"
                     value={this.props.quiz_descriptors.title}
                     onChange={this.on_title_value_change}
@@ -490,6 +500,7 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
 }
 
 export class Edit extends React.Component<Edit_props, Edit_state>{
+    totals: { points_total: number; time_total: number; };
     constructor(props: Edit_props) {
         super(props);
         this.state = {
@@ -502,6 +513,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         if (temp === null) {
             history.pushState({ page_state: "edit", edit_quiz_id: this.props.edit_quiz_id }, "Edit", `edit/${this.props.edit_quiz_id}`);
         }
+        
 
     }
     change_quiz_property = (property: string, index: number, new_value: any, second_index = -1): void => {
@@ -525,6 +537,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
             let matches = number_only.exec(new_value) != null;
             if (matches === true) {
                 this.state.quiz_questions[index].points_base = Number(new_value);
+                this.totals = this.calculate_totals();
             }
         }
         else if (property === "time_allocated") {
@@ -532,6 +545,8 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
             let matches = number_only.exec(new_value) != null;
             if (matches === true) {
                 this.state.quiz_questions[index].time_allocated = Number(new_value);
+                this.totals = this.calculate_totals();
+                this.state.quiz_descriptors.time_to_complete = this.totals.time_total;
             }
         }
         else if (property === "answer_choice") {
@@ -607,6 +622,58 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }
         this.forceUpdate();
     }
+    calculate_totals = (): { points_total: number, time_total: number } => {
+        let points_total = 0;
+        let time_total = 0;
+        for (let i = 0; i < this.state.quiz_questions.length; i += 1) {
+            let current_question = this.state.quiz_questions[i];
+            points_total += current_question.points_base;
+            time_total += current_question.time_allocated;
+        }
+        let return_obj = {
+            points_total: points_total,
+            time_total: Math.round(time_total / 60)
+        }
+        return return_obj;
+
+    }
+    delete_quiz = () => {
+        let is_sure = window.confirm(`Are you sure that you want to delete "${this.state.quiz_descriptors.title}" quiz?`);
+        if(is_sure){
+            fetch("/delete_quiz", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    quiz_id: this.state.quiz_descriptors.quiz_id
+                })
+            })
+            .then(result => result.json())
+            .then(result => {
+                if(result.code === 2){
+                    this.props.switch_page_state("user_profile");
+                }
+            })
+        }
+    }
+    submit_edit = () => {
+        fetch("/edit_quiz", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                quiz_id: this.state.quiz_descriptors.quiz_id,
+                quiz_descriptors: this.state.quiz_descriptors,
+                quiz_questions: this.state.quiz_questions
+            })
+        })
+        .then(result => result.json())
+        .then(result => {
+            console.log(result);
+        })
+    }
     componentDidMount() {
         document.querySelector(".app_container").classList.add("height_full");
         // Prevents fetching of quiz details when creating a new quiz (since quiz_id = 0)
@@ -657,6 +724,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         }).then(result => result.json())
             .then(result => {
                 let quiz_descriptors = result.quizzes[0];
+                this.totals = this.calculate_totals();
                 this.setState({
                     quiz_descriptors: quiz_descriptors
                 })
@@ -665,6 +733,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
     }
 
     render() {
+        
         return (
             <div className="edit">
                 {
@@ -674,6 +743,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                                 quiz_descriptors={this.state.quiz_descriptors}
                                 categories={this.props.categories}
                                 change_quiz_property={this.change_quiz_property}
+                                delete_quiz={this.delete_quiz}
                             >
 
                             </Quiz_descriptors_edit>
@@ -701,6 +771,8 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                     this.state.quiz_descriptors != undefined ? (
                         <Bottom_panel
                         questions={this.state.quiz_questions}
+                        totals={this.totals}
+                        submit_edit={this.submit_edit}
                         >
 
                         </Bottom_panel>

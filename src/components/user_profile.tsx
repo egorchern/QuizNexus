@@ -59,7 +59,21 @@ export class User_profile extends React.Component<IProps, IState> {
         })
     }
     on_quiz_button_click = (quiz_id) => {
-        this.props.edit(quiz_id);
+        if(quiz_id === 0){
+            fetch("/create_new_quiz", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+            .then(result => result.json())
+            .then(result => {
+                this.props.edit(result.quiz_id);
+            })
+        }
+        else{
+            this.props.edit(quiz_id);
+        }
     }
     log_out = () => {
         fetch("/log_out", {

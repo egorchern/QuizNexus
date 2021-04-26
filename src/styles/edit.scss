@@ -23,6 +23,7 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
 
 .quiz_descriptors {
     width: 100%;
+    position: relative;
 }
 
 .quiz_heading {
@@ -170,6 +171,19 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
 }
 .delete_question_svg:hover{
     box-shadow: $secondary_hover_box_shadow;
+}
+.delete_question_svg_bigger{
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border-radius: 8px;
+    width: clamp(40px, 7vw, 50px);
+    cursor: pointer;
+    padding: 4px;
+    height: auto;
+}
+.delete_question_svg_bigger:hover{
+    box-shadow: $primary_hover_box_shadow;
 }
 .edit_answer_choices{
     margin-top: 30px;
