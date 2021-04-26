@@ -30293,7 +30293,10 @@ function (_super) {
         _this.props.switch_page_state("register");
       }
     }, /*#__PURE__*/React.createElement("span", null, "Register"))) : /*#__PURE__*/React.createElement("div", {
-      className: "navigation_button"
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("user_profile");
+      }
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex_horizontal"
     }, /*#__PURE__*/React.createElement("svg", {
@@ -30330,7 +30333,10 @@ function (_super) {
         _this.props.switch_page_state("register");
       }
     }, /*#__PURE__*/React.createElement("span", null, "Register"))) : /*#__PURE__*/React.createElement("div", {
-      className: "navigation_button"
+      className: "navigation_button",
+      onClick: function onClick() {
+        _this.props.switch_page_state("user_profile");
+      }
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex_horizontal"
     }, /*#__PURE__*/React.createElement("svg", {
@@ -30490,6 +30496,164 @@ function (_super) {
 }(React.Component);
 
 exports.Home = Home;
+},{"react":"../node_modules/react/index.js"}],"components/quizzes_container.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Quizzes_container = void 0;
+
+var React = __importStar(require("react"));
+
+var Quizzes_container =
+/** @class */
+function (_super) {
+  __extends(Quizzes_container, _super);
+
+  function Quizzes_container(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.state = {};
+    return _this;
+  }
+
+  Quizzes_container.prototype.componentDidMount = function () {};
+
+  Quizzes_container.prototype.render = function () {
+    var _this = this;
+
+    var quizzes = this.props.quizzes.map(function (quiz, index) {
+      return /*#__PURE__*/React.createElement("div", {
+        className: "quizz",
+        key: index
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex_vertical top_part"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "result_title"
+      }, quiz.title), /*#__PURE__*/React.createElement("span", {
+        className: "result_heading"
+      }, "Category: ", quiz.category), /*#__PURE__*/React.createElement("span", {
+        className: "result_heading"
+      }, "Difficulty: ", quiz.difficulty), /*#__PURE__*/React.createElement("span", {
+        className: "result_heading"
+      }, "Time to complete: ", quiz.time_to_complete, " mins")), /*#__PURE__*/React.createElement("div", {
+        className: "flex_vertical bottom_part"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "result_text"
+      }, "Creator's name: ", quiz.creators_name), /*#__PURE__*/React.createElement("span", {
+        className: "result_text"
+      }, "Date created: ", quiz.date_created), /*#__PURE__*/React.createElement("span", {
+        className: "result_text"
+      }, "Number of questions: ", quiz.number_of_questions), /*#__PURE__*/React.createElement("span", {
+        className: "result_text margin_bottom_small"
+      }, "Description: ", quiz.description), /*#__PURE__*/React.createElement("button", {
+        className: "btn btn-primary flex_horizontal",
+        onClick: function onClick() {
+          // Call action passed in props
+          _this.props.action(quiz.quiz_id);
+        }
+      }, _this.props.button_text, /*#__PURE__*/React.createElement("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "currentColor",
+        viewBox: "0 0 16 16"
+      }, /*#__PURE__*/React.createElement("path", {
+        fillRule: "evenodd",
+        d: "M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+      })))));
+    });
+
+    if (this.props.add_new) {
+      var add_btn = /*#__PURE__*/React.createElement("div", {
+        key: this.props.quizzes.length,
+        className: "create_new_quiz",
+        onClick: function onClick() {
+          _this.props.action(0);
+        }
+      }, /*#__PURE__*/React.createElement("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "currentColor",
+        className: "plus_svg",
+        viewBox: "0 0 16 16"
+      }, /*#__PURE__*/React.createElement("path", {
+        d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+      })), /*#__PURE__*/React.createElement("span", {
+        className: "result_title"
+      }, "Create new"));
+      quizzes.push(add_btn);
+    }
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: "quizzes_container"
+    }, quizzes);
+  };
+
+  return Quizzes_container;
+}(React.Component);
+
+exports.Quizzes_container = Quizzes_container;
 },{"react":"../node_modules/react/index.js"}],"components/browse.tsx":[function(require,module,exports) {
 "use strict";
 
@@ -30562,6 +30726,8 @@ exports.Browse = void 0;
 
 var React = __importStar(require("react"));
 
+var quizzes_container_1 = require("./quizzes_container");
+
 var Browse =
 /** @class */
 function (_super) {
@@ -30621,7 +30787,7 @@ function (_super) {
 
 
     fetch("/get_quizzes", {
-      method: "GET",
+      method: "POST",
       headers: {
         "Content-Type": "application/json"
       }
@@ -30644,8 +30810,6 @@ function (_super) {
   }
 
   Browse.prototype.render = function () {
-    var _this = this;
-
     var matching_results = []; // Find quizzes that match the search criteria
 
     for (var i = 0; i < this.state.results.length; i += 1) {
@@ -30657,94 +30821,59 @@ function (_super) {
       if ((this.state.difficulty_value === "Any" || this.state.difficulty_value === current_quiz.difficulty) && (this.state.category_value === "Any" || this.state.category_value === current_quiz.category) && (this.state.time_min_value === "" || current_quiz.time_to_complete >= Number(this.state.time_min_value)) && (this.state.time_max_value === "" || current_quiz.time_to_complete <= Number(this.state.time_max_value)) && regex_matches_bool === true) {
         matching_results.push(current_quiz);
       }
-    } // Get markup for search results
+    }
 
-
-    var browse_results = matching_results.map(function (quiz, index) {
-      return /*#__PURE__*/React.createElement("div", {
-        className: "browse_results_item",
-        key: index
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "flex_vertical top_part"
-      }, /*#__PURE__*/React.createElement("span", {
-        className: "result_title"
-      }, quiz.title), /*#__PURE__*/React.createElement("span", {
-        className: "result_heading"
-      }, "Category: ", quiz.category), /*#__PURE__*/React.createElement("span", {
-        className: "result_heading"
-      }, "Difficulty: ", quiz.difficulty), /*#__PURE__*/React.createElement("span", {
-        className: "result_heading"
-      }, "Time to complete: ", quiz.time_to_complete, " mins")), /*#__PURE__*/React.createElement("div", {
-        className: "flex_vertical bottom_part"
-      }, /*#__PURE__*/React.createElement("span", {
-        className: "result_text"
-      }, "Creator's name: ", quiz.creators_name), /*#__PURE__*/React.createElement("span", {
-        className: "result_text"
-      }, "Date created: ", quiz.date_created), /*#__PURE__*/React.createElement("span", {
-        className: "result_text"
-      }, "Number of questions: ", quiz.number_of_questions), /*#__PURE__*/React.createElement("span", {
-        className: "result_text margin_bottom_small"
-      }, "Description: ", quiz.description), /*#__PURE__*/React.createElement("button", {
-        className: "btn btn-primary flex_horizontal",
-        onClick: function onClick() {
-          // When start button is clicked, call start_quiz function that is in app.tsx with the quiz_id
-          _this.props.start_quiz(quiz.quiz_id);
-        }
-      }, "Start", /*#__PURE__*/React.createElement("svg", {
-        xmlns: "http://www.w3.org/2000/svg",
-        fill: "currentColor",
-        viewBox: "0 0 16 16"
-      }, /*#__PURE__*/React.createElement("path", {
-        fillRule: "evenodd",
-        d: "M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-      })))));
-    });
     return /*#__PURE__*/React.createElement("div", {
       className: "browse"
     }, /*#__PURE__*/React.createElement("div", {
       className: "browse_toolbar animate__animated animate__zoomInLeft"
     }, /*#__PURE__*/React.createElement("div", {
       className: "browse_input_container"
-    }, /*#__PURE__*/React.createElement("span", null, "Title:"), /*#__PURE__*/React.createElement("input", {
+    }, /*#__PURE__*/React.createElement("span", null, "Title"), /*#__PURE__*/React.createElement("input", {
       className: "form-control",
       value: this.state.title_value,
       onChange: this.on_title_change
     })), /*#__PURE__*/React.createElement("div", {
       className: "browse_input_container"
-    }, /*#__PURE__*/React.createElement("span", null, "Time to complete (minutes):"), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("span", null, "Time to complete (minutes)"), /*#__PURE__*/React.createElement("div", {
       className: "two_column_grid"
     }, /*#__PURE__*/React.createElement("input", {
       className: "form-control",
-      placeholder: "min:",
+      placeholder: "min",
       value: this.state.time_min_value,
       onChange: this.on_time_min_change
     }), /*#__PURE__*/React.createElement("input", {
       className: "form-control",
-      placeholder: "max:",
+      placeholder: "max",
       value: this.state.time_max_value,
       onChange: this.on_time_max_change
     }))), /*#__PURE__*/React.createElement("div", {
       className: "browse_input_container"
-    }, /*#__PURE__*/React.createElement("span", null, "Difficulty:"), /*#__PURE__*/React.createElement("select", {
+    }, /*#__PURE__*/React.createElement("span", null, "Difficulty"), /*#__PURE__*/React.createElement("select", {
       className: "form-select",
       value: this.state.difficulty_value,
       onChange: this.on_difficulty_change
     }, /*#__PURE__*/React.createElement("option", null, "Any"), /*#__PURE__*/React.createElement("option", null, "Easy"), /*#__PURE__*/React.createElement("option", null, "Medium"), /*#__PURE__*/React.createElement("option", null, "Hard"))), /*#__PURE__*/React.createElement("div", {
       className: "browse_input_container"
-    }, /*#__PURE__*/React.createElement("span", null, "Category:"), /*#__PURE__*/React.createElement("select", {
+    }, /*#__PURE__*/React.createElement("span", null, "Category"), /*#__PURE__*/React.createElement("select", {
       className: "form-select",
       value: this.state.category_value,
       onChange: this.on_category_change
     }, /*#__PURE__*/React.createElement("option", null, "Any"), this.categories))), /*#__PURE__*/React.createElement("div", {
       className: "browse_results animate__animated animate__zoomInRight"
-    }, browse_results));
+    }, matching_results != undefined || matching_results.length > 0 ? /*#__PURE__*/React.createElement(quizzes_container_1.Quizzes_container, {
+      quizzes: matching_results,
+      action: this.props.start_quiz,
+      button_text: "Start",
+      add_new: false
+    }) : null));
   };
 
   return Browse;
 }(React.Component);
 
 exports.Browse = Browse;
-},{"react":"../node_modules/react/index.js"}],"../node_modules/process/browser.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","./quizzes_container":"components/quizzes_container.tsx"}],"../node_modules/process/browser.js":[function(require,module,exports) {
 
 // shim for using process in browser
 var process = module.exports = {}; // cached from whatever global is present so that test runners that stub it
@@ -41291,7 +41420,7 @@ function (_super) {
     if (state === "username_prompt") {
       content = /*#__PURE__*/React.createElement("div", {
         className: "username_prompt"
-      }, /*#__PURE__*/React.createElement("span", null, "Choose a username:"), /*#__PURE__*/React.createElement("input", {
+      }, /*#__PURE__*/React.createElement("span", null, "Username"), /*#__PURE__*/React.createElement("input", {
         value: this.state.username_value,
         onChange: this.on_username_value_change,
         className: "form-control username_input"
@@ -41312,11 +41441,11 @@ function (_super) {
         className: "quiz_title"
       }, "Quiz title: ", this.state.quiz_descriptors.title) : null, /*#__PURE__*/React.createElement("span", {
         className: "heading"
-      }, "Join code:"), /*#__PURE__*/React.createElement("span", {
+      }, "Join code"), /*#__PURE__*/React.createElement("span", {
         className: "join_code"
       }, this.join_code), /*#__PURE__*/React.createElement("span", {
         className: "heading"
-      }, "Link:"), /*#__PURE__*/React.createElement("span", {
+      }, "Link"), /*#__PURE__*/React.createElement("span", {
         className: "join_code"
       }, location.href), /*#__PURE__*/React.createElement("span", {
         className: "participants_span heading"
@@ -41914,6 +42043,8 @@ function (_super) {
           if (code === 1) {
             _this.push_alert("Invalid credentials. An account with that username either does not exist, or the password is wrong", "red");
           } else {
+            _this.props.switch_page_state("home");
+
             location.reload();
           }
         });
@@ -42068,7 +42199,1066 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app.tsx":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"components/user_profile.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.User_profile = void 0;
+
+var React = __importStar(require("react"));
+
+var quizzes_container_1 = require("./quizzes_container");
+
+var User_profile =
+/** @class */
+function (_super) {
+  __extends(User_profile, _super);
+
+  function User_profile(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.fetch_user_info = function () {
+      fetch("/get_global_user_info", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        var code = result.code;
+
+        if (code === 2) {
+          _this.setState({
+            user_info: result.user_info
+          });
+
+          _this.fetch_created_quizzes();
+        }
+      });
+    };
+
+    _this.fetch_created_quizzes = function () {
+      fetch("/get_quizzes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          quiz_ids: _this.state.user_info.created_quiz_ids
+        })
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        _this.setState({
+          created_quizzes: result.quizzes
+        });
+      });
+    };
+
+    _this.on_quiz_button_click = function (quiz_id) {
+      if (quiz_id === 0) {
+        fetch("/create_new_quiz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }).then(function (result) {
+          return result.json();
+        }).then(function (result) {
+          _this.props.edit(result.quiz_id);
+        });
+      } else {
+        _this.props.edit(quiz_id);
+      }
+    };
+
+    _this.log_out = function () {
+      fetch("/log_out", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        var code = result.code;
+
+        if (code === 2) {
+          location.reload();
+        }
+      });
+    };
+
+    _this.state = {}; // This is to prevent pushing into history when the state is already at browse
+
+    var path_name = location.pathname;
+    var regex = new RegExp("^/user_profile$");
+    var temp = regex.exec(path_name);
+
+    if (temp === null) {
+      history.pushState({
+        page_state: "user_profile"
+      }, "User profile", "/user_profile");
+    }
+
+    _this.fetch_user_info();
+
+    return _this;
+  }
+
+  User_profile.prototype.render = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "user_profile"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+      className: "btn btn-danger log_out",
+      onClick: this.log_out
+    }, "Log out")), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement("div", {
+      className: "created_quizzes animate__animated animate__zoomInRight"
+    }, /*#__PURE__*/React.createElement("h2", null, "Created Quizzes"), this.state.created_quizzes != undefined ? /*#__PURE__*/React.createElement(quizzes_container_1.Quizzes_container, {
+      button_text: "Edit",
+      quizzes: this.state.created_quizzes,
+      action: this.on_quiz_button_click,
+      add_new: true
+    }) : null));
+  };
+
+  return User_profile;
+}(React.Component);
+
+exports.User_profile = User_profile;
+},{"react":"../node_modules/react/index.js","./quizzes_container":"components/quizzes_container.tsx"}],"components/edit.tsx":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Edit = void 0;
+
+var React = __importStar(require("react"));
+
+var react_slidedown_1 = require("react-slidedown");
+
+var __png_1 = __importDefault(require("../assets/*.png"));
+
+console.log(__png_1.default);
+
+var Bottom_panel =
+/** @class */
+function (_super) {
+  __extends(Bottom_panel, _super);
+
+  function Bottom_panel(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.calculate_totals = function () {
+      var points_total = 0;
+      var time_total = 0;
+
+      for (var i = 0; i < _this.props.questions.length; i += 1) {
+        var current_question = _this.props.questions[i];
+        points_total += current_question.points_base;
+        time_total += current_question.time_allocated;
+      }
+
+      var return_obj = {
+        points_total: points_total,
+        time_total: Math.round(time_total / 60)
+      };
+      return return_obj;
+    };
+
+    _this.state = {};
+    return _this;
+  }
+
+  Bottom_panel.prototype.render = function () {
+    var _this = this;
+
+    var totals = this.calculate_totals();
+    console.log(totals);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "bottom_panel flex_vertical animate__animated animate__zoomInLeft"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "two_column_grid"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex_horizontal"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Total points (max): ", this.props.totals.points_total)), /*#__PURE__*/React.createElement("div", {
+      className: "flex_horizontal"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Time to complete (mins): ", this.props.totals.time_total))), /*#__PURE__*/React.createElement("button", {
+      className: "save_btn btn btn-primary",
+      onClick: function onClick() {
+        _this.props.submit_edit();
+      }
+    }, "Save"));
+  };
+
+  return Bottom_panel;
+}(React.Component);
+
+var Answer_choices =
+/** @class */
+function (_super) {
+  __extends(Answer_choices, _super);
+
+  function Answer_choices(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.on_answer_choice_click = function (index) {
+      if (index != _this.state.selected_index) {
+        _this.setState({
+          selected_index: index
+        });
+      }
+    };
+
+    _this.on_answer_choice_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.on_answer_choice_change(_this.state.selected_index, new_value);
+    };
+
+    _this.on_create_new = function () {
+      _this.props.add_new_answer_choice();
+
+      _this.setState({
+        selected_index: _this.props.answer_choices.length - 1
+      });
+    };
+
+    _this.on_delete_click = function (index) {
+      _this.props.delete_answer_choice(index);
+
+      _this.setState({
+        selected_index: -1
+      });
+    };
+
+    _this.on_change_correct_answer = function (index) {
+      _this.props.change_correct_answer_choice(index);
+    };
+
+    _this.state = {
+      selected_index: -1
+    };
+    return _this;
+  }
+
+  Answer_choices.prototype.render = function () {
+    var _this = this;
+
+    var answer_choices_list_items = this.props.answer_choices.map(function (answer_choice, index) {
+      var class_list = "edit_answer_choice ";
+      var mark_src;
+
+      if (_this.props.correct_answer_indexes.includes(index)) {
+        mark_src = __png_1.default.tick;
+      } else {
+        mark_src = __png_1.default.cross;
+      }
+
+      if (index === _this.state.selected_index) {
+        class_list += "expanded ";
+      }
+
+      return /*#__PURE__*/React.createElement("div", {
+        className: class_list,
+        key: index,
+        onClick: function onClick() {
+          _this.on_answer_choice_click(index);
+        }
+      }, _this.state.selected_index != index ? /*#__PURE__*/React.createElement("div", {
+        className: "answer_choice_line"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "quiz_main"
+      }, index + 1, ")"), /*#__PURE__*/React.createElement("span", {
+        className: "quiz_main margin-left"
+      }, answer_choice), /*#__PURE__*/React.createElement("img", {
+        className: "your_answer_mark",
+        src: mark_src
+      })) : null, /*#__PURE__*/React.createElement(react_slidedown_1.SlideDown, {
+        className: "question_details_container"
+      }, _this.state.selected_index === index ? /*#__PURE__*/React.createElement("div", {
+        className: "answer_choice_details"
+      }, /*#__PURE__*/React.createElement("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "currentColor",
+        className: "delete_question_svg_smaller",
+        viewBox: "0 0 16 16",
+        onClick: function onClick() {
+          _this.on_delete_click(index);
+        }
+      }, /*#__PURE__*/React.createElement("path", {
+        d: "M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
+      })), /*#__PURE__*/React.createElement("span", {
+        className: "quiz_main"
+      }, "Answer choice"), /*#__PURE__*/React.createElement("textarea", {
+        className: "form-control description reset_input",
+        value: answer_choice,
+        onChange: _this.on_answer_choice_value_change
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "answer_choice_line"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "quiz_main"
+      }, "Correct answer?"), /*#__PURE__*/React.createElement("input", {
+        className: "form-check-input is_correct_check quiz_main",
+        type: "checkbox",
+        checked: _this.props.correct_answer_indexes.includes(index),
+        onChange: function onChange() {
+          _this.on_change_correct_answer(index);
+        }
+      }))) : null));
+    });
+    var add_new = /*#__PURE__*/React.createElement("div", {
+      className: "edit_answer_choice flex_horizontal add_new_answer_choice",
+      key: this.props.answer_choices.length,
+      onClick: function onClick() {
+        _this.on_create_new();
+      }
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "plus_svg_smaller",
+      viewBox: "0 0 16 16",
+      preserveAspectRatio: "xMidYMin slice"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "quiz_main"
+    }, "Create new"));
+    answer_choices_list_items.push(add_new);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "edit_answer_choices flex-vertical"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Answer choices"), answer_choices_list_items);
+  };
+
+  return Answer_choices;
+}(React.Component);
+
+var Question =
+/** @class */
+function (_super) {
+  __extends(Question, _super);
+
+  function Question(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.on_question_click = function () {
+      _this.props.select_question(_this.index);
+    };
+
+    _this.on_question_text_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("question_text", _this.index, new_value);
+    };
+
+    _this.on_points_base_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("points_base", _this.index, new_value);
+    };
+
+    _this.on_time_allocated_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("time_allocated", _this.index, new_value);
+    };
+
+    _this.on_question_delete_click = function () {
+      _this.props.delete_question(_this.index);
+    };
+
+    _this.on_answer_choice_change = function (second_index, new_value) {
+      _this.props.change_quiz_property("answer_choice", _this.index, new_value, second_index);
+    };
+
+    _this.add_new_answer_choice = function () {
+      _this.props.add_new_answer_choice(_this.index);
+    };
+
+    _this.delete_answer_choice = function (answer_choice_index) {
+      _this.props.delete_answer_choice(_this.index, answer_choice_index);
+    };
+
+    _this.change_correct_answer_choice = function (answer_choice_index) {
+      console.log("in question component: " + answer_choice_index);
+
+      _this.props.change_correct_answer_choice(_this.index, answer_choice_index);
+    };
+
+    _this.index = _this.props.question.question_number - 1;
+    return _this;
+  }
+
+  Question.prototype.render = function () {
+    var question_classlist = "question flex_vertical ";
+
+    if (this.props.is_expanded === true) {
+      question_classlist += "expanded ";
+    }
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: question_classlist,
+      onClick: this.on_question_click
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Question ", this.props.question.question_number), /*#__PURE__*/React.createElement(react_slidedown_1.SlideDown, {
+      className: "question_details_container"
+    }, this.props.is_expanded === true ? /*#__PURE__*/React.createElement("div", {
+      className: "question_details"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "delete_question_svg",
+      viewBox: "0 0 16 16",
+      onClick: this.on_question_delete_click
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Question text"), /*#__PURE__*/React.createElement("textarea", {
+      className: "form-control description reset_input",
+      value: this.props.question.question_text,
+      onChange: this.on_question_text_value_change
+    }), /*#__PURE__*/React.createElement(Answer_choices, {
+      answer_choices: this.props.question.answer_choices,
+      correct_answer_indexes: this.props.question.correct_answer_indexes,
+      on_answer_choice_change: this.on_answer_choice_change,
+      add_new_answer_choice: this.add_new_answer_choice,
+      delete_answer_choice: this.delete_answer_choice,
+      change_correct_answer_choice: this.change_correct_answer_choice
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "points_explanation"
+    }, "Points earned for answering the question correctly is calculated with: P = B - (B / TA * TT)", /*#__PURE__*/React.createElement("br", null), "Where: P - points earned, B - points base, TA - time allocated, TT - time taken to answer the quetion."), /*#__PURE__*/React.createElement("div", {
+      className: "two_column_grid points_edit"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex_vertical"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Points base"), /*#__PURE__*/React.createElement("input", {
+      className: "join_input",
+      value: this.props.question.points_base,
+      onChange: this.on_points_base_value_change
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex_vertical"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Time allocated (seconds)"), /*#__PURE__*/React.createElement("input", {
+      className: "join_input",
+      value: this.props.question.time_allocated,
+      onChange: this.on_time_allocated_value_change
+    })))) : null));
+  };
+
+  return Question;
+}(React.Component);
+
+var Quiz_questions_edit =
+/** @class */
+function (_super) {
+  __extends(Quiz_questions_edit, _super);
+
+  function Quiz_questions_edit(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.select_question = function (index) {
+      if (index != _this.state.selected_index) {
+        _this.setState({
+          selected_index: index
+        });
+      }
+    };
+
+    _this.on_question_delete = function (index) {
+      _this.setState({
+        selected_index: -1
+      });
+
+      _this.props.delete_question(index);
+    };
+
+    _this.add_new_question = function () {
+      _this.props.add_new_question();
+
+      _this.setState({
+        selected_index: _this.props.questions.length - 1
+      });
+    };
+
+    _this.state = {
+      selected_index: -1
+    };
+    return _this;
+  }
+
+  Quiz_questions_edit.prototype.render = function () {
+    var _this = this;
+
+    var questions = this.props.questions.map(function (question, index) {
+      return /*#__PURE__*/React.createElement(Question, {
+        question: question,
+        key: index,
+        select_question: _this.select_question,
+        is_expanded: _this.state.selected_index === index,
+        change_quiz_property: _this.props.change_quiz_propery,
+        delete_question: _this.on_question_delete,
+        add_new_answer_choice: _this.props.add_new_answer_choice,
+        delete_answer_choice: _this.props.delete_answer_choice,
+        change_correct_answer_choice: _this.props.change_correct_answer_choice
+      });
+    });
+    var add_new = /*#__PURE__*/React.createElement("div", {
+      className: "question flex_horizontal",
+      onClick: function onClick() {
+        _this.add_new_question();
+      }
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "plus_svg",
+      viewBox: "0 0 16 16"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Create new"));
+    return /*#__PURE__*/React.createElement("div", {
+      className: "quiz_questions flex_vertical animate__animated animate__zoomInRight"
+    }, questions, add_new);
+  };
+
+  return Quiz_questions_edit;
+}(React.Component);
+
+var Quiz_descriptors_edit =
+/** @class */
+function (_super) {
+  __extends(Quiz_descriptors_edit, _super);
+
+  function Quiz_descriptors_edit(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.on_title_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("title", -1, new_value);
+    };
+
+    _this.on_description_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("description", -1, new_value);
+    };
+
+    _this.on_difficulty_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("difficulty", -1, new_value);
+    };
+
+    _this.on_category_value_change = function (ev) {
+      var new_value = ev.target.value;
+
+      _this.props.change_quiz_property("category", -1, new_value);
+    };
+
+    _this.state = {};
+    _this.categories = _this.props.categories.map(function (category, index) {
+      return /*#__PURE__*/React.createElement("option", {
+        key: index
+      }, category);
+    });
+    return _this;
+  }
+
+  Quiz_descriptors_edit.prototype.render = function () {
+    var _this = this;
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: "quiz_descriptors flex_vertical animate__animated animate__zoomInLeft"
+    }, /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "currentColor",
+      className: "delete_question_svg_bigger",
+      viewBox: "0 0 16 16",
+      onClick: function onClick() {
+        _this.props.delete_quiz();
+      }
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
+    })), /*#__PURE__*/React.createElement("input", {
+      className: "form-control title reset_input",
+      value: this.props.quiz_descriptors.title,
+      onChange: this.on_title_value_change
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "quiz_descriptors_item description_container"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Description"), /*#__PURE__*/React.createElement("textarea", {
+      className: "form-control description reset_input",
+      value: this.props.quiz_descriptors.description,
+      onChange: this.on_description_value_change
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "quiz_descriptors_item two_column_grid"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex_vertical"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Category"), /*#__PURE__*/React.createElement("select", {
+      className: "form-select select",
+      value: this.props.quiz_descriptors.category,
+      onChange: this.on_category_value_change
+    }, this.categories)), /*#__PURE__*/React.createElement("div", {
+      className: "flex_vertical"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "quiz_heading"
+    }, "Difficulty"), /*#__PURE__*/React.createElement("select", {
+      className: "form-select select",
+      value: this.props.quiz_descriptors.difficulty,
+      onChange: this.on_difficulty_value_change
+    }, /*#__PURE__*/React.createElement("option", null, "Easy"), /*#__PURE__*/React.createElement("option", null, "Medium"), /*#__PURE__*/React.createElement("option", null, "Hard")))));
+  };
+
+  return Quiz_descriptors_edit;
+}(React.Component);
+
+var Edit =
+/** @class */
+function (_super) {
+  __extends(Edit, _super);
+
+  function Edit(props) {
+    var _this = _super.call(this, props) || this;
+
+    _this.change_quiz_property = function (property, index, new_value, second_index) {
+      if (second_index === void 0) {
+        second_index = -1;
+      }
+
+      if (property === "question_text") {
+        _this.state.quiz_questions[index].question_text = new_value;
+      } else if (property === "title") {
+        _this.state.quiz_descriptors.title = new_value;
+      } else if (property === "description") {
+        _this.state.quiz_descriptors.description = new_value;
+      } else if (property === "category") {
+        _this.state.quiz_descriptors.category = new_value;
+      } else if (property === "difficulty") {
+        _this.state.quiz_descriptors.difficulty = new_value;
+      } else if (property === "points_base") {
+        var number_only = new RegExp("^[1-9][0-9]*$");
+        var matches = number_only.exec(new_value) != null;
+
+        if (matches === true) {
+          _this.state.quiz_questions[index].points_base = Number(new_value);
+          _this.totals = _this.calculate_totals();
+        }
+      } else if (property === "time_allocated") {
+        var number_only = new RegExp("^[1-9][0-9]*$");
+        var matches = number_only.exec(new_value) != null;
+
+        if (matches === true) {
+          _this.state.quiz_questions[index].time_allocated = Number(new_value);
+          _this.totals = _this.calculate_totals();
+          _this.state.quiz_descriptors.time_to_complete = _this.totals.time_total;
+        }
+      } else if (property === "answer_choice") {
+        _this.state.quiz_questions[index].answer_choices[second_index] = new_value;
+      }
+
+      _this.forceUpdate();
+    };
+
+    _this.add_new_question = function () {
+      console.log("new question reached");
+      var next_question_num = _this.state.quiz_descriptors.number_of_questions + 1;
+      _this.state.quiz_descriptors.number_of_questions += 1;
+      var new_question;
+      new_question = {
+        question_number: next_question_num,
+        question_text: "",
+        answer_choices: [],
+        correct_answer_indexes: [],
+        quiz_id: _this.state.quiz_descriptors.quiz_id,
+        points_base: 1000,
+        time_allocated: 20,
+        multi_choice: false
+      };
+
+      _this.state.quiz_questions.push(new_question);
+
+      _this.totals = _this.calculate_totals();
+
+      _this.forceUpdate();
+    };
+
+    _this.delete_question = function (index) {
+      // Reduce question number of questions that come after the deleted question. if question num 4 is deleted, questions 5 6 7 become 4 5 6
+      for (var i = index; i < _this.state.quiz_questions.length; i += 1) {
+        _this.state.quiz_questions[i].question_number -= 1;
+      }
+
+      _this.state.quiz_descriptors.number_of_questions -= 1;
+
+      _this.state.quiz_questions.splice(index, 1);
+
+      _this.forceUpdate();
+    };
+
+    _this.add_new_answer_choice = function (question_index) {
+      _this.state.quiz_questions[question_index].answer_choices.push("");
+
+      _this.forceUpdate();
+    };
+
+    _this.delete_answer_choice = function (question_index, answer_choice_index) {
+      var correct_answer_indexes = _this.state.quiz_questions[question_index].correct_answer_indexes;
+      var delete_index = correct_answer_indexes.indexOf(answer_choice_index);
+
+      if (delete_index != -1) {
+        correct_answer_indexes.splice(delete_index, 1);
+      }
+
+      for (var i = 0; i < correct_answer_indexes.length; i += 1) {
+        var correct_answer_index = correct_answer_indexes[i];
+
+        if (correct_answer_index > answer_choice_index) {
+          console.log(correct_answer_indexes);
+          correct_answer_indexes[i] -= 1;
+          console.log(correct_answer_indexes);
+        }
+      }
+
+      _this.state.quiz_questions[question_index].answer_choices.splice(answer_choice_index, 1);
+
+      _this.forceUpdate();
+    };
+
+    _this.change_correct_answer_choice = function (question_index, answer_choice_index) {
+      var correct_answer_indexes = _this.state.quiz_questions[question_index].correct_answer_indexes;
+      var delete_index = correct_answer_indexes.indexOf(answer_choice_index);
+      console.log("question index: " + question_index + ", answer_choice_index: " + answer_choice_index);
+
+      if (delete_index != -1) {
+        correct_answer_indexes.splice(delete_index, 1);
+      } else {
+        console.log(correct_answer_indexes);
+        correct_answer_indexes.push(answer_choice_index);
+
+        if (correct_answer_indexes.length > 1) {
+          _this.state.quiz_questions[question_index].multi_choice = true;
+        }
+
+        console.log(correct_answer_indexes);
+      }
+
+      _this.forceUpdate();
+    };
+
+    _this.calculate_totals = function () {
+      var points_total = 0;
+      var time_total = 0;
+
+      for (var i = 0; i < _this.state.quiz_questions.length; i += 1) {
+        var current_question = _this.state.quiz_questions[i];
+        points_total += current_question.points_base;
+        time_total += current_question.time_allocated;
+      }
+
+      var return_obj = {
+        points_total: points_total,
+        time_total: Math.round(time_total / 60)
+      };
+      return return_obj;
+    };
+
+    _this.delete_quiz = function () {
+      var is_sure = window.confirm("Are you sure that you want to delete \"" + _this.state.quiz_descriptors.title + "\" quiz?");
+
+      if (is_sure) {
+        fetch("/delete_quiz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            quiz_id: _this.state.quiz_descriptors.quiz_id
+          })
+        }).then(function (result) {
+          return result.json();
+        }).then(function (result) {
+          if (result.code === 2) {
+            _this.props.switch_page_state("user_profile");
+          }
+        });
+      }
+    };
+
+    _this.submit_edit = function () {
+      fetch("/edit_quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          quiz_id: _this.state.quiz_descriptors.quiz_id,
+          quiz_descriptors: _this.state.quiz_descriptors,
+          quiz_questions: _this.state.quiz_questions
+        })
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        if (result.code === 2) {
+          _this.props.switch_page_state("user_profile");
+        } else if (result.code === 3) {
+          alert("A quiz with title: \"" + _this.state.quiz_descriptors.title + "\" already exists. Please choose a different title");
+        }
+      });
+    }; // Fetches quiz_questions from server and handles the response code
+
+
+    _this.fetch_quiz_questions = function () {
+      fetch("/get_quiz_questions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          quiz_id: _this.props.edit_quiz_id
+        })
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        var code = result.code;
+
+        if (code === 2) {
+          // This is here so that if the user is not allowed to edit the quiz, the front-end does not recieve quiz descriptors
+          _this.fetch_quiz_descriptors();
+
+          _this.setState({
+            quiz_questions: result.questions
+          });
+        }
+      });
+    }; // Fetcjes quiz descriptors from server
+
+
+    _this.fetch_quiz_descriptors = function () {
+      fetch("/get_quizzes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          quiz_ids: [_this.props.edit_quiz_id]
+        })
+      }).then(function (result) {
+        return result.json();
+      }).then(function (result) {
+        var quiz_descriptors = result.quizzes[0];
+        _this.totals = _this.calculate_totals();
+
+        _this.setState({
+          quiz_descriptors: quiz_descriptors
+        });
+      });
+    };
+
+    _this.state = {}; // This is to prevent pushing into history when the state is already at browse
+
+    var path_name = location.pathname;
+    var edit_regex = new RegExp("^/edit/(?<edit_quiz_id>[0-9A-Z]+)$");
+    var temp = edit_regex.exec(path_name);
+
+    if (temp === null) {
+      history.pushState({
+        page_state: "edit",
+        edit_quiz_id: _this.props.edit_quiz_id
+      }, "Edit", "edit/" + _this.props.edit_quiz_id);
+    }
+
+    return _this;
+  }
+
+  Edit.prototype.componentDidMount = function () {
+    document.querySelector(".app_container").classList.add("height_full"); // Prevents fetching of quiz details when creating a new quiz (since quiz_id = 0)
+
+    if (this.props.edit_quiz_id != 0) {
+      this.fetch_quiz_questions();
+    }
+  };
+
+  Edit.prototype.componentWillUnmount = function () {
+    document.querySelector(".app_container").classList.remove("height_full");
+  };
+
+  Edit.prototype.render = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "edit"
+    }, this.state.quiz_descriptors != undefined ? /*#__PURE__*/React.createElement(Quiz_descriptors_edit, {
+      quiz_descriptors: this.state.quiz_descriptors,
+      categories: this.props.categories,
+      change_quiz_property: this.change_quiz_property,
+      delete_quiz: this.delete_quiz
+    }) : null, this.state.quiz_questions != undefined ? /*#__PURE__*/React.createElement(Quiz_questions_edit, {
+      questions: this.state.quiz_questions,
+      change_quiz_propery: this.change_quiz_property,
+      add_new_question: this.add_new_question,
+      delete_question: this.delete_question,
+      add_new_answer_choice: this.add_new_answer_choice,
+      delete_answer_choice: this.delete_answer_choice,
+      change_correct_answer_choice: this.change_correct_answer_choice
+    }) : null, this.state.quiz_descriptors != undefined ? /*#__PURE__*/React.createElement(Bottom_panel, {
+      questions: this.state.quiz_questions,
+      totals: this.totals,
+      submit_edit: this.submit_edit
+    }) : null);
+  };
+
+  return Edit;
+}(React.Component);
+
+exports.Edit = Edit;
+},{"react":"../node_modules/react/index.js","react-slidedown":"../node_modules/react-slidedown/lib/slidedown.js","../assets/*.png":"assets/*.png"}],"app.tsx":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -42162,6 +43352,10 @@ var login_1 = require("./components/login");
 var __png_1 = __importDefault(require("./assets/*.png"));
 
 require("animate.css");
+
+var user_profile_1 = require("./components/user_profile");
+
+var edit_1 = require("./components/edit");
 
 var root = document.querySelector("#root");
 var categories = ["Programming", "Video games", "Mathematics", "History", "General", "Russian&English", "Chess"];
@@ -42276,6 +43470,13 @@ function (_super) {
       });
     };
 
+    _this.edit = function (quiz_id) {
+      _this.setState({
+        page_state: "edit",
+        edit_quiz_id: quiz_id
+      });
+    };
+
     _this.switch_page_state = function (state) {
       //To prevent unneeded switches from same state
       if (_this.state.page_state != state) {
@@ -42285,8 +43486,12 @@ function (_super) {
       }
     };
 
-    var page_state = "home";
+    var page_state;
     var path_name = location.pathname;
+
+    if (path_name === "/home") {
+      page_state = "home";
+    }
 
     if (path_name === "/browse") {
       page_state = "browse";
@@ -42300,11 +43505,23 @@ function (_super) {
       page_state = "login";
     }
 
+    if (path_name === "/user_profile") {
+      page_state = "user_profile";
+    }
+
     _this.state = {
       page_state: page_state,
       join_code: undefined,
-      global_username: null
+      global_username: null,
+      edit_quiz_id: undefined
     };
+    return _this;
+  }
+
+  App.prototype.componentDidMount = function () {
+    var _this = this;
+
+    var path_name = location.pathname;
 
     window.onpopstate = function (ev) {
       var state = ev.state;
@@ -42313,6 +43530,13 @@ function (_super) {
         _this.setState({
           page_state: state.page_state,
           join_code: state.join_code
+        });
+      }
+
+      if (state.page_state === "edit") {
+        _this.setState({
+          page_state: state.page_state,
+          edit_quiz_id: state.edit_quiz_id
         });
       } else {
         _this.setState({
@@ -42326,7 +43550,15 @@ function (_super) {
     var temp = lobby_regex.exec(path_name);
 
     if (temp != null) {
-      _this.join(temp.groups.join_code);
+      this.join(temp.groups.join_code);
+    }
+
+    var edit_regex = new RegExp("^/edit/(?<edit_quiz_id>[0-9A-Z]+)$");
+    temp = edit_regex.exec(path_name);
+
+    if (temp != null) {
+      console.log("reach");
+      this.edit(Number(temp.groups.edit_quiz_id));
     }
 
     fetch("/get_global_username", {
@@ -42345,8 +43577,7 @@ function (_super) {
         });
       }
     });
-    return _this;
-  }
+  };
 
   App.prototype.render = function () {
     var content;
@@ -42374,8 +43605,21 @@ function (_super) {
       });
     } else if (state === "login") {
       content = /*#__PURE__*/React.createElement(login_1.Login, {
-        log_in: this.log_in
+        log_in: this.log_in,
+        switch_page_state: this.switch_page_state
       });
+    } else if (state === "user_profile") {
+      content = /*#__PURE__*/React.createElement(user_profile_1.User_profile, {
+        edit: this.edit
+      });
+    } else if (state === "edit") {
+      content = /*#__PURE__*/React.createElement(edit_1.Edit, {
+        edit_quiz_id: this.state.edit_quiz_id,
+        categories: categories,
+        switch_page_state: this.switch_page_state
+      });
+    } else {
+      content = null;
     }
 
     return /*#__PURE__*/React.createElement("div", {
@@ -42391,7 +43635,7 @@ function (_super) {
 }(React.Component);
 
 react_dom_1.render( /*#__PURE__*/React.createElement(App, null), root);
-},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","./components/navigation":"components/navigation.tsx","./components/home":"components/home.tsx","./components/browse":"components/browse.tsx","./components/game":"components/game.tsx","./components/register":"components/register.tsx","./components/login":"components/login.tsx","./assets/*.png":"assets/*.png","animate.css":"../node_modules/animate.css/animate.css"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","./components/navigation":"components/navigation.tsx","./components/home":"components/home.tsx","./components/browse":"components/browse.tsx","./components/game":"components/game.tsx","./components/register":"components/register.tsx","./components/login":"components/login.tsx","./assets/*.png":"assets/*.png","animate.css":"../node_modules/animate.css/animate.css","./components/user_profile":"components/user_profile.tsx","./components/edit":"components/edit.tsx"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -42419,7 +43663,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65440" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57488" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
