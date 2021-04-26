@@ -1,6 +1,7 @@
 $home_title_font_size: calc(1.25rem + 0.65vw);
 .home {
-    height: 100%;
+    height: -webkit-fill-available;
+    flex-grow: 1;
     display: flex;
     .animate__animated {
         animation-duration: 0.5s;

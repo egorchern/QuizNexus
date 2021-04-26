@@ -10,6 +10,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const request_ip = require("request-ip");
 const sql = require("yesql").pg;
+const cloneDeep = require("lodash.clonedeep");
 let dist_path = path.join(__dirname, "dist");
 let app = express();
 const port = process.env.PORT || 3000;
@@ -32,7 +33,7 @@ let global_users = {
 }
 
 let auth_tokens = {
-    
+
 }
 // if dev mode enabled, fetch database connection string from the connection_string.txt file.
 if (dev_mode === true) {
@@ -73,7 +74,7 @@ function get_quizzes() {
             sql("SELECT * FROM quizzes ORDER BY quiz_id ASC")({})
         ).then(res => {
             let rows = res.rows;
-            
+
             for (let i = 0; i < rows.length; i += 1) {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
@@ -122,13 +123,14 @@ function get_global_users() {
                 let current_row = rows[i];
                 let username = current_row.username;
                 global_users[username] = current_row;
+                global_users[username].created_quiz_ids = [];
             }
             resolve();
         })
     })
 }
 
-function get_auth_tokens(){
+function get_auth_tokens() {
     return new Promise(resolve => {
         client.query(
             sql(`
@@ -153,18 +155,18 @@ function get_auth_tokens(){
 function insert_global_user(username, password_hash) {
 
     client.query(
-    sql(`
+        sql(`
     INSERT INTO global_users
     VALUES(:username, :password_hash)
     `)({
-        username: username,
-        password_hash: password_hash
-    })
+            username: username,
+            password_hash: password_hash
+        })
     );
 
 }
 
-function insert_auth_token(username, auth_token, client_ip, user_agent){
+function insert_auth_token(username, auth_token, client_ip, user_agent) {
     client.query(
         sql(`
         INSERT INTO auth_tokens
@@ -176,6 +178,15 @@ function insert_auth_token(username, auth_token, client_ip, user_agent){
             user_agent: user_agent
         })
     )
+}
+
+function assign_quizzes_to_creators() {
+    let quiz_keys = Object.keys(quizzes);
+    quiz_keys.forEach(key => {
+        let quiz = quizzes[key];
+        let creators_name = quiz.creators_name;
+        global_users[creators_name].created_quiz_ids.push(quiz.quiz_id);
+    })
 }
 
 // hash using bcrypt
@@ -224,19 +235,17 @@ function get_random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function get_global_user_info(auth_token) {
-    let auth_token_obj = auth_tokens[auth_token];
-    if(auth_token_obj === undefined){
+function get_global_user_info(username) {
+
+    if (username === undefined) {
         return undefined;
     }
-    let username = auth_token_obj
-
     let user_info = global_users[username];
     return user_info;
 }
 
-function attempt_register_global_user_in_lobby(auth_token, join_code) {
-    let global_user_info = get_global_user_info(auth_token);
+function attempt_register_global_user_in_lobby(username, auth_token, join_code) {
+    let global_user_info = get_global_user_info(username);
     if (global_user_info != undefined) {
         if (lobbies[join_code].participants[auth_token] === undefined) {
             lobbies[join_code].participants[auth_token] = {
@@ -319,11 +328,11 @@ function delete_redundant_auth_token(username, client_ip, user_agent) {
                 user_agent: user_agent
             })
         ).then(res => {
-            
+
             if (res.rows.length > 0) {
                 auth_token = res.rows[0].auth_token
             }
-            
+
 
             client.query(
                 sql(`
@@ -427,6 +436,7 @@ function get_scores(join_code) {
 function get_all_questions(quiz_id) {
     let output_list = [];
     let quiz_questions_obj = quiz_questions[quiz_id];
+
     let keys = Object.keys(quiz_questions_obj);
     for (let i = 0; i < keys.length; i += 1) {
         let key = keys[i];
@@ -436,12 +446,136 @@ function get_all_questions(quiz_id) {
     return output_list;
 }
 
+function insert_quiz(descriptors) {
+    return new Promise(resolve => {
+        client.query(sql(`
+        INSERT INTO quizzes (quiz_id, title, description, creators_name, date_created, time_to_complete, number_of_questions, category, difficulty)
+        VALUES(:quiz_id, :title, :description, :creators_name, :date_created, :time_to_complete, :number_of_questions, :category, :difficulty);
+        `)({
+            quiz_id: descriptors.quiz_id,
+            title: descriptors.title,
+            description: descriptors.description,
+            creators_name: descriptors.creators_name,
+            date_created: descriptors.date_created,
+            time_to_complete: descriptors.time_to_complete,
+            number_of_questions: descriptors.number_of_questions,
+            category: descriptors.category,
+            difficulty: descriptors.difficulty
+        })).then(res => {
+            resolve();
+        })
+    })
+
+}
+
+function create_new_quiz(descriptors, creators_name) {
+    return new Promise(resolve => {
+        quizzes[descriptors.quiz_id] = descriptors;
+        global_users[creators_name].created_quiz_ids.push(descriptors.quiz_id);
+        quiz_questions[descriptors.quiz_id] = {};
+
+        let insert_promise = insert_quiz(descriptors);
+        insert_promise.then(result => {
+            resolve();
+        })
+    })
+}
+
+function delete_quiz_db(quiz_id) {
+    return new Promise(resolve => {
+        client.query(sql(`
+            DELETE FROM quizzes
+            WHERE quiz_id = :quiz_id
+        `)({
+            quiz_id: quiz_id
+        })).then(res => {
+            client.query(sql(`
+                DELETE FROM quiz_questions
+                WHERE quiz_id = :quiz_id
+            `)({
+                quiz_id: quiz_id
+            })).then(res => {
+                resolve();
+            })
+        })
+    })
+}
+
+function delete_quiz(quiz_id) {
+    return new Promise(resolve => {
+        let creators_name = quizzes[quiz_id].creators_name;
+        let delete_index = global_users[creators_name].created_quiz_ids.indexOf(quiz_id);
+        global_users[creators_name].created_quiz_ids.splice(delete_index, 1);
+        delete quizzes[quiz_id];
+        delete quiz_questions[quiz_id];
+        let delete_db_promise = delete_quiz_db(quiz_id);
+        delete_db_promise.then(res => {
+            resolve();
+        })
+    })
+
+}
+
+function insert_question(question) {
+    
+
+    client.query(sql(`
+        INSERT INTO quiz_questions (quiz_id, question_number, multi_choice, question_text, answer_choices, correct_answer_indexes, time_allocated, points_base)
+        VALUES(:quiz_id, :question_number, :multi_choice, :question_text, :answer_choices, :correct_answer_indexes, :time_allocated, :points_base);
+        `)({
+        quiz_id: question.quiz_id,
+        question_number: question.question_number,
+        multi_choice: question.multi_choice,
+        question_text: question.question_text,
+        answer_choices: question.answer_choices,
+        correct_answer_indexes: question.correct_answer_indexes,
+        time_allocated: question.time_allocated,
+        points_base: question.points_base
+    })).then(res => {
+        
+
+    })
+
+
+}
+
+async function edit_quiz(quiz_descriptors, quiz_questionss) {
+    let delete_quiz_promise = await delete_quiz(quiz_descriptors.quiz_id);
+    let create_quiz_promise = await create_new_quiz(quiz_descriptors, quiz_descriptors.creators_name);
+    let question_index = 0;
+    
+    console.log(quiz_questionss);
+    for(let i = 0; i < quiz_questionss.length; i += 1){
+        let current_question = quiz_questionss[i];
+        
+        insert_question(current_question);
+        quiz_questions[current_question.quiz_id][current_question.question_number] = current_question;
+        
+    }
+
+
+
+}
+
+function is_title_free(title){
+    let quiz_keys = Object.keys(quizzes);
+    for(let i = 0; i < quiz_keys.length; i += 1){
+        let key = quiz_keys[i];
+        let quiz_title = quizzes[key].title;
+        if(quiz_title.toLowerCase() === title.toLowerCase()){
+            return false;
+        }
+    }
+    return true;
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
-    
+    assign_quizzes_to_creators();
+
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -449,7 +583,7 @@ async function main() {
     // To parse cookies from the HTTP Request
     app.use(cookie_parser());
     app.use(express.static("dist"));
-
+    // Middleware for authenticating users. Looks up auth_token in auth_tokens and affixes the username to the req, req.username
     app.use((req, res, next) => {
         let client_ip = request_ip.getClientIp(req);
         req.client_ip = client_ip;
@@ -457,24 +591,39 @@ async function main() {
         req.user_agent = user_agent;
         let auth_token = req.cookies.auth_token;
         let auth_token_output = auth_tokens[auth_token];
-        console.log(client_ip, user_agent);
+
         if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
             req.username = auth_token_output.username;
         }
         else {
             req.username = null;
         }
-        console.log(req.username);
+
         next();
     })
     var server = http.createServer(app);
     var io = socketio(server);
+    app.post("/log_out", (req, res) => {
 
-    // When receive a request for quizzes data, send quizzes array
-    app.get("/get_quizzes", (req, res) => {
-        let quizzes_list = Object.values(quizzes);
+        res.clearCookie("auth_token");
         res.send({
-            quizzes: quizzes_list,
+            code: 2
+        })
+    })
+    // When receive a request for quizzes data, send quizzes array
+    app.post("/get_quizzes", (req, res) => {
+
+        let quiz_list = [];
+        if (req.body.quiz_ids === undefined) {
+            quiz_list = Object.values(quizzes);
+        }
+        else {
+            req.body.quiz_ids.forEach(quiz_id => {
+                quiz_list.push(quizzes[quiz_id]);
+            })
+        }
+        res.send({
+            quizzes: quiz_list,
         });
     });
 
@@ -563,7 +712,7 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
-        attempt_register_global_user_in_lobby(auth_token, join_code);
+        attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
 
         res.send({
@@ -602,20 +751,20 @@ async function main() {
                     client_ip: req.client_ip,
                     user_agent: req.user_agent
                 }
-                
+
                 let deleted_auth_token_promise = delete_redundant_auth_token(username, req.client_ip, req.user_agent);
                 deleted_auth_token_promise.then(deleted_auth_token => {
                     delete auth_tokens[deleted_auth_token];
-                    
+
                 })
-                
-                
+
+
                 res.cookie("auth_token", auth_token, {
                     maxAge: 725760000,
                     expires: 725760000,
                     httpOnly: true
                 }
-                
+
                 )
                 insert_auth_token(username, auth_token, req.client_ip, req.user_agent);
                 res.send({
@@ -628,13 +777,127 @@ async function main() {
                 })
             }
         })
-        
+
     })
 
+    // Used to relay whether user is authenticated to the App component. If not authenticated send username = null, otherwise send username.
     app.post("/get_global_username", (req, res) => {
         res.send({
             username: req.username
         })
+    })
+
+    // Used when User_profile page requests information for display. Response codes: 1 - not allowed, 2 - allowed
+    app.post("/get_global_user_info", (req, res) => {
+        let username = req.username;
+        if (username != null) {
+            let user_info = get_global_user_info(username);
+            let new_user_info = cloneDeep(user_info);
+            delete new_user_info.password_hash;
+
+            res.send({
+                code: 2,
+                user_info: new_user_info
+            })
+        }
+        else {
+            res.send({
+                code: 1
+            })
+        }
+    })
+
+    // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
+    app.post("/get_quiz_questions", (req, res) => {
+        let quiz_id = req.body.quiz_id;
+
+        let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
+        console.log(`quiz edit access: ${quiz_id}, ${req.username}, ${is_allowed}`);
+        if (is_allowed) {
+            let questions = get_all_questions(quiz_id);
+            res.send({
+                code: 2,
+                questions: questions
+            })
+        }
+        else {
+            res.send({
+                code: 1
+            })
+        }
+    })
+
+    // Route for creating a new quiz. Calls create_new_quiz and return newly created quiz_id with response code
+    app.post("/create_new_quiz", (req, res) => {
+        let username = req.username;
+        let is_allowed = username != null;
+        if (is_allowed) {
+            let next_quiz_id = Object.keys(quizzes).length + 1;
+            let descriptors = {
+                category: "General",
+                creators_name: username,
+                date_created: new Date().toLocaleDateString(),
+                description: "",
+                difficulty: "Easy",
+                number_of_questions: 0,
+                quiz_id: next_quiz_id,
+                time_to_complete: 0,
+                title: `Untitled-${next_quiz_id}`
+            }
+            let create_promise = create_new_quiz(descriptors, username);
+            create_promise.then(result => {
+                res.send({
+                    quiz_id: next_quiz_id,
+                    code: 2
+                })
+            })
+        }
+    })
+
+    // Route for deleting a quiz; returs code = 2 if successfully deleted
+    app.post("/delete_quiz", (req, res) => {
+        let quiz_id = req.body.quiz_id;
+        let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
+        if (is_allowed) {
+            let delete_promise = delete_quiz(quiz_id);
+            delete_promise.then(result => {
+                res.send({
+                    code: 2
+                })
+            })
+        }
+    })
+
+    // Response codes: 2 - successfull, 3 - title taken
+    app.post("/edit_quiz", (req, res) => {
+        let quiz_id = req.body.quiz_id;
+        let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
+        console.log(`Edit quiz atempt: ${quiz_id}, ${req.username}, ${is_allowed}`);
+        if (is_allowed) {
+            let quiz_descriptors = req.body.quiz_descriptors;
+            let quiz_questions = req.body.quiz_questions;
+            let title_free_bool;
+            if(quizzes[quiz_id].title != quiz_descriptors.title){
+                title_free_bool = is_title_free(quiz_descriptors.title);
+            }
+            else{
+                title_free_bool = true;
+            }
+            if(title_free_bool){
+                let edit_quiz_promise = edit_quiz(quiz_descriptors, quiz_questions);
+                edit_quiz_promise.then(result => {
+                    res.send({
+                        code: 2
+                    })
+                })
+            }
+            else{
+                res.send({
+                    code: 3
+                })
+            }
+            
+        }
     })
     // Start up a new lobby
     app.post("/start_quiz", (req, res) => {
@@ -651,7 +914,7 @@ async function main() {
             expires: 725760000,
             httpOnly: true
         });
-        let global_user_info = get_global_user_info(auth_token);
+        let global_user_info = get_global_user_info(req.username);
         let new_username = undefined;
         if (global_user_info != undefined) {
             new_username = global_user_info.username;
@@ -690,11 +953,17 @@ async function main() {
     app.get("/login", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
+    app.get("/user_profile", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
     app.get("/lobby/:join_code", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
-    app.get("/", (req, res) => {
+    app.get("/edit/:edit_quiz_id", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
+    });
+    app.get("/", (req, res) => {
+        res.redirect("/home");
     });
     io.on("connect", (socket) => {
         socket.on("connect_to_room", (data) => {
@@ -788,7 +1057,7 @@ async function main() {
             else {
                 points_earned = 0;
             }
-            if(points_earned > question_obj.points_base){
+            if (points_earned > question_obj.points_base) {
                 points_earned = 0;
             }
             lobbies[join_code].participants[auth_token].answers[question_number] = {

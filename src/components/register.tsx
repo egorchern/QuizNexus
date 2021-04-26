@@ -3,6 +3,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 import {Alert_message} from "./alert";
 
+
 export class Register extends React.Component{
     constructor(props){
         super(props);

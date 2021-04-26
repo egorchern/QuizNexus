@@ -8,6 +8,9 @@ import { Register } from "./components/register";
 import { Login } from "./components/login";
 import assets from "./assets/*.png";
 import "animate.css";
+import { User_profile } from "./components/user_profile";
+import { Edit } from "./components/edit";
+
 
 let root = document.querySelector("#root");
 let categories = [
@@ -24,8 +27,11 @@ let socket;
 class App extends React.Component {
     constructor(props) {
         super(props);
-        let page_state = "home";
+        let page_state;
         let path_name = location.pathname;
+        if(path_name === "/home"){
+            page_state = "home";
+        }
         if (path_name === "/browse") {
             page_state = "browse";
         }
@@ -35,11 +41,21 @@ class App extends React.Component {
         if (path_name === "/login") {
             page_state = "login";
         }
+        if (path_name === "/user_profile") {
+            page_state = "user_profile"
+        }
         this.state = {
             page_state: page_state,
             join_code: undefined,
-            global_username: null
+            global_username: null,
+            edit_quiz_id: undefined
         };
+
+
+
+    }
+    componentDidMount() {
+        let path_name = location.pathname;
         window.onpopstate = (ev) => {
             let state = ev.state;
             if (state.page_state === "game") {
@@ -48,40 +64,50 @@ class App extends React.Component {
                     join_code: state.join_code
                 })
             }
+            if (state.page_state === "edit") {
+                this.setState({
+                    page_state: state.page_state,
+                    edit_quiz_id: state.edit_quiz_id
+                })
+            }
             else {
                 this.setState({
                     page_state: state.page_state
                 })
             }
         }
-
         // Get information from url and switch state appropriately
 
-        
+
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
         let temp = lobby_regex.exec(path_name);
 
         if (temp != null) {
             this.join(temp.groups.join_code);
         }
-        
+
+        let edit_regex = new RegExp("^/edit/(?<edit_quiz_id>[0-9A-Z]+)$");
+        temp = edit_regex.exec(path_name);
+        if (temp != null) {
+            console.log("reach");
+            this.edit(Number(temp.groups.edit_quiz_id));
+        }
+
         fetch("/get_global_username", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             }
         }).then(result => result.json())
-        .then(result => {
-            let username = result.username;
-            if(username != null){
-                this.setState({
-                    global_username: username
-                })
-            }
-            
-        })
-        
+            .then(result => {
+                let username = result.username;
+                if (username != null) {
+                    this.setState({
+                        global_username: username
+                    })
+                }
 
+            })
     }
     join = (join_code) => {
         let fetch_body = {
@@ -152,12 +178,12 @@ class App extends React.Component {
                     password: password
                 })
             }).then(result => result.json())
-            .then(result => {
-                let code = result.code;
-                resolve(code);
-            })
+                .then(result => {
+                    let code = result.code;
+                    resolve(code);
+                })
         })
-        
+
     }
     log_in = (username: string, password: string) => {
         return new Promise(resolve => {
@@ -171,10 +197,16 @@ class App extends React.Component {
                     password: password
                 })
             }).then(result => result.json())
-            .then(result => {
-                let code = result.code;
-                resolve(code);
-            })
+                .then(result => {
+                    let code = result.code;
+                    resolve(code);
+                })
+        })
+    }
+    edit = (quiz_id: number) => {
+        this.setState({
+            page_state: "edit",
+            edit_quiz_id: quiz_id
         })
     }
     switch_page_state = (state) => {
@@ -216,23 +248,47 @@ class App extends React.Component {
             )
         }
         else if (state === "register") {
-            
+
             content = (
                 <Register
-                register={this.register}
+                    register={this.register}
                 >
 
                 </Register>
             )
         }
-        else if(state === "login"){
+        else if (state === "login") {
             content = (
                 <Login
-                log_in={this.log_in}
+                    log_in={this.log_in}
+                    switch_page_state={this.switch_page_state}
                 >
 
                 </Login>
             )
+        }
+        else if (state === "user_profile") {
+            content = (
+                <User_profile
+                    edit={this.edit}
+                >
+
+                </User_profile>
+            )
+        }
+        else if (state === "edit") {
+            content = (
+                <Edit
+                    edit_quiz_id={this.state.edit_quiz_id}
+                    categories={categories}
+                    switch_page_state={this.switch_page_state}
+                >
+
+                </Edit>
+            )
+        }
+        else{
+            content = null
         }
         return (
             <div className="app_container">

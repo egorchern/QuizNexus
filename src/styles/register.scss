@@ -2,7 +2,8 @@ $title_font_size: calc(1.25rem + 0.65vw);
 $toolbar_font_size: calc(1.2rem + 0.1vw);
 .register{
     width: 95%;
-    height: 100%;
+    flex-grow: 1;
+    height: -webkit-fill-available;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -39,7 +40,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
 }
 .plus_svg{
     min-width: 40px;
-    width: 40vw;
+    width: 5vw;
     max-width: 60px;
     height: auto;
     fill: var(--bs-success);

@@ -511,7 +511,7 @@ export class Game extends React.Component {
         if (state === "username_prompt") {
             content = (
                 <div className="username_prompt">
-                    <span>Choose a username:</span>
+                    <span>Username</span>
                     <input
                         value={this.state.username_value}
                         onChange={this.on_username_value_change}
@@ -546,9 +546,9 @@ export class Game extends React.Component {
                             Quiz title: {this.state.quiz_descriptors.title}
                         </span>
                     ) : null}
-                    <span className="heading">Join code:</span>
+                    <span className="heading">Join code</span>
                     <span className="join_code">{this.join_code}</span>
-                    <span className="heading">Link:</span>
+                    <span className="heading">Link</span>
                     <span className="join_code">{location.href}</span>
                     <span className="participants_span heading">
                         Participants:
