@@ -104,7 +104,7 @@ class Bottom_panel extends React.Component<Bottom_panel_props, Bottom_panel_stat
         let totals = this.calculate_totals();
         console.log(totals);
         return (
-            <div className="bottom_panel flex_vertical">
+            <div className="bottom_panel flex_vertical animate__animated animate__zoomInLeft">
                 <div className="two_column_grid">
                     <div className="flex_horizontal">
                         <span className="quiz_heading">
@@ -415,7 +415,7 @@ class Quiz_questions_edit extends React.Component<Quiz_questions_edit_props, Qui
             </div>
         )
         return (
-            <div className="quiz_questions flex_vertical">
+            <div className="quiz_questions flex_vertical animate__animated animate__zoomInRight">
                 {questions}
                 {add_new}
             </div>
@@ -452,7 +452,7 @@ class Quiz_descriptors_edit extends React.Component<Quiz_descriptors_edit_props,
     }
     render() {
         return (
-            <div className="quiz_descriptors flex_vertical">
+            <div className="quiz_descriptors flex_vertical animate__animated animate__zoomInLeft">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="delete_question_svg_bigger" viewBox="0 0 16 16" onClick={() => {
                     this.props.delete_quiz();
                 }}>
@@ -571,6 +571,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
 
         }
         this.state.quiz_questions.push(new_question);
+        this.totals = this.calculate_totals();
         this.forceUpdate();
     }
     delete_question = (index: number) => {
@@ -671,7 +672,12 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
         })
         .then(result => result.json())
         .then(result => {
-            console.log(result);
+            if(result.code === 2){
+                this.props.switch_page_state("user_profile");
+            }
+            else if(result.code === 3){
+                alert(`A quiz with title: "${this.state.quiz_descriptors.title}" already exists. Please choose a different title`);
+            }
         })
     }
     componentDidMount() {
@@ -744,6 +750,7 @@ export class Edit extends React.Component<Edit_props, Edit_state>{
                                 categories={this.props.categories}
                                 change_quiz_property={this.change_quiz_property}
                                 delete_quiz={this.delete_quiz}
+                               
                             >
 
                             </Quiz_descriptors_edit>

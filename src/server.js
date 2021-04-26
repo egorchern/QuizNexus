@@ -436,7 +436,7 @@ function get_scores(join_code) {
 function get_all_questions(quiz_id) {
     let output_list = [];
     let quiz_questions_obj = quiz_questions[quiz_id];
-    
+
     let keys = Object.keys(quiz_questions_obj);
     for (let i = 0; i < keys.length; i += 1) {
         let key = keys[i];
@@ -473,7 +473,7 @@ function create_new_quiz(descriptors, creators_name) {
         quizzes[descriptors.quiz_id] = descriptors;
         global_users[creators_name].created_quiz_ids.push(descriptors.quiz_id);
         quiz_questions[descriptors.quiz_id] = {};
-        
+
         let insert_promise = insert_quiz(descriptors);
         insert_promise.then(result => {
             resolve();
@@ -481,7 +481,7 @@ function create_new_quiz(descriptors, creators_name) {
     })
 }
 
-function delete_quiz_db(quiz_id){
+function delete_quiz_db(quiz_id) {
     return new Promise(resolve => {
         client.query(sql(`
             DELETE FROM quizzes
@@ -501,7 +501,7 @@ function delete_quiz_db(quiz_id){
     })
 }
 
-function delete_quiz(quiz_id){
+function delete_quiz(quiz_id) {
     return new Promise(resolve => {
         let creators_name = quizzes[quiz_id].creators_name;
         let delete_index = global_users[creators_name].created_quiz_ids.indexOf(quiz_id);
@@ -513,7 +513,60 @@ function delete_quiz(quiz_id){
             resolve();
         })
     })
+
+}
+
+function insert_question(question) {
     
+
+    client.query(sql(`
+        INSERT INTO quiz_questions (quiz_id, question_number, multi_choice, question_text, answer_choices, correct_answer_indexes, time_allocated, points_base)
+        VALUES(:quiz_id, :question_number, :multi_choice, :question_text, :answer_choices, :correct_answer_indexes, :time_allocated, :points_base);
+        `)({
+        quiz_id: question.quiz_id,
+        question_number: question.question_number,
+        multi_choice: question.multi_choice,
+        question_text: question.question_text,
+        answer_choices: question.answer_choices,
+        correct_answer_indexes: question.correct_answer_indexes,
+        time_allocated: question.time_allocated,
+        points_base: question.points_base
+    })).then(res => {
+        
+
+    })
+
+
+}
+
+async function edit_quiz(quiz_descriptors, quiz_questionss) {
+    let delete_quiz_promise = await delete_quiz(quiz_descriptors.quiz_id);
+    let create_quiz_promise = await create_new_quiz(quiz_descriptors, quiz_descriptors.creators_name);
+    let question_index = 0;
+    
+    console.log(quiz_questionss);
+    for(let i = 0; i < quiz_questionss.length; i += 1){
+        let current_question = quiz_questionss[i];
+        
+        insert_question(current_question);
+        quiz_questions[current_question.quiz_id][current_question.question_number] = current_question;
+        
+    }
+
+
+
+}
+
+function is_title_free(title){
+    let quiz_keys = Object.keys(quizzes);
+    for(let i = 0; i < quiz_keys.length; i += 1){
+        let key = quiz_keys[i];
+        let quiz_title = quizzes[key].title;
+        if(quiz_title.toLowerCase() === title.toLowerCase()){
+            return false;
+        }
+    }
+    return true;
 }
 
 async function main() {
@@ -522,7 +575,7 @@ async function main() {
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
     assign_quizzes_to_creators();
-    
+
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -805,7 +858,7 @@ async function main() {
     app.post("/delete_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
         let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
-        if(is_allowed){
+        if (is_allowed) {
             let delete_promise = delete_quiz(quiz_id);
             delete_promise.then(result => {
                 res.send({
@@ -815,14 +868,35 @@ async function main() {
         }
     })
 
+    // Response codes: 2 - successfull, 3 - title taken
     app.post("/edit_quiz", (req, res) => {
         let quiz_id = req.body.quiz_id;
         let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
         console.log(`Edit quiz atempt: ${quiz_id}, ${req.username}, ${is_allowed}`);
-        if(is_allowed){
+        if (is_allowed) {
             let quiz_descriptors = req.body.quiz_descriptors;
             let quiz_questions = req.body.quiz_questions;
-            console.log(quiz_descriptors, quiz_questions);
+            let title_free_bool;
+            if(quizzes[quiz_id].title != quiz_descriptors.title){
+                title_free_bool = is_title_free(quiz_descriptors.title);
+            }
+            else{
+                title_free_bool = true;
+            }
+            if(title_free_bool){
+                let edit_quiz_promise = edit_quiz(quiz_descriptors, quiz_questions);
+                edit_quiz_promise.then(result => {
+                    res.send({
+                        code: 2
+                    })
+                })
+            }
+            else{
+                res.send({
+                    code: 3
+                })
+            }
+            
         }
     })
     // Start up a new lobby
