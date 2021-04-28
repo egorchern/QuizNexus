@@ -93,7 +93,7 @@ export class User_profile extends React.Component<IProps, IState> {
     render(){
         return (
             <div className="user_profile">
-                <div>
+                <div className="user_stats">
                     <button className="btn btn-danger log_out" onClick={this.log_out}>
                         Log out
                     </button>
