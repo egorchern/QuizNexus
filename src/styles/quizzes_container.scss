@@ -9,7 +9,7 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
-    
+    overflow-x: hidden;
     /*
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -76,4 +76,10 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
 }
 .result_heading {
     font-size: $toolbar_font_size;
+}
+@media screen and (max-width: 750px) {
+    .quizzes_container{
+        flex-flow: column nowrap;
+        align-items: center;
+    }
 }

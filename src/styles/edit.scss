@@ -243,3 +243,19 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
     margin-top: 40px;
     width: 100%;
 }
+
+@media screen and (max-width: 750px) {
+    .question{
+        padding: 12px;
+    }
+    .question_details{
+        padding: 0;
+    }
+    .title{
+        margin-top: 40px;
+    }
+    .edit_answer_choice{
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+}
