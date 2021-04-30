@@ -41,11 +41,6 @@ if (dev_mode === true) {
 
     process.env.DATABASE_URL = database_url;
 }
-/*
-INSERT INTO auth_tokens
-VALUES('Egorcik', 'c36cd89d50f6244effced311c6cd50c559fa9aeda1f15fbd1f2edeb837295c30e28ef5fcc62c0819dab582e2d3af19da444eee97054d535199c2556fa6152380f983325a35c5bdceebb67b86b3417d09', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36')
-*/
-//app.use(express.static("dist"));
 
 // connect to a database
 const client = new Client({
@@ -56,17 +51,6 @@ const client = new Client({
 });
 
 client.connect();
-/*
-INSERT INTO quizzes (title, description, creators_name, date_created, time_to_complete, number_of_questions, category, difficulty)
-VALUES('Личная проверка', 'Проверка от Егора', 'Egorcik', '13/04/2021', 3, 8, 'General', 'Easy');
-
-INSERT INTO quiz_questions (quiz_id, question_number, multi_choice, question_text, answer_choices, correct_answer_indexes, time_allocated, points_base)
-VALUES(1, 8, false, 'Кто виноват что Владислав Былёв Витальевич не поднимает ММР в Доте?' , 
-'{"Дмитрий Мысников Александрович", "Егор Чернышев Владимерович", "Он сам (например: рубик пятерка с take aim)", "Агенты Габена"}',
-'{2}',
-25, 1000
-)
-*/
 
 function get_quizzes() {
     return new Promise(resolve => {
@@ -143,8 +127,7 @@ function get_auth_tokens() {
                 let row = rows[i];
                 auth_tokens[row.auth_token] = {
                     username: row.username,
-                    client_ip: row.client_ip,
-                    user_agent: row.user_agent
+                    client_id: row.client_id
                 }
             }
             resolve();
@@ -166,16 +149,15 @@ function insert_global_user(username, password_hash) {
 
 }
 
-function insert_auth_token(username, auth_token, client_ip, user_agent) {
+function insert_auth_token(username, auth_token, client_id) {
     client.query(
         sql(`
         INSERT INTO auth_tokens
-        VALUES(:username, :auth_token, :client_ip, :user_agent)
+        VALUES(:username, :auth_token, :client_id)
         `)({
             username: username,
             auth_token: auth_token,
-            client_ip: client_ip,
-            user_agent: user_agent
+            client_id: client_id
         })
     )
 }
@@ -313,19 +295,18 @@ function generate_join_code() {
     return join_code;
 }
 
-function delete_redundant_auth_token(username, client_ip, user_agent) {
+function delete_redundant_auth_token(username, client_id) {
     return new Promise(resolve => {
         let auth_token;
-        console.log(username, client_ip, user_agent);
+        
         client.query(
             sql(`
             SELECT auth_token
             FROM auth_tokens
-            WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent
+            WHERE username = :username AND client_id = :client_id
             `)({
                 username: username,
-                client_ip: client_ip,
-                user_agent: user_agent
+                client_id: client_id
             })
         ).then(res => {
 
@@ -337,11 +318,8 @@ function delete_redundant_auth_token(username, client_ip, user_agent) {
             client.query(
                 sql(`
                 DELETE FROM auth_tokens
-                WHERE username = :username AND client_ip = :client_ip AND user_agent = :user_agent AND auth_token = :auth_token
+                WHERE auth_token = :auth_token
                 `)({
-                    username: username,
-                    client_ip: client_ip,
-                    user_agent: user_agent,
                     auth_token: auth_token
                 })
             ).then(res => {
@@ -575,7 +553,7 @@ async function main() {
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
     assign_quizzes_to_creators();
-
+    console.log(auth_tokens);
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -585,14 +563,11 @@ async function main() {
     app.use(express.static("dist"));
     // Middleware for authenticating users. Looks up auth_token in auth_tokens and affixes the username to the req, req.username
     app.use((req, res, next) => {
-        let client_ip = request_ip.getClientIp(req);
-        req.client_ip = client_ip;
-        let user_agent = req.headers['user-agent'];
-        req.user_agent = user_agent;
+        
         let auth_token = req.cookies.auth_token;
         let auth_token_output = auth_tokens[auth_token];
 
-        if (auth_token_output != undefined && auth_token_output.client_ip === client_ip && auth_token_output.user_agent === user_agent) {
+        if (auth_token_output != undefined) {
             req.username = auth_token_output.username;
         }
         else {
@@ -743,16 +718,20 @@ async function main() {
     app.post("/log_in", (req, res) => {
         let username = req.body.username;
         let password = req.body.password;
+        let client_id = req.body.client_id;
         do_credentials_match(username, password).then(match => {
             if (match) {
                 let auth_token = generateToken();
+                if(client_id === null){
+                    client_id = generateToken();
+                }
+                
                 auth_tokens[auth_token] = {
                     username: username,
-                    client_ip: req.client_ip,
-                    user_agent: req.user_agent
+                    client_id: client_id
                 }
 
-                let deleted_auth_token_promise = delete_redundant_auth_token(username, req.client_ip, req.user_agent);
+                let deleted_auth_token_promise = delete_redundant_auth_token(username, client_id);
                 deleted_auth_token_promise.then(deleted_auth_token => {
                     delete auth_tokens[deleted_auth_token];
 
@@ -766,9 +745,10 @@ async function main() {
                 }
 
                 )
-                insert_auth_token(username, auth_token, req.client_ip, req.user_agent);
+                insert_auth_token(username, auth_token, client_id);
                 res.send({
-                    code: 2
+                    code: 2,
+                    client_id: client_id
                 })
             }
             else {

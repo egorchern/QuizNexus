@@ -47,11 +47,12 @@ export class Login extends React.Component<IProps, IState> {
     };
     on_login_click = () => {
       if(this.state.username_value != "" && this.state.password_value != ""){
-        this.props.log_in(this.state.username_value, this.state.password_value).then(code => {
-          if(code === 1){
+        this.props.log_in(this.state.username_value, this.state.password_value).then(result => {
+          if(result.code === 1){
             this.push_alert("Invalid credentials. An account with that username either does not exist, or the password is wrong", "red");
           }
           else{
+            localStorage.setItem("client_id", result.client_id);
             this.props.switch_page_state("home");
             location.reload();
           }

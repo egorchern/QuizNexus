@@ -3,6 +3,16 @@ import * as React from "react";
 import { render } from "react-dom";
 import socketIo, { io } from "socket.io/client-dist/socket.io";
 
+function round_to(n, digits) {
+    if (digits === undefined) {
+        digits = 0;
+    }
+
+    var multiplicator = Math.pow(10, digits);
+    n = parseFloat((n * multiplicator).toFixed(11));
+    return Math.round(n) / multiplicator;
+}
+
 
 class Answers_breakdown extends React.Component {
     constructor(props) {
@@ -15,49 +25,49 @@ class Answers_breakdown extends React.Component {
         let assets = this.props.assets;
         let own_answers_index;
         let content = null;
-        if(all_answers.length > 0 && questions.length > 0){
+        if (all_answers.length > 0 && questions.length > 0) {
             console.log(all_answers, questions);
             for (let i = 0; i < all_answers.length; i += 1) {
                 if (all_answers[i].username === username) {
                     own_answers_index = i;
                 }
             }
-            
+
             let own_answers = all_answers[own_answers_index].answers;
             let own_answers_keys = Object.keys(own_answers);
             content = own_answers_keys.map((key, index) => {
                 let current_question_obj = questions[index];
                 console.log(current_question_obj);
-                
+
                 let answer = own_answers[key];
                 let is_correct = answer.is_correct;
                 let own_answer_string = ``;
-                for(let i = 0; i < answer.answer_indexes.length; i += 1){
+                for (let i = 0; i < answer.answer_indexes.length; i += 1) {
                     let answer_index = answer.answer_indexes[i];
                     let answer_string = current_question_obj.answer_choices[answer_index];
-                    if(i === answer.answer_indexes.length - 1){
+                    if (i === answer.answer_indexes.length - 1) {
                         own_answer_string += answer_string
                     }
-                    else{
+                    else {
                         own_answer_string += `${answer_string}, `;
                     }
                 }
                 let correct_answer_string = ``;
-                for(let i = 0; i < answer.correct_answer_indexes.length; i += 1){
+                for (let i = 0; i < answer.correct_answer_indexes.length; i += 1) {
                     let answer_index = answer.correct_answer_indexes[i];
                     let answer_string = current_question_obj.answer_choices[answer_index];
-                    if(i === answer.correct_answer_indexes.length - 1){
+                    if (i === answer.correct_answer_indexes.length - 1) {
                         correct_answer_string += answer_string
                     }
-                    else{
+                    else {
                         correct_answer_string += `${answer_string}, `;
                     }
                 }
                 let mark_src;
-                if(is_correct){
+                if (is_correct) {
                     mark_src = assets.tick;
                 }
-                else{
+                else {
                     mark_src = assets.cross;
                 }
                 return (
@@ -70,26 +80,26 @@ class Answers_breakdown extends React.Component {
                             <img className="your_answer_mark" src={mark_src}>
                             </img>
                         </div>
-                        
+
                         {
                             is_correct === false ? (
                                 <span>
                                     Correct answer: {correct_answer_string}
                                 </span>
                             )
-                            :null
+                                : null
                         }
                     </div>
                 )
             })
-            
+
         }
         return (
             <div className="answers_breakdown">
                 {content}
             </div>
         )
-        
+
     }
 }
 
@@ -119,7 +129,7 @@ class Answer_grid extends React.Component {
 
             let tds = [];
             let keys = Object.keys(answer_obj.answers);
-            
+
             for (let i = 0; i < keys.length; i += 1) {
                 let answer = answer_obj.answers[keys[i]];
 
@@ -209,8 +219,10 @@ export class Game extends React.Component {
     join_code: any;
     wait_interval_between_questions: number;
     socket: any;
-    
+
     timer: NodeJS.Timeout;
+    fps: number;
+    timer_interval: number;
     constructor(props) {
         super(props);
         this.join_code = this.props.join_code;
@@ -224,6 +236,7 @@ export class Game extends React.Component {
             scores: undefined,
             is_host: false,
             current_question_obj: undefined,
+            milliseconds_elapsed: 0,
             seconds_elapsed: 0,
             question_pointer: 0,
             score: 0,
@@ -232,7 +245,9 @@ export class Game extends React.Component {
             answers_list: [],
             questions: []
         };
-        
+        this.fps = 60;
+        this.timer_interval = round_to(1000 / this.fps, 0);
+        console.log(this.timer_interval);
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
@@ -247,14 +262,18 @@ export class Game extends React.Component {
 
         this.get_user_info();
     }
-    on_second_elapse = () => {
-
+    on_timer_interval_elapse = () => {
+        let seconds = Math.floor(this.state.milliseconds_elapsed / 1000);
+        if (seconds > this.state.seconds_elapsed) {
+            this.state.seconds_elapsed += 1;
+        }
         if (this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1) {
             this.submit_answer([-1]);
         }
         else {
+
             this.setState({
-                seconds_elapsed: this.state.seconds_elapsed + 1
+                milliseconds_elapsed: this.state.milliseconds_elapsed + this.timer_interval
             })
         }
 
@@ -264,9 +283,9 @@ export class Game extends React.Component {
             correct_answer_indexes: [],
             selected_answer_indexes: [],
         });
-        
+
         this.state.question_pointer += 1;
-        
+
         this.socket.emit(
             "request_question",
             JSON.stringify({
@@ -278,9 +297,10 @@ export class Game extends React.Component {
     join_io_room = () => {
         this.socket = io.connect();
         this.socket.on("get_question", (data) => {
-            this.timer = setInterval(this.on_second_elapse, 1000);
+            this.timer = setInterval(this.on_timer_interval_elapse, this.timer_interval);
             this.setState({
                 seconds_elapsed: 0,
+                milliseconds_elapsed: 0,
                 current_question_obj: data,
             });
         });
@@ -368,8 +388,8 @@ export class Game extends React.Component {
         this.socket.emit("connect_to_room", body);
     };
     submit_answer = () => {
-        
-        
+
+
         this.socket.emit(
             "submit_answer",
             JSON.stringify({
@@ -502,10 +522,10 @@ export class Game extends React.Component {
     render() {
         let content;
         let state = this.state.game_state;
-        if(state != "results"){
+        if (state != "results") {
             document.querySelector(".app_container").classList.remove("height_full");
         }
-        else{
+        else {
             document.querySelector(".app_container").classList.add("height_full");
         }
         if (state === "username_prompt") {
@@ -647,11 +667,11 @@ export class Game extends React.Component {
                 );
 
 
-                let progress_bar_width_percentage = Math.floor(
-                    (this.state.seconds_elapsed /
-                        this.state.current_question_obj.time_allocated) *
-                    100
-                );
+                let progress_bar_width_percentage =
+                    round_to((this.state.milliseconds_elapsed /
+                        (this.state.current_question_obj.time_allocated * 1000)) *
+                    100, 1)
+
 
                 let styles = {
                     width: `${progress_bar_width_percentage}%`,
@@ -738,11 +758,11 @@ export class Game extends React.Component {
 
                 </div>
             )
-            
+
         }
         return <div className="game">{content}</div>;
     }
-    componentWillUnmount(){
+    componentWillUnmount() {
         document.querySelector(".app_container").classList.remove("height_full");
     }
 }
