@@ -194,12 +194,12 @@ class App extends React.Component {
                 },
                 body: JSON.stringify({
                     username: username,
-                    password: password
+                    password: password,
+                    client_id: localStorage.getItem("client_id")
                 })
             }).then(result => result.json())
                 .then(result => {
-                    let code = result.code;
-                    resolve(code);
+                    resolve(result);
                 })
         })
     }
