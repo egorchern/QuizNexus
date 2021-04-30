@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "build_client": "parcel src/index_page.html",
-    "build_server": "nodemon src/server.js"
+    "build_server": "nodemon src/server.js",
+    "heroku-postbuild": "parcel src/index_page.html"
   },
   "main": "index.js",
   "keywords": [],
