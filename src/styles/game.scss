@@ -138,6 +138,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 .question_text {
     max-width: 650px;
     display: flex;
+    text-align: center;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -195,6 +196,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 
 .quiz_top_part {
     display: grid;
+    width: 100%;
     grid-template-columns: 1fr 3fr 1fr;
 }
 .timer {
