@@ -547,6 +547,12 @@ function is_title_free(title){
     return true;
 }
 
+function destroy_lobby(join_code){
+    console.log(lobbies);
+    delete lobbies[join_code];
+    console.log(lobbies);
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
@@ -1087,6 +1093,9 @@ async function main() {
                 let join_code = socket_rooms[1];
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
+                if(logged_users.length === 0){
+                    destroy_lobby(join_code);
+                }
                 io.to(`${join_code}`).emit(
                     "logged_users_in_room",
                     logged_users
@@ -1099,3 +1108,5 @@ async function main() {
 }
 
 main();
+
+//TODO delete lobby if no participants are in

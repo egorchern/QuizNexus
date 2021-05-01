@@ -102,7 +102,7 @@ class Bottom_panel extends React.Component<Bottom_panel_props, Bottom_panel_stat
     }
     render() {
         let totals = this.calculate_totals();
-        console.log(totals);
+        
         return (
             <div className="bottom_panel flex_vertical animate__animated animate__zoomInLeft">
                 <div className="two_column_grid">
@@ -291,7 +291,7 @@ class Question extends React.Component<Question_props, Question_state>{
         this.props.delete_answer_choice(this.index, answer_choice_index);
     }
     change_correct_answer_choice = (answer_choice_index: number) => {
-        console.log(`in question component: ${answer_choice_index}`);
+        
         this.props.change_correct_answer_choice(this.index, answer_choice_index);
     }
     render() {

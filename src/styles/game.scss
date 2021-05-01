@@ -248,6 +248,9 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     max-width: 175px;
     margin: auto;
 }
+.margin_left_medium{
+    margin-left: 15px;
+}
 .multi_choice_indicator {
     display: flex;
     flex-direction: column;

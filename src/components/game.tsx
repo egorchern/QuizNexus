@@ -25,8 +25,9 @@ class Answers_breakdown extends React.Component {
         let assets = this.props.assets;
         let own_answers_index;
         let content = null;
+        let correct_answers, number_of_questions, correct_answer_percent;
         if (all_answers.length > 0 && questions.length > 0) {
-            console.log(all_answers, questions);
+            
             for (let i = 0; i < all_answers.length; i += 1) {
                 if (all_answers[i].username === username) {
                     own_answers_index = i;
@@ -34,10 +35,23 @@ class Answers_breakdown extends React.Component {
             }
 
             let own_answers = all_answers[own_answers_index].answers;
+            
             let own_answers_keys = Object.keys(own_answers);
+            
+            number_of_questions = own_answers_keys.length;
+            correct_answers = 0;
+            for(let i = 0; i < own_answers_keys.length; i += 1){
+                let ans = own_answers[own_answers_keys[i]];
+                let is_correct = ans.is_correct;
+                if(is_correct){
+                    correct_answers += 1;
+                }
+            }
+            correct_answer_percent = Math.floor(correct_answers / number_of_questions * 100);
+            
             content = own_answers_keys.map((key, index) => {
                 let current_question_obj = questions[index];
-                console.log(current_question_obj);
+                
 
                 let answer = own_answers[key];
                 let is_correct = answer.is_correct;
@@ -96,6 +110,21 @@ class Answers_breakdown extends React.Component {
         }
         return (
             <div className="answers_breakdown">
+                {
+                    correct_answers != undefined ? (
+                        <div className="flex_horizontal">
+                            <span>
+                                Correct answers: {correct_answers} / {number_of_questions}
+                            </span>
+                            <span className="margin_left_medium">
+                                Correct percentage: {correct_answer_percent}%
+                            </span>
+                        </div>
+                    )
+                    : null
+
+                }
+                
                 {content}
             </div>
         )
@@ -247,7 +276,7 @@ export class Game extends React.Component {
         };
         this.fps = 60;
         this.timer_interval = round_to(1000 / this.fps, 0);
-        console.log(this.timer_interval);
+        
         // To prevent looping the history pushes i.e not pushing when location already at lobby
         let path_name = location.pathname;
         let lobby_regex = new RegExp("^/lobby/(?<join_code>[0-9A-Z]+)$");
