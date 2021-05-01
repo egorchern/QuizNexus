@@ -27,7 +27,8 @@ let quiz_questions = {
 // join code => lobby info
 let lobbies = {};
 let all_usernames = {};
-
+let destroy_lobby_after_minutes = 1;
+let destroy_lobby_after_ms = destroy_lobby_after_minutes * 60 * 1000;
 let global_users = {
 
 }
@@ -1094,7 +1095,10 @@ async function main() {
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
                 if(logged_users.length === 0){
-                    destroy_lobby(join_code);
+                    setTimeout(() => {
+                        destroy_lobby(join_code);
+                    }, destroy_lobby_after_ms);
+                    
                 }
                 io.to(`${join_code}`).emit(
                     "logged_users_in_room",
