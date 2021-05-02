@@ -429,7 +429,6 @@ export class Game extends React.Component {
         this.socket.emit(
             "submit_answer",
             JSON.stringify({
-                question_number: this.state.question_pointer,
                 answer_indexes: this.state.selected_answer_indexes,
                 time: this.state.seconds_elapsed,
                 join_code: this.join_code,

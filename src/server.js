@@ -554,6 +554,54 @@ function destroy_lobby(join_code){
     console.log(lobbies);
 }
 
+function get_formatted_current_date(){
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    let return_date = `${dd}/${mm}/${yyyy}`;
+    return return_date;
+}
+
+function get_performance_data(quiz_id, answers){
+    let current_quiz_questions = quiz_questions[quiz_id];
+    let answer_keys = Object.keys(answers);
+    let correct_answers = 0;
+    let answers_total = answer_keys.length;
+    let correct_answers_percentage;
+    let points_earned = 0;
+    let total_points = 0;
+    let points_earned_percentage;
+    for(let i = 0; i < answers_total; i += 1){
+        let answer_key = answer_keys[i];
+        let answer = answers[answer_key];
+        if(answer.is_correct){
+            correct_answers += 1;
+
+        }
+        points_earned += answer.points_earned;
+        total_points += current_quiz_questions[answer_key].points_base;
+    }
+    correct_answers_percentage = Math.floor((correct_answers / answers_total) * 100);
+    points_earned_percentage = Math.floor((points_earned / total_points) * 100);
+    console.log(correct_answers, answers_total, correct_answers_percentage, points_earned, total_points, points_earned_percentage);
+}
+
+function record_results(join_code, auth_token, username){
+    let global_user_obj = global_users[username];
+    if(global_user_obj != undefined){
+        let answers = lobbies[join_code].participants[auth_token].answers;
+        let quiz_id = lobbies[join_code].quiz_id;
+        let record_obj = {
+            answers: answers,
+            quiz_id: quiz_id,
+            date: get_formatted_current_date(),
+            performance_data: get_performance_data(quiz_id, answers)
+        }
+        console.log(record_obj);
+    }
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
@@ -823,7 +871,7 @@ async function main() {
             let descriptors = {
                 category: "General",
                 creators_name: username,
-                date_created: new Date().toLocaleDateString(),
+                date_created: get_formatted_current_date(),
                 description: "",
                 difficulty: "Easy",
                 number_of_questions: 0,
@@ -1026,46 +1074,53 @@ async function main() {
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             let username = lobbies[join_code].participants[auth_token].username;
-            let question_number = parsed.question_number;
+            let question_number = lobbies[join_code].participants[auth_token].question_pointer + 1;
+            
             let quiz_id = lobbies[join_code].quiz_id;
             let answer_indexes = parsed.answer_indexes;
             let time = parsed.time;
             let question_obj = quiz_questions[quiz_id][question_number];
-            isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
-            let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
-            if (time >= question_obj.time_allocated) {
-                is_correct = false;
-            }
-            let points_earned;
-            // Formula for points: points_base - (points_base / time_allocated * time);
-            if (is_correct) {
-                points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
-            }
-            else {
-                points_earned = 0;
-            }
-            if (points_earned > question_obj.points_base) {
-                points_earned = 0;
-            }
-            lobbies[join_code].participants[auth_token].answers[question_number] = {
-                answer_indexes: answer_indexes,
-                correct_answer_indexes: question_obj.correct_answer_indexes,
-                is_correct: is_correct,
-                points_earned: points_earned
-            }
-            lobbies[join_code].participants[auth_token].question_pointer += 1;
-            lobbies[join_code].participants[auth_token].score += points_earned;
-            if (points_earned != 0) {
-                io.to(`${join_code}`).emit("score_update", {
-                    username: username,
-                    score: lobbies[join_code].participants[auth_token].score
-                });
-            }
-            socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
-            let answers_list = get_all_answers(join_code);
-            io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
-            console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
+            if(question_obj != undefined){
 
+            
+                isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
+                let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
+                if (time >= question_obj.time_allocated) {
+                    is_correct = false;
+                }
+                let points_earned;
+                // Formula for points: points_base - (points_base / time_allocated * time);
+                if (is_correct) {
+                    points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
+                }
+                else {
+                    points_earned = 0;
+                }
+                if (points_earned > question_obj.points_base) {
+                    points_earned = 0;
+                }
+                lobbies[join_code].participants[auth_token].answers[question_number] = {
+                    answer_indexes: answer_indexes,
+                    correct_answer_indexes: question_obj.correct_answer_indexes,
+                    is_correct: is_correct,
+                    points_earned: points_earned
+                }
+                lobbies[join_code].participants[auth_token].question_pointer += 1;
+                lobbies[join_code].participants[auth_token].score += points_earned;
+                if (points_earned != 0) {
+                    io.to(`${join_code}`).emit("score_update", {
+                        username: username,
+                        score: lobbies[join_code].participants[auth_token].score
+                    });
+                }
+                socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
+                let answers_list = get_all_answers(join_code);
+                io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
+                console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
+                if(quizzes[quiz_id].number_of_questions === question_number){
+                    record_results(join_code, auth_token, username);
+                }
+            }
         });
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
