@@ -304,7 +304,8 @@ export class Game extends React.Component {
             this.state.seconds_elapsed += 1;
         }
         if (this.state.seconds_elapsed === this.state.current_question_obj.time_allocated - 1) {
-            this.submit_answer([-1]);
+            this.state.selected_answer_indexes = [];
+            this.submit_answer();
         }
         else {
 

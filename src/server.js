@@ -595,10 +595,34 @@ function get_performance_data(quiz_id, answers){
     }
 }
 
+function insert_result_record(record_obj){
+    client.query(sql(`
+    INSERT INTO result_records (record_id, username, quiz_id, date)
+    VALUES(:record_id, :username, :quiz_id, :date)
+    `)(record_obj))
+    
+}
+
+function insert_record_answer(record_id, question_number, answer){
+    console.log(record_id, answer);
+    client.query(sql(`
+    INSERT INTO record_answers(record_id, question_number, answer_indexes, correct_answer_indexes, is_correct, points_earned)
+    VALUES(:record_id, :question_number, :answer_indexes, :correct_answer_indexes, :is_correct, :points_earned)
+    `)({
+        record_id: record_id,
+        question_number: question_number,
+        answer_indexes: answer.answer_indexes,
+        correct_answer_indexes: answer.correct_answer_indexes,
+        is_correct: answer.is_correct,
+        points_earned: answer.points_earned
+    }))
+}
+
 function record_results(join_code, auth_token, username, next_record_id){
     let global_user_obj = global_users[username];
     if(global_user_obj != undefined){
         let answers = lobbies[join_code].participants[auth_token].answers;
+        
         let quiz_id = lobbies[join_code].quiz_id;
         let record_obj = {
             record_id: next_record_id,
@@ -608,8 +632,14 @@ function record_results(join_code, auth_token, username, next_record_id){
             date: get_formatted_current_date(),
             performance_data: get_performance_data(quiz_id, answers)
         }
+        console.log(record_obj);
         global_user_obj.result_records.push(record_obj);
-        console.log(global_user_obj);
+        insert_result_record(record_obj);
+        let answer_keys = Object.keys(record_obj.answers);
+        for(let i = 0; i < answer_keys.length; i += 1){
+            let answer = record_obj.answers[answer_keys[i]];
+            insert_record_answer(record_obj.record_id, answer_keys[i], answer);
+        }
     }
 }
 
@@ -620,7 +650,7 @@ async function main() {
     let auth_tokens_promise = await get_auth_tokens();
     
     assign_quizzes_to_creators();
-    console.log(global_users);
+    
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -1030,10 +1060,11 @@ async function main() {
 
             let logged_users = get_logged_participants(join_code);
             let scores_list = get_scores(join_code);
-
+            clearTimeout(lobbies[join_code].destroy_timer);
             socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
             io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
+
         });
         socket.on("request_quiz_descriptors", (data) => {
             let parsed = JSON.parse(data);
@@ -1168,9 +1199,11 @@ async function main() {
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
                 if(logged_users.length === 0){
+                    lobbies[join_code].destroy_timer = 
                     setTimeout(() => {
                         destroy_lobby(join_code);
                     }, destroy_lobby_after_ms);
+                    
                     
                 }
                 io.to(`${join_code}`).emit(
