@@ -32,7 +32,9 @@ let destroy_lobby_after_ms = destroy_lobby_after_minutes * 60 * 1000;
 let global_users = {
 
 }
+let record_id_to_username_map = {
 
+}
 let auth_tokens = {
 
 }
@@ -134,6 +136,59 @@ function get_auth_tokens() {
             }
             resolve();
         })
+    })
+}
+
+function get_record_answers(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT *
+        FROM record_answers
+        ORDER BY record_id ASC
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let info = record_id_to_username_map[row.record_id];
+                let username = info.username;
+                let index = info.index;
+                let result_records = global_users[username].result_records[index];
+                result_records.answers.push(row);
+                
+            })
+            resolve();
+        })
+    })
+}
+
+function get_result_records(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT * 
+        FROM result_records
+        ORDER BY record_id ASC
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let global_user_obj = global_users[row.username];
+                let result_record = {
+                    record_id: row.record_id,
+                    username: row.username,
+                    quiz_id: row.quiz_id,
+                    date: row.date,
+                    answers: []
+                }
+                global_user_obj.result_records.push(result_record);
+                record_id_to_username_map[row.record_id] = {
+                    username: row.username,
+                    index: global_user_obj.result_records.length - 1
+                }
+                
+            })
+            let next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            resolve(next_record_id);
+        })
+
+        
     })
 }
 
@@ -524,7 +579,7 @@ async function edit_quiz(quiz_descriptors, quiz_questionss) {
     let create_quiz_promise = await create_new_quiz(quiz_descriptors, quiz_descriptors.creators_name);
     let question_index = 0;
     
-    console.log(quiz_questionss);
+    
     for(let i = 0; i < quiz_questionss.length; i += 1){
         let current_question = quiz_questionss[i];
         
@@ -550,9 +605,9 @@ function is_title_free(title){
 }
 
 function destroy_lobby(join_code){
-    console.log(lobbies);
+    
     delete lobbies[join_code];
-    console.log(lobbies);
+    
 }
 
 function get_formatted_current_date(){
@@ -604,7 +659,7 @@ function insert_result_record(record_obj){
 }
 
 function insert_record_answer(record_id, question_number, answer){
-    console.log(record_id, answer);
+    
     client.query(sql(`
     INSERT INTO record_answers(record_id, question_number, answer_indexes, correct_answer_indexes, is_correct, points_earned)
     VALUES(:record_id, :question_number, :answer_indexes, :correct_answer_indexes, :is_correct, :points_earned)
@@ -632,7 +687,7 @@ function record_results(join_code, auth_token, username, next_record_id){
             date: get_formatted_current_date(),
             performance_data: get_performance_data(quiz_id, answers)
         }
-        console.log(record_obj);
+        
         global_user_obj.result_records.push(record_obj);
         insert_result_record(record_obj);
         let answer_keys = Object.keys(record_obj.answers);
@@ -648,13 +703,15 @@ async function main() {
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
+    let next_record_id = await get_result_records();
+    let get_record_answers_promise = await get_record_answers();
     
     assign_quizzes_to_creators();
     
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
-    let next_record_id = 1;
+    
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
