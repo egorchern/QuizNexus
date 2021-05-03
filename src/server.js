@@ -109,6 +109,7 @@ function get_global_users() {
                 let username = current_row.username;
                 global_users[username] = current_row;
                 global_users[username].created_quiz_ids = [];
+                global_users[username].result_records = [];
             }
             resolve();
         })
@@ -584,21 +585,31 @@ function get_performance_data(quiz_id, answers){
     }
     correct_answers_percentage = Math.floor((correct_answers / answers_total) * 100);
     points_earned_percentage = Math.floor((points_earned / total_points) * 100);
-    console.log(correct_answers, answers_total, correct_answers_percentage, points_earned, total_points, points_earned_percentage);
+    return {
+        correct_answers: correct_answers,
+        answers_total: answers_total,
+        correct_answers_percentage: correct_answers_percentage,
+        points_earned: points_earned,
+        total_points: total_points,
+        points_earned_percentage: points_earned_percentage
+    }
 }
 
-function record_results(join_code, auth_token, username){
+function record_results(join_code, auth_token, username, next_record_id){
     let global_user_obj = global_users[username];
     if(global_user_obj != undefined){
         let answers = lobbies[join_code].participants[auth_token].answers;
         let quiz_id = lobbies[join_code].quiz_id;
         let record_obj = {
+            record_id: next_record_id,
             answers: answers,
+            username: username,
             quiz_id: quiz_id,
             date: get_formatted_current_date(),
             performance_data: get_performance_data(quiz_id, answers)
         }
-        console.log(record_obj);
+        global_user_obj.result_records.push(record_obj);
+        console.log(global_user_obj);
     }
 }
 
@@ -607,8 +618,13 @@ async function main() {
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
+    
     assign_quizzes_to_creators();
-    console.log(auth_tokens);
+    console.log(global_users);
+    let next_quiz_id;
+    let quiz_keys = Object.keys(quizzes);
+    next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
+    let next_record_id = 1;
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -867,7 +883,7 @@ async function main() {
         let username = req.username;
         let is_allowed = username != null;
         if (is_allowed) {
-            let next_quiz_id = Object.keys(quizzes).length + 1;
+            
             let descriptors = {
                 category: "General",
                 creators_name: username,
@@ -884,7 +900,8 @@ async function main() {
                 res.send({
                     quiz_id: next_quiz_id,
                     code: 2
-                })
+                });
+                next_quiz_id += 1;
             })
         }
     })
@@ -1118,7 +1135,8 @@ async function main() {
                 io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
                 console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
                 if(quizzes[quiz_id].number_of_questions === question_number){
-                    record_results(join_code, auth_token, username);
+                    record_results(join_code, auth_token, username, next_record_id);
+                    next_record_id += 1;
                 }
             }
         });
