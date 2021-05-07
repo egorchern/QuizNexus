@@ -621,22 +621,22 @@ function get_formatted_current_date(){
 
 function get_performance_data(quiz_id, answers){
     let current_quiz_questions = quiz_questions[quiz_id];
-    let answer_keys = Object.keys(answers);
+    
     let correct_answers = 0;
-    let answers_total = answer_keys.length;
+    let answers_total = answers.length;
     let correct_answers_percentage;
     let points_earned = 0;
     let total_points = 0;
     let points_earned_percentage;
     for(let i = 0; i < answers_total; i += 1){
-        let answer_key = answer_keys[i];
-        let answer = answers[answer_key];
+        
+        let answer = answers[i];
         if(answer.is_correct){
             correct_answers += 1;
 
         }
-        points_earned += answer.points_earned;
-        total_points += current_quiz_questions[answer_key].points_base;
+        points_earned += Number(answer.points_earned);
+        total_points += Number(current_quiz_questions[answer.question_number].points_base);
     }
     correct_answers_percentage = Math.floor((correct_answers / answers_total) * 100);
     points_earned_percentage = Math.floor((points_earned / total_points) * 100);
@@ -685,7 +685,7 @@ function record_results(join_code, auth_token, username, next_record_id){
             username: username,
             quiz_id: quiz_id,
             date: get_formatted_current_date(),
-            performance_data: get_performance_data(quiz_id, answers)
+            
         }
         
         global_user_obj.result_records.push(record_obj);
@@ -698,6 +698,25 @@ function record_results(join_code, auth_token, username, next_record_id){
     }
 }
 
+function calculate_stats(){
+    
+}
+
+function assign_performance_data_on_records(){
+    let global_user_keys = Object.keys(global_users);
+    global_user_keys.forEach(global_user_key => {
+        let global_user = global_users[global_user_key];
+        
+        let result_records = global_user.result_records;
+        result_records.forEach(result_record => {
+            
+            let performance_data = get_performance_data(result_record.quiz_id, result_record.answers);
+            result_record.performance_data = performance_data;
+        })
+
+    })
+}
+
 async function main() {
     let quizzes_promise = await get_quizzes();
     let quiz_questions_promise = await get_quiz_questions();
@@ -707,7 +726,7 @@ async function main() {
     let get_record_answers_promise = await get_record_answers();
     
     assign_quizzes_to_creators();
-    
+    assign_performance_data_on_records()
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -1276,4 +1295,3 @@ async function main() {
 
 main();
 
-//TODO delete lobby if no participants are in

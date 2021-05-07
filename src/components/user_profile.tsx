@@ -6,15 +6,65 @@ interface IProps {
 }
 
 interface IState {
-    user_info?: {username: string, created_quiz_ids: number[]},
+    user_info?: {username: string, created_quiz_ids: number[], result_records: {
+        date: string,
+        performance_data: {
+            correct_answers: number,
+            answers_total: number,
+            correct_answers_percentage: number,
+            points_earned: number,
+            points_earned_percentage: number,
+            total_points: number
+        },
+        quiz_id: number,
+        record_id: number,
+        answers: {
+            answer_indexes: number[],
+            correct_answer_indexes: number[],
+            is_correct: boolean,
+            points_earned: number,
+            question_number: number,
+            record_id: number
+        }[]
+    }[]},
     created_quizzes?: { title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string }[];
+    stats: {
+        average_score_percentage?: number,
+        average_correct_answers_percentage?: number,
+    }
+}
+
+interface account_props {
+    stats: {
+        average_score_percentage: number,
+        average_correct_answers_percentage: number,
+        
+    },
+    username: string
+}
+
+interface account_state {
+
+}
+
+function calculate_mean(array: number[]){
+    let n = array.length;
+    let total = 0;
+    array.forEach(num => {
+        total += num;
+    })
+    
+    let mean = Math.floor((total / n));
+    return mean;
 }
 
 export class User_profile extends React.Component<IProps, IState> {
     constructor(props: IProps){
         super(props);
         this.state = {
+            stats: {
 
+            }
         }
         // This is to prevent pushing into history when the state is already at browse
         let path_name = location.pathname;
@@ -38,6 +88,7 @@ export class User_profile extends React.Component<IProps, IState> {
                 this.setState({
                     user_info: result.user_info
                 })
+                this.calculate_stats();
                 this.fetch_created_quizzes();
             }
         })
@@ -89,6 +140,21 @@ export class User_profile extends React.Component<IProps, IState> {
                 location.reload();
             }
         })
+    }
+    calculate_stats = () => {
+        let result_records = this.state.user_info.result_records;
+        let correct_answers_percentages = [];
+        let points_earned_percentages = []
+        result_records.forEach(result_record => {
+            let performance_data = result_record.performance_data;
+            correct_answers_percentages.push(performance_data.correct_answers_percentage);
+            points_earned_percentages.push(performance_data.points_earned_percentage);
+        })
+        console.log(correct_answers_percentages, points_earned_percentages);
+        this.state.stats.average_correct_answers_percentage = calculate_mean(correct_answers_percentages);
+        this.state.stats.average_score_percentage = calculate_mean(points_earned_percentages);
+        this.forceUpdate();
+        
     }
     render(){
         return (
