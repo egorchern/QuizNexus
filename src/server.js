@@ -677,6 +677,15 @@ function record_results(join_code, auth_token, username, next_record_id){
     let global_user_obj = global_users[username];
     if(global_user_obj != undefined){
         let answers = lobbies[join_code].participants[auth_token].answers;
+        let converted_answers = [];
+        let answer_keys = Object.keys(answers);
+        answer_keys.forEach(answer_key => {
+            let ans_obj = answers[answer_key];
+            ans_obj.question_number = answer_key;
+            converted_answers.push(ans_obj);
+
+        });
+        answers = converted_answers;
         
         let quiz_id = lobbies[join_code].quiz_id;
         let record_obj = {
@@ -685,22 +694,19 @@ function record_results(join_code, auth_token, username, next_record_id){
             username: username,
             quiz_id: quiz_id,
             date: get_formatted_current_date(),
+            performance_data: get_performance_data(quiz_id, answers)
             
         }
         
         global_user_obj.result_records.push(record_obj);
         insert_result_record(record_obj);
-        let answer_keys = Object.keys(record_obj.answers);
-        for(let i = 0; i < answer_keys.length; i += 1){
-            let answer = record_obj.answers[answer_keys[i]];
+        for(let i = 0; i < answers.length; i += 1){
+            let answer = answers[i];
             insert_record_answer(record_obj.record_id, answer_keys[i], answer);
         }
     }
 }
 
-function calculate_stats(){
-    
-}
 
 function assign_performance_data_on_records(){
     let global_user_keys = Object.keys(global_users);

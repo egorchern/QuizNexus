@@ -271,6 +271,7 @@ class App extends React.Component {
             content = (
                 <User_profile
                     edit={this.edit}
+                    switch_page_state={this.switch_page_state}
                 >
 
                 </User_profile>

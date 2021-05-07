@@ -84,3 +84,11 @@ body {
     grid-template-columns: 1fr 1fr;
     column-gap: 16px;
 }
+.box_shadow_hoverable{
+    transition: 0.3s box-shadow;
+    cursor: pointer;
+    padding: 12px;
+}
+.box_shadow_hoverable:hover{
+    box-shadow: 0px 0px 5px 3px #43adef;
+}

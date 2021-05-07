@@ -17,6 +17,22 @@ $main_font_size: calc(1.2rem + 0.4vw);
         --browse_item_width_percentage: 90%;
     }
 }
+.greeting{
+    font-size: $heading_font_size;
+    width: 100%;
+}
+.leave_svg{
+    width: clamp(30px, 4.5vw, 45px);
+    height: auto;
+    fill: var(--bs-danger);
+    margin-right: 2px;
+}
+.log_out{
+    cursor: pointer;
+    margin-left: 14px;
+    font-size: $heading_font_size;
+    
+}
 .user_profile{
     width: 95%;
     
@@ -32,9 +48,7 @@ $main_font_size: calc(1.2rem + 0.4vw);
         
     }
 }
-.log_out{
-    font-size: $heading_font_size;
-}
+
 .created_quizzes{
     grid-row-start: 1;
     grid-row-end: 3;
@@ -54,6 +68,17 @@ $main_font_size: calc(1.2rem + 0.4vw);
     align-items: center;
     justify-content: flex-start;
     padding: 8px;
+}
+.stats{
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+.stat{
+    font-size: $heading_font_size;
+    margin: 8px;
 }
 
 @media screen and (max-width: 750px) {

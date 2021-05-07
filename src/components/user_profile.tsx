@@ -3,6 +3,7 @@ import {render} from "react-dom";
 import { Quizzes_container } from "./quizzes_container";
 interface IProps {
     edit: Function;
+    switch_page_state: Function;
 }
 
 interface IState {
@@ -31,19 +32,21 @@ interface IState {
     stats: {
         average_score_percentage?: number,
         average_correct_answers_percentage?: number,
+        quizzes_taken?: number
     }
 }
 
-interface account_props {
+interface Account_props {
     stats: {
-        average_score_percentage: number,
-        average_correct_answers_percentage: number,
-        
+        average_score_percentage?: number,
+        average_correct_answers_percentage?: number,
+        quizzes_taken?: number
     },
-    username: string
+    username: string,
+    log_out: Function
 }
 
-interface account_state {
+interface Account_state {
 
 }
 
@@ -56,6 +59,51 @@ function calculate_mean(array: number[]){
     
     let mean = Math.floor((total / n));
     return mean;
+}
+
+class Account extends React.Component<Account_props, Account_state>{
+    constructor(props: Account_props){
+        super(props);
+    }
+    render(){
+        return (
+            <div className="user_stats">
+                <div className="greeting flex_horizontal">
+                    <span>Hi, {this.props.username}</span>
+                    
+                    <div className="log_out box_shadow_hoverable flex_horizontal" onClick={() => {
+                        this.props.log_out();
+                    }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="leave_svg" viewBox="0 0 16 16">
+                            <path d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15H1.5zM11 2h.5a.5.5 0 0 1 .5.5V15h-1V2zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1z"/>
+                        </svg>
+                        <span>Log out</span>
+                    </div>
+                </div>
+                <div className="stats">
+                    <div className="stat">
+                        <span>
+                            Correct answers: {this.props.stats.average_correct_answers_percentage}%
+                        </span>
+                        
+                    </div>
+                    <div className="stat">
+                        <span>
+                            Score earned: {this.props.stats.average_score_percentage}%
+                        </span>
+                        
+                    </div>
+                    <div className="stat">
+                        <span>
+                            Quizzes taken: {this.props.stats.quizzes_taken}
+                        </span>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        )
+    }
 }
 
 export class User_profile extends React.Component<IProps, IState> {
@@ -137,6 +185,7 @@ export class User_profile extends React.Component<IProps, IState> {
         .then(result => {
             let code = result.code;
             if(code === 2){
+                this.props.switch_page_state("home");
                 location.reload();
             }
         })
@@ -150,20 +199,38 @@ export class User_profile extends React.Component<IProps, IState> {
             correct_answers_percentages.push(performance_data.correct_answers_percentage);
             points_earned_percentages.push(performance_data.points_earned_percentage);
         })
-        console.log(correct_answers_percentages, points_earned_percentages);
-        this.state.stats.average_correct_answers_percentage = calculate_mean(correct_answers_percentages);
-        this.state.stats.average_score_percentage = calculate_mean(points_earned_percentages);
+        let average_correct_answers_percentage = calculate_mean(correct_answers_percentages);
+        let average_score_percentage = calculate_mean(points_earned_percentages);
+        
+        if(isNaN(average_correct_answers_percentage)){
+            
+            average_correct_answers_percentage = 0;
+            average_score_percentage = 0;
+        }
+        
+        this.state.stats.average_correct_answers_percentage = average_correct_answers_percentage
+        this.state.stats.average_score_percentage = average_score_percentage;
+        this.state.stats.quizzes_taken = result_records.length;
         this.forceUpdate();
         
     }
     render(){
         return (
             <div className="user_profile">
-                <div className="user_stats">
-                    <button className="btn btn-danger log_out" onClick={this.log_out}>
-                        Log out
-                    </button>
-                </div>
+                {
+                    this.state.user_info != undefined ? (
+                        <Account
+                        stats={this.state.stats}
+                        username={this.state.user_info.username}
+                        log_out={this.log_out}
+                        >
+
+                        </Account>
+                    )
+                    : null
+                        
+                }
+                
                 <div>
 
                 </div>
