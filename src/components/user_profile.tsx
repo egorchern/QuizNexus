@@ -69,16 +69,21 @@ class Account extends React.Component<Account_props, Account_state>{
         return (
             <div className="user_stats">
                 <div className="greeting flex_horizontal">
-                    <span>Hi, {this.props.username}</span>
-                    
-                    <div className="log_out box_shadow_hoverable flex_horizontal" onClick={() => {
-                        this.props.log_out();
-                    }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="leave_svg" viewBox="0 0 16 16">
-                            <path d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15H1.5zM11 2h.5a.5.5 0 0 1 .5.5V15h-1V2zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1z"/>
-                        </svg>
-                        <span>Log out</span>
+                    <div className="flex_grow flex_horizontal">
+                        <span>Hi, {this.props.username}</span>
                     </div>
+                    
+                    <div className="flex_horizontal">
+                        <div className="log_out box_shadow_hoverable flex_horizontal" onClick={() => {
+                            this.props.log_out();
+                        }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="leave_svg" viewBox="0 0 16 16">
+                                <path d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15H1.5zM11 2h.5a.5.5 0 0 1 .5.5V15h-1V2zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1z"/>
+                            </svg>
+                            <span>Log out</span>
+                        </div>
+                    </div>
+                    
                 </div>
                 <div className="stats">
                     <div className="stat">

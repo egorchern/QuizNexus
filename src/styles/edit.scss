@@ -14,6 +14,7 @@ $third_hover_box_shadow: 0px 0px 4px 2px #13e73d;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     .animate__animated {
         animation-duration: 0.5s;
     }
