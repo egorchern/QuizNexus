@@ -40,15 +40,16 @@ $main_font_size: calc(1.2rem + 0.4vw);
     flex-grow: 1;
 }
 .user_profile{
-    width: 95%;
+    width: 100%;
     overflow: hidden;
     margin: auto;
     display: grid;
-    grid-template-columns: 40fr 60fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 45fr 55fr;
+    grid-template-rows: 40fr 60fr;
     flex-grow: 1;
     height: -webkit-fill-available;
-    padding: 8px;
+    padding: 12px;
+    column-gap: 15px;
     .animate__animated{
         animation-duration: 0.5s;
         
@@ -88,11 +89,24 @@ $main_font_size: calc(1.2rem + 0.4vw);
     font-size: $main_font_size;
     margin: 8px;
 }
+.records{
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+.record{
+    width: 100%;
+    font-size: $main_font_size;
+}
 
 @media screen and (max-width: 750px) {
     .user_profile{
         grid-template-columns: 1fr;
         grid-template-rows: none;
+        
     }
     .created_quizzes{
         grid-row-start: auto;
