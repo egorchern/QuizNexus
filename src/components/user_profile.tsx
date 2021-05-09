@@ -77,9 +77,11 @@ interface Records_props {
 }
 
 interface Records_state {
-    quizzes?: {quiz_id: {
-        title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string 
-    }};
+    quizzes?: {
+        quiz_id: {
+            title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string
+        }
+    };
 }
 
 
@@ -94,16 +96,16 @@ function calculate_mean(array: number[]) {
     return mean;
 }
 
-function reverse_array(array: any[]){
+function reverse_array(array: any[]) {
     let output = [];
-    for(let i = array.length - 1; i >= 0; i -= 1){
+    for (let i = array.length - 1; i >= 0; i -= 1) {
         output.push(array[i]);
     }
     return output;
 }
 
 class Records extends React.Component<Records_props, Records_state>{
-    constructor(props: Records_props){
+    constructor(props: Records_props) {
         super(props);
         this.state = {
 
@@ -114,7 +116,7 @@ class Records extends React.Component<Records_props, Records_state>{
         let quiz_ids = [];
         this.props.result_records.forEach(result_record => {
             let quiz_id = result_record.quiz_id;
-            if(!quiz_ids.includes(quiz_id)){
+            if (!quiz_ids.includes(quiz_id)) {
                 quiz_ids.push(quiz_id);
             }
         })
@@ -125,48 +127,96 @@ class Records extends React.Component<Records_props, Records_state>{
             },
             body: JSON.stringify(quiz_ids)
         }).then(result => result.json())
-        .then(result => {
-            let quizzes = result.quizzes;
-            let quizzes_hash_map = {};
-            for(let i = 0; i < quizzes.length; i += 1){
-                let quiz_id = quizzes[i].quiz_id;
-                quizzes_hash_map[quiz_id] = quizzes[i];
-            }
-            
-            this.setState({
-                quizzes: quizzes_hash_map
+            .then(result => {
+                let quizzes = result.quizzes;
+                let quizzes_hash_map = {};
+                for (let i = 0; i < quizzes.length; i += 1) {
+                    let quiz_id = quizzes[i].quiz_id;
+                    quizzes_hash_map[quiz_id] = quizzes[i];
+                }
+
+                this.setState({
+                    quizzes: quizzes_hash_map
+                })
             })
-        })
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.fetch_quizzes();
     }
 
-    render(){
+    render() {
         let records = null
-        if(this.state.quizzes != undefined){
+        if (this.state.quizzes != undefined) {
             let result_records: Records_props["result_records"] = reverse_array(this.props.result_records);
             records = result_records.map((result_record, index) => {
                 let quiz_id = result_record.quiz_id;
                 let quiz_obj = this.state.quizzes[quiz_id];
                 return (
                     <div key={index} className="answer_choice record">
-                        <span>
-                            {quiz_obj.title}
-                        </span>
+                        <div className="flex_vertical">
+                            <span>
+                                {quiz_obj.title}
+                            </span>
+                        </div>
+
+                        <div className="flex_vertical">
+                            <span>
+                                {result_record.date}
+                            </span>
+                        </div>
+                        <div className="flex_vertical">
+                            <span>
+                                {result_record.performance_data.correct_answers_percentage}%
+                            </span>
+                        </div>
+                        <div className="flex_vertical">
+                            <span>
+                                {result_record.performance_data.points_earned_percentage}%
+                            </span>
+                        </div>
                     </div>
                 )
-            });      
+            });
         }
-        
+        let stl = {
+            overflow: "hidden"
+        }
+        let stl2 = {
+            paddingRight: "14px",
+            paddingLeft: "6px"
+        }
         return (
-            <div className="records">
-                {records}
-             </div>
+            <div className="flex_vertical" style={stl}>
+                <div className="record" style={stl2}>
+                    <div className="flex_vertical">
+                        <span>
+                            Title
+                        </span>
+                    </div>
+                    <div className="flex_vertical">
+                        <span>
+                            Date
+                        </span>
+                    </div>
+                    <div className="flex_vertical">
+                        <span>
+                            Correct answers %
+                        </span>
+                    </div>
+                    <div className="flex_vertical">
+                        <span>
+                            Score earned %
+                        </span>
+                    </div>
+
+                </div>
+                <div className="records">
+
+                    {records}
+                </div>
+            </div>
         )
-            
-        
     }
 }
 
@@ -347,12 +397,12 @@ export class User_profile extends React.Component<IProps, IState> {
                 {
                     this.state.user_info != undefined ? (
                         <Records
-                        result_records={this.state.user_info.result_records}
+                            result_records={this.state.user_info.result_records}
                         >
 
                         </Records>
                     )
-                    : null
+                        : null
                 }
                 <div className="created_quizzes animate__animated animate__zoomInRight">
                     <h2>Created Quizzes</h2>
