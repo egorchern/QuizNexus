@@ -733,6 +733,7 @@ async function main() {
     
     assign_quizzes_to_creators();
     assign_performance_data_on_records()
+    console.log(record_id_to_username_map);
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -969,11 +970,11 @@ async function main() {
             })
         }
     })
-
+    // TODO make route for viewing records
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
-
+        
         let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
         console.log(`quiz edit access: ${quiz_id}, ${req.username}, ${is_allowed}`);
         if (is_allowed) {
@@ -1126,6 +1127,9 @@ async function main() {
     app.get("/edit/:edit_quiz_id", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
+    app.get("/view_record/:record_id", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    })
     app.get("/", (req, res) => {
         res.redirect("/home");
     });

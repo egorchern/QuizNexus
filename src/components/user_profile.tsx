@@ -4,6 +4,7 @@ import { Quizzes_container } from "./quizzes_container";
 interface IProps {
     edit: Function;
     switch_page_state: Function;
+    view_record: Function;
 }
 
 interface IState {
@@ -74,6 +75,7 @@ interface Records_props {
             record_id: number
         }[]
     }[];
+    view_record: Function;
 }
 
 interface Records_state {
@@ -153,7 +155,9 @@ class Records extends React.Component<Records_props, Records_state>{
                 let quiz_id = result_record.quiz_id;
                 let quiz_obj = this.state.quizzes[quiz_id];
                 return (
-                    <div key={index} className="answer_choice record">
+                    <div key={index} className="answer_choice record" onClick={() => {
+                        this.props.view_record(result_record.record_id);
+                    }}>
                         <div className="flex_vertical">
                             <span>
                                 {quiz_obj.title}
@@ -398,6 +402,7 @@ export class User_profile extends React.Component<IProps, IState> {
                     this.state.user_info != undefined ? (
                         <Records
                             result_records={this.state.user_info.result_records}
+                            view_record={this.props.view_record}
                         >
 
                         </Records>
