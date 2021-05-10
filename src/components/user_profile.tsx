@@ -191,7 +191,7 @@ class Records extends React.Component<Records_props, Records_state>{
             paddingLeft: "6px"
         }
         return (
-            <div className="flex_vertical" style={stl}>
+            <div className="flex_vertical animate__animated animate__zoomInLeft" style={stl}>
                 <div className="record" style={stl2}>
                     <div className="flex_vertical">
                         <span>
@@ -230,7 +230,7 @@ class Account extends React.Component<Account_props, Account_state>{
     }
     render() {
         return (
-            <div className="user_stats">
+            <div className="user_stats animate__animated animate__zoomInLeft">
                 <div className="greeting flex_horizontal">
                     <div className="flex_grow flex_horizontal">
                         <span>Hi, {this.props.username}</span>

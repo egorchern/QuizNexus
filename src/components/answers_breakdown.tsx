@@ -1,8 +1,8 @@
 import * as React from "react";
 import { render } from "react-dom";
-
+import assets from "../assets/*.png";
+console.log(assets);
 interface Answers_breakdown_props{
-    assets: any,
     username: string,
     questions: { answer_choices: string[], correct_answer_indexes: number[], multi_choice: boolean, points_base: number, question_number: number, question_text: string, quiz_id: number, time_allocated: number }[];
     all_answers: any[]
@@ -20,7 +20,6 @@ export class Answers_breakdown extends React.Component<Answers_breakdown_props, 
         let all_answers = this.props.all_answers;
         let username = this.props.username;
         let questions = this.props.questions;
-        let assets = this.props.assets;
         let own_answers_index;
         let content = null;
         let correct_answers, number_of_questions, correct_answer_percent;
@@ -46,8 +45,8 @@ export class Answers_breakdown extends React.Component<Answers_breakdown_props, 
                 let current_question_obj = questions[index];
                 
                 let answer = own_answers[key];
-                points_earned += answer.points_earned;
-                points_total += current_question_obj.points_base;
+                points_earned += Number(answer.points_earned);
+                points_total += Number(current_question_obj.points_base);
                 let is_correct = answer.is_correct;
                 let own_answer_string = ``;
                 for (let i = 0; i < answer.answer_indexes.length; i += 1) {

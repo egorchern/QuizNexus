@@ -699,6 +699,10 @@ function record_results(join_code, auth_token, username, next_record_id){
         }
         
         global_user_obj.result_records.push(record_obj);
+        record_id_to_username_map[record_obj.record_id] = {
+            username: username,
+            index: global_user_obj.result_records.length - 1
+        }
         insert_result_record(record_obj);
         for(let i = 0; i < answers.length; i += 1){
             let answer = answers[i];
@@ -733,7 +737,7 @@ async function main() {
     
     assign_quizzes_to_creators();
     assign_performance_data_on_records()
-    console.log(record_id_to_username_map);
+    
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -970,7 +974,31 @@ async function main() {
             })
         }
     })
-    // TODO make route for viewing records
+
+    // Used to fetch record by the Record component. Response codes: 1 - not allowed, 2 - allowed
+    app.post("/get_record", (req, res) => {
+        let record_id = req.body.record_id;
+        let username = req.username;
+        let record_about = record_id_to_username_map[record_id];
+        let is_allowed = username != null && record_about != undefined && record_about.username === username;
+        if(is_allowed){
+            let record_obj = global_users[username].result_records[record_about.index];
+            let quiz_id = record_obj.quiz_id;
+            let questions = get_all_questions(quiz_id);
+            res.send({
+                code: 2,
+                questions: questions,
+                record: record_obj
+            })
+            
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
+
+    })
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
