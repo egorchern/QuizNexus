@@ -8,6 +8,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow: hidden;
     align-items: center;
     position: relative;
     padding: 8px;

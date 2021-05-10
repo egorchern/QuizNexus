@@ -9,6 +9,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     margin-left: auto;
     margin-right: auto;
     display: flex;
+    overflow: hidden;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -152,7 +153,7 @@ $heading_font_size: calc(1.5rem + 0.9vw);
 }
 .answer_choices {
     width: 100%;
-
+    text-align: center;
     padding: 2px;
     display: flex;
     flex-wrap: wrap;

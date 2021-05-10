@@ -6,6 +6,7 @@ $toolbar_font_size: calc(1.2rem + 0.1vw);
     height: -webkit-fill-available;
     margin: auto;
     display: flex;
+    overflow: hidden;
     flex-direction: column;
     justify-content: center;
     align-items: center;

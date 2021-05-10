@@ -17,32 +17,55 @@ $main_font_size: calc(1.2rem + 0.4vw);
         --browse_item_width_percentage: 90%;
     }
 }
+.greeting{
+    font-size: $heading_font_size;
+    width: 100%;
+}
+.leave_svg{
+    width: clamp(30px, 4.5vw, 45px);
+    height: auto;
+    fill: var(--bs-danger);
+    margin-right: 2px;
+}
+.log_out{
+    cursor: pointer;
+    margin-left: 12px;
+    margin-right: 12px;
+    font-size: $heading_font_size;
+}
+.justify_end{
+    justify-content: flex-end !important;
+}
+.flex_grow{
+    flex-grow: 1;
+}
 .user_profile{
-    width: 95%;
-    
+    width: 100%;
+    overflow: hidden;
     margin: auto;
     display: grid;
-    grid-template-columns: 40fr 60fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 45fr 55fr;
+    grid-template-rows: 40fr 60fr;
     flex-grow: 1;
     height: -webkit-fill-available;
-    padding: 8px;
+    padding: 12px;
+    column-gap: 15px;
     .animate__animated{
         animation-duration: 0.5s;
         
     }
 }
-.log_out{
-    font-size: $heading_font_size;
-}
+
 .created_quizzes{
     grid-row-start: 1;
     grid-row-end: 3;
     grid-column-start: 2;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     grid-column-end: 3;
-    padding-top: 12px;
-    height: 90%;
+    padding: 6px;
+    height: 100%;
     > h2{
         text-align: center;
     }
@@ -55,11 +78,48 @@ $main_font_size: calc(1.2rem + 0.4vw);
     justify-content: flex-start;
     padding: 8px;
 }
+.stats{
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+.stat{
+    font-size: $main_font_size;
+    margin: 8px;
+}
+.records{
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-right: 6px;
+    padding-left: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+.record{
+    width: 100%;
+    min-height: auto;
+    height: fit-content;
+    font-size: $main_font_size;
+    display: grid;
+    margin-left: 0;
+    margin-right: 0;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    column-gap: 8px;
+    span{
+        text-align: center;
+    }
+    
+}
 
 @media screen and (max-width: 750px) {
     .user_profile{
         grid-template-columns: 1fr;
         grid-template-rows: none;
+        
     }
     .created_quizzes{
         grid-row-start: auto;

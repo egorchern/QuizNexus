@@ -32,7 +32,9 @@ let destroy_lobby_after_ms = destroy_lobby_after_minutes * 60 * 1000;
 let global_users = {
 
 }
+let record_id_to_username_map = {
 
+}
 let auth_tokens = {
 
 }
@@ -109,6 +111,7 @@ function get_global_users() {
                 let username = current_row.username;
                 global_users[username] = current_row;
                 global_users[username].created_quiz_ids = [];
+                global_users[username].result_records = [];
             }
             resolve();
         })
@@ -133,6 +136,59 @@ function get_auth_tokens() {
             }
             resolve();
         })
+    })
+}
+
+function get_record_answers(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT *
+        FROM record_answers
+        ORDER BY record_id ASC
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let info = record_id_to_username_map[row.record_id];
+                let username = info.username;
+                let index = info.index;
+                let result_records = global_users[username].result_records[index];
+                result_records.answers.push(row);
+                
+            })
+            resolve();
+        })
+    })
+}
+
+function get_result_records(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT * 
+        FROM result_records
+        ORDER BY record_id ASC
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let global_user_obj = global_users[row.username];
+                let result_record = {
+                    record_id: row.record_id,
+                    username: row.username,
+                    quiz_id: row.quiz_id,
+                    date: row.date,
+                    answers: []
+                }
+                global_user_obj.result_records.push(result_record);
+                record_id_to_username_map[row.record_id] = {
+                    username: row.username,
+                    index: global_user_obj.result_records.length - 1
+                }
+                
+            })
+            let next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            resolve(next_record_id);
+        })
+
+        
     })
 }
 
@@ -523,7 +579,7 @@ async function edit_quiz(quiz_descriptors, quiz_questionss) {
     let create_quiz_promise = await create_new_quiz(quiz_descriptors, quiz_descriptors.creators_name);
     let question_index = 0;
     
-    console.log(quiz_questionss);
+    
     for(let i = 0; i < quiz_questionss.length; i += 1){
         let current_question = quiz_questionss[i];
         
@@ -549,9 +605,126 @@ function is_title_free(title){
 }
 
 function destroy_lobby(join_code){
-    console.log(lobbies);
+    
     delete lobbies[join_code];
-    console.log(lobbies);
+    
+}
+
+function get_formatted_current_date(){
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    let return_date = `${dd}/${mm}/${yyyy}`;
+    return return_date;
+}
+
+function get_performance_data(quiz_id, answers){
+    let current_quiz_questions = quiz_questions[quiz_id];
+    
+    let correct_answers = 0;
+    let answers_total = answers.length;
+    let correct_answers_percentage;
+    let points_earned = 0;
+    let total_points = 0;
+    let points_earned_percentage;
+    for(let i = 0; i < answers_total; i += 1){
+        
+        let answer = answers[i];
+        if(answer.is_correct){
+            correct_answers += 1;
+
+        }
+        points_earned += Number(answer.points_earned);
+        total_points += Number(current_quiz_questions[answer.question_number].points_base);
+    }
+    correct_answers_percentage = Math.floor((correct_answers / answers_total) * 100);
+    points_earned_percentage = Math.floor((points_earned / total_points) * 100);
+    return {
+        correct_answers: correct_answers,
+        answers_total: answers_total,
+        correct_answers_percentage: correct_answers_percentage,
+        points_earned: points_earned,
+        total_points: total_points,
+        points_earned_percentage: points_earned_percentage
+    }
+}
+
+function insert_result_record(record_obj){
+    client.query(sql(`
+    INSERT INTO result_records (record_id, username, quiz_id, date)
+    VALUES(:record_id, :username, :quiz_id, :date)
+    `)(record_obj))
+    
+}
+
+function insert_record_answer(record_id, question_number, answer){
+    
+    client.query(sql(`
+    INSERT INTO record_answers(record_id, question_number, answer_indexes, correct_answer_indexes, is_correct, points_earned)
+    VALUES(:record_id, :question_number, :answer_indexes, :correct_answer_indexes, :is_correct, :points_earned)
+    `)({
+        record_id: record_id,
+        question_number: question_number,
+        answer_indexes: answer.answer_indexes,
+        correct_answer_indexes: answer.correct_answer_indexes,
+        is_correct: answer.is_correct,
+        points_earned: answer.points_earned
+    }))
+}
+
+function record_results(join_code, auth_token, username, next_record_id){
+    let global_user_obj = global_users[username];
+    if(global_user_obj != undefined){
+        let answers = lobbies[join_code].participants[auth_token].answers;
+        let converted_answers = [];
+        let answer_keys = Object.keys(answers);
+        answer_keys.forEach(answer_key => {
+            let ans_obj = answers[answer_key];
+            ans_obj.question_number = answer_key;
+            converted_answers.push(ans_obj);
+
+        });
+        answers = converted_answers;
+        
+        let quiz_id = lobbies[join_code].quiz_id;
+        let record_obj = {
+            record_id: next_record_id,
+            answers: answers,
+            username: username,
+            quiz_id: quiz_id,
+            date: get_formatted_current_date(),
+            performance_data: get_performance_data(quiz_id, answers)
+            
+        }
+        
+        global_user_obj.result_records.push(record_obj);
+        record_id_to_username_map[record_obj.record_id] = {
+            username: username,
+            index: global_user_obj.result_records.length - 1
+        }
+        insert_result_record(record_obj);
+        for(let i = 0; i < answers.length; i += 1){
+            let answer = answers[i];
+            insert_record_answer(record_obj.record_id, answer_keys[i], answer);
+        }
+    }
+}
+
+
+function assign_performance_data_on_records(){
+    let global_user_keys = Object.keys(global_users);
+    global_user_keys.forEach(global_user_key => {
+        let global_user = global_users[global_user_key];
+        
+        let result_records = global_user.result_records;
+        result_records.forEach(result_record => {
+            
+            let performance_data = get_performance_data(result_record.quiz_id, result_record.answers);
+            result_record.performance_data = performance_data;
+        })
+
+    })
 }
 
 async function main() {
@@ -559,8 +732,16 @@ async function main() {
     let quiz_questions_promise = await get_quiz_questions();
     let global_users_promise = await get_global_users();
     let auth_tokens_promise = await get_auth_tokens();
+    let next_record_id = await get_result_records();
+    let get_record_answers_promise = await get_record_answers();
+    
     assign_quizzes_to_creators();
-    console.log(auth_tokens);
+    assign_performance_data_on_records()
+    
+    let next_quiz_id;
+    let quiz_keys = Object.keys(quizzes);
+    next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
+    
     // To support URL-encoded bodies
     app.use(body_parser.urlencoded({ extended: true }));
     // To support json bodies
@@ -794,10 +975,34 @@ async function main() {
         }
     })
 
+    // Used to fetch record by the Record component. Response codes: 1 - not allowed, 2 - allowed
+    app.post("/get_record", (req, res) => {
+        let record_id = req.body.record_id;
+        let username = req.username;
+        let record_about = record_id_to_username_map[record_id];
+        let is_allowed = username != null && record_about != undefined && record_about.username === username;
+        if(is_allowed){
+            let record_obj = global_users[username].result_records[record_about.index];
+            let quiz_id = record_obj.quiz_id;
+            let questions = get_all_questions(quiz_id);
+            res.send({
+                code: 2,
+                questions: questions,
+                record: record_obj
+            })
+            
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
+
+    })
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
-
+        
         let is_allowed = req.username != null && quiz_id != undefined && global_users[req.username].created_quiz_ids.includes(quiz_id);
         console.log(`quiz edit access: ${quiz_id}, ${req.username}, ${is_allowed}`);
         if (is_allowed) {
@@ -819,11 +1024,11 @@ async function main() {
         let username = req.username;
         let is_allowed = username != null;
         if (is_allowed) {
-            let next_quiz_id = Object.keys(quizzes).length + 1;
+            
             let descriptors = {
                 category: "General",
                 creators_name: username,
-                date_created: new Date().toLocaleDateString(),
+                date_created: get_formatted_current_date(),
                 description: "",
                 difficulty: "Easy",
                 number_of_questions: 0,
@@ -836,7 +1041,8 @@ async function main() {
                 res.send({
                     quiz_id: next_quiz_id,
                     code: 2
-                })
+                });
+                next_quiz_id += 1;
             })
         }
     })
@@ -949,6 +1155,9 @@ async function main() {
     app.get("/edit/:edit_quiz_id", (req, res) => {
         res.status(200).sendFile("index_page.html", { root: "dist" });
     });
+    app.get("/view_record/:record_id", (req, res) => {
+        res.status(200).sendFile("index_page.html", { root: "dist" });
+    })
     app.get("/", (req, res) => {
         res.redirect("/home");
     });
@@ -965,10 +1174,11 @@ async function main() {
 
             let logged_users = get_logged_participants(join_code);
             let scores_list = get_scores(join_code);
-
+            clearTimeout(lobbies[join_code].destroy_timer);
             socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
             io.to(`${join_code}`).emit("logged_users_in_room", logged_users);
+
         });
         socket.on("request_quiz_descriptors", (data) => {
             let parsed = JSON.parse(data);
@@ -1026,46 +1236,54 @@ async function main() {
             let auth_token = regex.exec(socket.handshake.headers.cookie).groups
                 .auth_token;
             let username = lobbies[join_code].participants[auth_token].username;
-            let question_number = parsed.question_number;
+            let question_number = lobbies[join_code].participants[auth_token].question_pointer + 1;
+            
             let quiz_id = lobbies[join_code].quiz_id;
             let answer_indexes = parsed.answer_indexes;
             let time = parsed.time;
             let question_obj = quiz_questions[quiz_id][question_number];
-            isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
-            let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
-            if (time >= question_obj.time_allocated) {
-                is_correct = false;
-            }
-            let points_earned;
-            // Formula for points: points_base - (points_base / time_allocated * time);
-            if (is_correct) {
-                points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
-            }
-            else {
-                points_earned = 0;
-            }
-            if (points_earned > question_obj.points_base) {
-                points_earned = 0;
-            }
-            lobbies[join_code].participants[auth_token].answers[question_number] = {
-                answer_indexes: answer_indexes,
-                correct_answer_indexes: question_obj.correct_answer_indexes,
-                is_correct: is_correct,
-                points_earned: points_earned
-            }
-            lobbies[join_code].participants[auth_token].question_pointer += 1;
-            lobbies[join_code].participants[auth_token].score += points_earned;
-            if (points_earned != 0) {
-                io.to(`${join_code}`).emit("score_update", {
-                    username: username,
-                    score: lobbies[join_code].participants[auth_token].score
-                });
-            }
-            socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
-            let answers_list = get_all_answers(join_code);
-            io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
-            console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
+            if(question_obj != undefined){
 
+            
+                isSetsEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value));
+                let is_correct = isSetsEqual(new Set(answer_indexes), new Set(question_obj.correct_answer_indexes));
+                if (time >= question_obj.time_allocated) {
+                    is_correct = false;
+                }
+                let points_earned;
+                // Formula for points: points_base - (points_base / time_allocated * time);
+                if (is_correct) {
+                    points_earned = question_obj.points_base - (Math.floor(question_obj.points_base / question_obj.time_allocated) * time);
+                }
+                else {
+                    points_earned = 0;
+                }
+                if (points_earned > question_obj.points_base) {
+                    points_earned = 0;
+                }
+                lobbies[join_code].participants[auth_token].answers[question_number] = {
+                    answer_indexes: answer_indexes,
+                    correct_answer_indexes: question_obj.correct_answer_indexes,
+                    is_correct: is_correct,
+                    points_earned: points_earned
+                }
+                lobbies[join_code].participants[auth_token].question_pointer += 1;
+                lobbies[join_code].participants[auth_token].score += points_earned;
+                if (points_earned != 0) {
+                    io.to(`${join_code}`).emit("score_update", {
+                        username: username,
+                        score: lobbies[join_code].participants[auth_token].score
+                    });
+                }
+                socket.emit("get_correct_answer", question_obj.correct_answer_indexes);
+                let answers_list = get_all_answers(join_code);
+                io.to(`${join_code}_get_new_answers`).emit("get_users_answers", answers_list);
+                console.log(`Question: ${question_number}, answer_indexes: ${answer_indexes}, username: ${username}, is_correct: ${is_correct}, points_earned: ${points_earned}`);
+                if(quizzes[quiz_id].number_of_questions === question_number){
+                    record_results(join_code, auth_token, username, next_record_id);
+                    next_record_id += 1;
+                }
+            }
         });
         socket.on("start_game", (data) => {
             let parsed = JSON.parse(data);
@@ -1095,9 +1313,11 @@ async function main() {
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
                 if(logged_users.length === 0){
+                    lobbies[join_code].destroy_timer = 
                     setTimeout(() => {
                         destroy_lobby(join_code);
                     }, destroy_lobby_after_ms);
+                    
                     
                 }
                 io.to(`${join_code}`).emit(
@@ -1113,4 +1333,3 @@ async function main() {
 
 main();
 
-//TODO delete lobby if no participants are in

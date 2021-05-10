@@ -10,7 +10,7 @@ import assets from "./assets/*.png";
 import "animate.css";
 import { User_profile } from "./components/user_profile";
 import { Edit } from "./components/edit";
-
+import { Record } from "./components/record";
 
 let root = document.querySelector("#root");
 let categories = [
@@ -44,11 +44,15 @@ class App extends React.Component {
         if (path_name === "/user_profile") {
             page_state = "user_profile"
         }
+        if(path_name === "/view_record"){
+            page_state = "view_record";
+        }
         this.state = {
             page_state: page_state,
             join_code: undefined,
             global_username: null,
-            edit_quiz_id: undefined
+            edit_quiz_id: undefined,
+            record_id: undefined
         };
 
 
@@ -75,6 +79,12 @@ class App extends React.Component {
                     page_state: state.page_state
                 })
             }
+            if(state.page_state === "view_record"){
+                this.setState({
+                    page_state: state.page_state,
+                    record_id: state.record_id
+                })
+            }
         }
         // Get information from url and switch state appropriately
 
@@ -89,10 +99,15 @@ class App extends React.Component {
         let edit_regex = new RegExp("^/edit/(?<edit_quiz_id>[0-9A-Z]+)$");
         temp = edit_regex.exec(path_name);
         if (temp != null) {
-            console.log("reach");
+            
             this.edit(Number(temp.groups.edit_quiz_id));
         }
 
+        let view_record = new RegExp("^/view_record/(?<record_id>[0-9A-Z]+)$");
+        temp = view_record.exec(path_name);
+        if(temp != null){
+            this.view_record(Number(temp.groups.record_id));
+        }
         fetch("/get_global_username", {
             method: "POST",
             headers: {
@@ -209,6 +224,12 @@ class App extends React.Component {
             edit_quiz_id: quiz_id
         })
     }
+    view_record = (record_id: number) => {
+        this.setState({
+            page_state: "view_record",
+            record_id: record_id
+        })
+    }
     switch_page_state = (state) => {
         //To prevent unneeded switches from same state
         if (this.state.page_state != state) {
@@ -271,6 +292,8 @@ class App extends React.Component {
             content = (
                 <User_profile
                     edit={this.edit}
+                    switch_page_state={this.switch_page_state}
+                    view_record={this.view_record}
                 >
 
                 </User_profile>
@@ -287,6 +310,16 @@ class App extends React.Component {
                 </Edit>
             )
         }
+        else if(state === "view_record"){
+            content = (
+                <Record
+                record_id={this.state.record_id}
+                >
+
+                </Record>
+            )
+        }
+        
         else{
             content = null
         }

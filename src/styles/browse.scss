@@ -12,12 +12,12 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
     display: grid;
     grid-template-columns: 1fr 4fr;
     column-gap: 20px;
-    
+    overflow: hidden;
     .animate__animated{
         animation-duration: 0.5s;
     }
     .browse_toolbar {
-        height: 90%;
+        height: 100%;
         padding: 12px;
         display: flex;
         
@@ -61,7 +61,8 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
         }
     }
     .browse_results {
-        height: 90%;
+        height: 100%;
+        padding: 4px;
         overflow-y: auto;
     }
     

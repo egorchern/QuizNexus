@@ -2,7 +2,7 @@ import * as React from "react";
 import { render } from "react-dom";
 import { SlideDown } from "react-slidedown";
 import assets from "../assets/*.png";
-console.log(assets);
+
 interface Edit_props {
     edit_quiz_id: number;
     categories: string[];

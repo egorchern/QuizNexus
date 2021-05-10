@@ -3,6 +3,7 @@ $home_title_font_size: calc(1.25rem + 0.65vw);
     height: -webkit-fill-available;
     flex-grow: 1;
     display: flex;
+    overflow: hidden;
     .animate__animated {
         animation-duration: 0.5s;
     }

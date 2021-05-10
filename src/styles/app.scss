@@ -8,6 +8,7 @@
 @use "quizzes_container";
 @use "user_profile";
 @use "edit";
+@use "record";
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,500;1,400;1,500&display=swap");
 * {
     font-family: "Lato", sans-serif;
@@ -83,4 +84,12 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 16px;
+}
+.box_shadow_hoverable{
+    transition: 0.3s box-shadow;
+    cursor: pointer;
+    padding: 12px;
+}
+.box_shadow_hoverable:hover{
+    box-shadow: 0px 0px 5px 3px #43adef;
 }

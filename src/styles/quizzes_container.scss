@@ -4,8 +4,8 @@ $result_text_font_size: calc(1.1rem + 0.05vw);
 
 
 .quizzes_container {
-    overflow-y: hidden;
-    
+    overflow-y: auto;
+    height: 100%;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
