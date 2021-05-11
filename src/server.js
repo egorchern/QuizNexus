@@ -66,6 +66,8 @@ function get_quizzes() {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
                 quizzes[quiz_id] = current_row;
+                quizzes[quiz_id].ratings_list = {};
+                quizzes[quiz_id].rating = 0;
                 quiz_questions[quiz_id] = {
 
                 }
@@ -189,6 +191,31 @@ function get_result_records(){
         })
 
         
+    })
+}
+
+function get_quiz_ratings(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT *
+        FROM quiz_ratings
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let quiz_id = row.quiz_id;
+                let username = row.username;
+                let is_positive = row.is_positive;
+                quizzes[quiz_id].ratings_list[username] = is_positive;
+                if(is_positive){
+                    quizzes[quiz_id].rating += 1;
+                }
+                else{
+                    quizzes[quiz_id].rating -= 1;
+                }
+            })
+            resolve();
+
+        })
     })
 }
 
@@ -675,6 +702,63 @@ function insert_record_answer(record_id, question_number, answer){
     }))
 }
 
+function insert_quiz_rating(quiz_id, username, is_positive){
+    client.query(sql(`
+    INSERT INTO quiz_ratings (quiz_id, username, is_positive)
+    VALUES(:quiz_id, :username, :is_positive)
+    `)({
+        quiz_id: quiz_id,
+        username: username,
+        is_positive: is_positive
+    }));
+}
+
+function update_quiz_rating(quiz_id, username, is_positive){
+    client.query(sql(`
+    UPDATE quiz_ratings
+    SET is_positive = :is_positive
+    WHERE quiz_id = :quiz_id AND username = :username
+    `)({
+        quiz_id: quiz_id,
+        username: username,
+        is_positive: is_positive
+    }))
+}
+
+function record_quiz_rating(quiz_id, username, is_positive){
+    let ratings_obj = quizzes[quiz_id].ratings_list;
+    let already_rated = ratings_obj[username] != undefined;
+    
+    if(already_rated){
+        let val = ratings_obj[username];
+        if(val != is_positive){
+            
+            console.log(ratings_obj[username]);
+            if(val === false){
+                quizzes[quiz_id].rating += 2;
+            }
+            else{
+                quizzes[quiz_id].rating -= 2;
+            }
+            ratings_obj[username] = is_positive;
+            
+            update_quiz_rating(quiz_id, username, is_positive);
+        }
+    }
+    else{
+        ratings_obj[username] = is_positive;
+        
+        if(is_positive){
+            quizzes[quiz_id].rating += 1;
+        }
+        else{
+            quizzes[quiz_id].rating -= 1;
+        }
+        insert_quiz_rating(quiz_id, username, is_positive);
+    }
+    
+}
+
 function record_results(join_code, auth_token, username, next_record_id){
     let global_user_obj = global_users[username];
     if(global_user_obj != undefined){
@@ -736,10 +820,11 @@ async function main() {
     let auth_tokens_promise = await get_auth_tokens();
     let next_record_id = await get_result_records();
     let get_record_answers_promise = await get_record_answers();
+    let get_quiz_ratings_promise = await get_quiz_ratings();
     
     assign_quizzes_to_creators();
     assign_performance_data_on_records()
-    
+    console.log(quizzes);
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -1001,6 +1086,25 @@ async function main() {
             })
         }
 
+    })
+
+    // Used to record a quiz rating
+    app.post("/record_rating", (req, res) => {
+        let join_code = req.body.join_code;
+        let quiz_id = lobbies[join_code].quiz_id;
+        let username = req.username;
+        let is_positive = req.body.is_positive;
+        if(username != null){
+            record_quiz_rating(quiz_id, username, is_positive);
+            res.send({
+                code: 2
+            })
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
     })
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {

@@ -31,6 +31,7 @@ class Rate extends React.Component<Rate_props, Rate_state>{
     }
     on_rate = (is_positive: boolean) => {
         if(is_positive != this.state.is_positive){
+            this.props.rate(is_positive);
             this.setState({
                 is_positive: is_positive
             })
@@ -47,7 +48,7 @@ class Rate extends React.Component<Rate_props, Rate_state>{
         }
         return (
             <div className="rate flex_vertical">
-                <span>Please rate the quiz!</span>
+                <span>Please rate this quiz!</span>
                 <div className="flex_horizontal">
                     <svg xmlns="http://www.w3.org/2000/svg" className={class_list_1} viewBox="0 0 16 16" onClick={() => {
                         this.on_rate(true);
@@ -415,7 +416,19 @@ export class Game extends React.Component {
         }
     }
     rate = (is_positive: boolean) => {
-
+        fetch("/record_rating", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                join_code: this.join_code,
+                is_positive: is_positive
+            })
+        }).then(result => result.json())
+        .then(result => {
+            console.log(result);
+        })
     }
     render() {
         let content;
