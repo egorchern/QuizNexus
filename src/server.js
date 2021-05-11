@@ -298,8 +298,10 @@ function attempt_register_global_user_in_lobby(username, auth_token, join_code) 
             all_usernames[join_code].push(global_user_info.username);
 
         }
+        return true;
 
     }
+    return false;
 }
 
 // Generates a new join code from the charlist
@@ -875,11 +877,12 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
-        attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
+        let is_global_user = attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
 
         res.send({
             user_info: user_info,
+            is_global_user: is_global_user
         });
     });
 
