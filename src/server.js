@@ -113,7 +113,7 @@ function get_global_users() {
                 let username = current_row.username;
                 global_users[username] = current_row;
                 global_users[username].created_quiz_ids = [];
-                global_users[username].result_records = [];
+                global_users[username].result_records = {};
             }
             resolve();
         })
@@ -152,9 +152,8 @@ function get_record_answers(){
             rows.forEach(row => {
                 let info = record_id_to_username_map[row.record_id];
                 let username = info.username;
-                let index = info.index;
-                let result_records = global_users[username].result_records[index];
-                result_records.answers.push(row);
+                let result_records = global_users[username].result_records;
+                result_records[row.record_id].answers.push(row);
                 
             })
             resolve();
@@ -179,14 +178,17 @@ function get_result_records(){
                     date: row.date,
                     answers: []
                 }
-                global_user_obj.result_records.push(result_record);
+                global_user_obj.result_records[result_record.record_id] = result_record;
                 record_id_to_username_map[row.record_id] = {
-                    username: row.username,
-                    index: global_user_obj.result_records.length - 1
+                    username: row.username, 
                 }
                 
             })
-            let next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            
+            let next_record_id = 1;
+            if(rows.length > 0){
+                next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            }
             resolve(next_record_id);
         })
 
@@ -537,7 +539,8 @@ function create_new_quiz(descriptors, creators_name) {
         quizzes[descriptors.quiz_id] = descriptors;
         global_users[creators_name].created_quiz_ids.push(descriptors.quiz_id);
         quiz_questions[descriptors.quiz_id] = {};
-
+        quizzes[descriptors.quiz_id].rating = 0;
+        quizzes[descriptors.quiz_id].ratings_list = {};
         let insert_promise = insert_quiz(descriptors);
         insert_promise.then(result => {
             resolve();
@@ -572,6 +575,8 @@ function delete_quiz(quiz_id) {
         global_users[creators_name].created_quiz_ids.splice(delete_index, 1);
         delete quizzes[quiz_id];
         delete quiz_questions[quiz_id];
+        delete_quiz_ratings(quiz_id);
+        delete_records(quiz_id);
         let delete_db_promise = delete_quiz_db(quiz_id);
         delete_db_promise.then(res => {
             resolve();
@@ -759,6 +764,15 @@ function record_quiz_rating(quiz_id, username, is_positive){
     
 }
 
+function delete_quiz_ratings(quiz_id){
+    client.query(sql(`
+    DELETE FROM quiz_ratings
+    WHERE quiz_id = :quiz_id
+    `)({
+        quiz_id: quiz_id
+    }))
+}
+
 function get_user_rating_on_quiz(quiz_id, username){
     let ratings_obj = quizzes[quiz_id].ratings_list;
     let val = ratings_obj[username];
@@ -793,10 +807,10 @@ function record_results(join_code, auth_token, username, next_record_id){
             
         }
         
-        global_user_obj.result_records.push(record_obj);
+        global_user_obj.result_records[record_obj.record_id] = record_obj;
         record_id_to_username_map[record_obj.record_id] = {
             username: username,
-            index: global_user_obj.result_records.length - 1
+            
         }
         insert_result_record(record_obj);
         for(let i = 0; i < answers.length; i += 1){
@@ -806,6 +820,44 @@ function record_results(join_code, auth_token, username, next_record_id){
     }
 }
 
+function delete_records(quiz_id){
+    delete_records_db(quiz_id).then(record_ids => {
+        record_ids.forEach(record_id => {
+            let username = record_id_to_username_map[record_id].username;
+            delete global_users[username].result_records[record_id];
+        })
+        
+    })
+}
+
+async function delete_records_db(quiz_id){
+    let select_record_ids = await client.query(sql(`
+    SELECT record_id
+    FROM result_records
+    WHERE quiz_id = :quiz_id
+    `)({
+        quiz_id: quiz_id
+    }))
+    let record_ids = []
+    select_record_ids.rows.forEach(row => {
+        record_ids.push(Number(row.record_id));
+    })
+    record_ids.forEach(record_id => {
+        client.query(sql(`
+        DELETE FROM result_records
+        WHERE record_id = :record_id
+        `)({
+            record_id: record_id
+        }))
+        client.query(sql(`
+        DELETE FROM record_answers
+        WHERE record_id = :record_id
+        `)({
+            record_id: record_id
+        }))
+    });
+    return record_ids;
+}
 
 function assign_performance_data_on_records(){
     let global_user_keys = Object.keys(global_users);
@@ -813,8 +865,9 @@ function assign_performance_data_on_records(){
         let global_user = global_users[global_user_key];
         
         let result_records = global_user.result_records;
-        result_records.forEach(result_record => {
-            
+        let keys = Object.keys(result_records);
+        keys.forEach(key => {
+            let result_record = result_records[key];
             let performance_data = get_performance_data(result_record.quiz_id, result_record.answers);
             result_record.performance_data = performance_data;
         })
@@ -833,7 +886,7 @@ async function main() {
     
     assign_quizzes_to_creators();
     assign_performance_data_on_records()
-    console.log(quizzes);
+
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -1079,7 +1132,7 @@ async function main() {
         let record_about = record_id_to_username_map[record_id];
         let is_allowed = username != null && record_about != undefined && record_about.username === username;
         if(is_allowed){
-            let record_obj = global_users[username].result_records[record_about.index];
+            let record_obj = global_users[username].result_records[record_id];
             let quiz_id = record_obj.quiz_id;
             let questions = get_all_questions(quiz_id);
             res.send({
