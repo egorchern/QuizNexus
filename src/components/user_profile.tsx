@@ -98,6 +98,16 @@ function calculate_mean(array: number[]) {
     return mean;
 }
 
+function convert_to_array(obj: any){
+    let array = [];
+    let keys = Object.keys(obj);
+    keys.forEach(key => {
+        let element = obj[key];
+        array.push(element);
+    })
+    return array;
+}
+
 function reverse_array(array: any[]) {
     let output = [];
     for (let i = array.length - 1; i >= 0; i -= 1) {
@@ -154,6 +164,19 @@ class Records extends React.Component<Records_props, Records_state>{
             records = result_records.map((result_record, index) => {
                 let quiz_id = result_record.quiz_id;
                 let quiz_obj = this.state.quizzes[quiz_id];
+                if(quiz_obj === undefined){
+                    quiz_obj = {
+                        title: "[deleted]",
+                        category: "[deleted]",
+                        difficulty: "[deleted]",
+                        date_created: "[deleted]",
+                        time_to_complete: null,
+                        creators_name: "[deleted]",
+                        number_of_questions: null,
+                        description: "[deleted]",
+                        quiz_id: "[deleted]"
+                    }
+                }
                 return (
                     <div key={index} className="answer_choice record" onClick={() => {
                         this.props.view_record(result_record.record_id);
@@ -301,6 +324,7 @@ export class User_profile extends React.Component<IProps, IState> {
             .then(result => {
                 let code = result.code;
                 if (code === 2) {
+                    result.user_info.result_records = convert_to_array(result.user_info.result_records);
                     this.setState({
                         user_info: result.user_info
                     })

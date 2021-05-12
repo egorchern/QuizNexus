@@ -66,6 +66,8 @@ function get_quizzes() {
                 let current_row = rows[i];
                 let quiz_id = current_row.quiz_id;
                 quizzes[quiz_id] = current_row;
+                quizzes[quiz_id].ratings_list = {};
+                quizzes[quiz_id].rating = 0;
                 quiz_questions[quiz_id] = {
 
                 }
@@ -111,7 +113,7 @@ function get_global_users() {
                 let username = current_row.username;
                 global_users[username] = current_row;
                 global_users[username].created_quiz_ids = [];
-                global_users[username].result_records = [];
+                global_users[username].result_records = {};
             }
             resolve();
         })
@@ -150,9 +152,8 @@ function get_record_answers(){
             rows.forEach(row => {
                 let info = record_id_to_username_map[row.record_id];
                 let username = info.username;
-                let index = info.index;
-                let result_records = global_users[username].result_records[index];
-                result_records.answers.push(row);
+                let result_records = global_users[username].result_records;
+                result_records[row.record_id].answers.push(row);
                 
             })
             resolve();
@@ -177,18 +178,46 @@ function get_result_records(){
                     date: row.date,
                     answers: []
                 }
-                global_user_obj.result_records.push(result_record);
+                global_user_obj.result_records[result_record.record_id] = result_record;
                 record_id_to_username_map[row.record_id] = {
-                    username: row.username,
-                    index: global_user_obj.result_records.length - 1
+                    username: row.username, 
                 }
                 
             })
-            let next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            
+            let next_record_id = 1;
+            if(rows.length > 0){
+                next_record_id = Number(rows[rows.length - 1].record_id) + 1;
+            }
             resolve(next_record_id);
         })
 
         
+    })
+}
+
+function get_quiz_ratings(){
+    return new Promise(resolve => {
+        client.query(sql(`
+        SELECT *
+        FROM quiz_ratings
+        `)({})).then(res => {
+            let rows = res.rows;
+            rows.forEach(row => {
+                let quiz_id = row.quiz_id;
+                let username = row.username;
+                let is_positive = row.is_positive;
+                quizzes[quiz_id].ratings_list[username] = is_positive;
+                if(is_positive){
+                    quizzes[quiz_id].rating += 1;
+                }
+                else{
+                    quizzes[quiz_id].rating -= 1;
+                }
+            })
+            resolve();
+
+        })
     })
 }
 
@@ -298,8 +327,10 @@ function attempt_register_global_user_in_lobby(username, auth_token, join_code) 
             all_usernames[join_code].push(global_user_info.username);
 
         }
+        return true;
 
     }
+    return false;
 }
 
 // Generates a new join code from the charlist
@@ -508,7 +539,8 @@ function create_new_quiz(descriptors, creators_name) {
         quizzes[descriptors.quiz_id] = descriptors;
         global_users[creators_name].created_quiz_ids.push(descriptors.quiz_id);
         quiz_questions[descriptors.quiz_id] = {};
-
+        quizzes[descriptors.quiz_id].rating = 0;
+        quizzes[descriptors.quiz_id].ratings_list = {};
         let insert_promise = insert_quiz(descriptors);
         insert_promise.then(result => {
             resolve();
@@ -543,6 +575,8 @@ function delete_quiz(quiz_id) {
         global_users[creators_name].created_quiz_ids.splice(delete_index, 1);
         delete quizzes[quiz_id];
         delete quiz_questions[quiz_id];
+        delete_quiz_ratings(quiz_id);
+        delete_records(quiz_id);
         let delete_db_promise = delete_quiz_db(quiz_id);
         delete_db_promise.then(res => {
             resolve();
@@ -605,7 +639,7 @@ function is_title_free(title){
 }
 
 function destroy_lobby(join_code){
-    
+    console.log(`lobby: ${join_code} destroyed`);
     delete lobbies[join_code];
     
 }
@@ -673,6 +707,81 @@ function insert_record_answer(record_id, question_number, answer){
     }))
 }
 
+function insert_quiz_rating(quiz_id, username, is_positive){
+    client.query(sql(`
+    INSERT INTO quiz_ratings (quiz_id, username, is_positive)
+    VALUES(:quiz_id, :username, :is_positive)
+    `)({
+        quiz_id: quiz_id,
+        username: username,
+        is_positive: is_positive
+    }));
+}
+
+function update_quiz_rating(quiz_id, username, is_positive){
+    client.query(sql(`
+    UPDATE quiz_ratings
+    SET is_positive = :is_positive
+    WHERE quiz_id = :quiz_id AND username = :username
+    `)({
+        quiz_id: quiz_id,
+        username: username,
+        is_positive: is_positive
+    }))
+}
+
+function record_quiz_rating(quiz_id, username, is_positive){
+    let ratings_obj = quizzes[quiz_id].ratings_list;
+    let already_rated = ratings_obj[username] != undefined;
+    
+    if(already_rated){
+        let val = ratings_obj[username];
+        if(val != is_positive){
+            
+            console.log(ratings_obj[username]);
+            if(val === false){
+                quizzes[quiz_id].rating += 2;
+            }
+            else{
+                quizzes[quiz_id].rating -= 2;
+            }
+            ratings_obj[username] = is_positive;
+            
+            update_quiz_rating(quiz_id, username, is_positive);
+        }
+    }
+    else{
+        ratings_obj[username] = is_positive;
+        
+        if(is_positive){
+            quizzes[quiz_id].rating += 1;
+        }
+        else{
+            quizzes[quiz_id].rating -= 1;
+        }
+        insert_quiz_rating(quiz_id, username, is_positive);
+    }
+    
+}
+
+function delete_quiz_ratings(quiz_id){
+    client.query(sql(`
+    DELETE FROM quiz_ratings
+    WHERE quiz_id = :quiz_id
+    `)({
+        quiz_id: quiz_id
+    }))
+}
+
+function get_user_rating_on_quiz(quiz_id, username){
+    let ratings_obj = quizzes[quiz_id].ratings_list;
+    let val = ratings_obj[username];
+    if(val === undefined){
+        val = null;
+    }
+    return val;
+}
+
 function record_results(join_code, auth_token, username, next_record_id){
     let global_user_obj = global_users[username];
     if(global_user_obj != undefined){
@@ -698,10 +807,10 @@ function record_results(join_code, auth_token, username, next_record_id){
             
         }
         
-        global_user_obj.result_records.push(record_obj);
+        global_user_obj.result_records[record_obj.record_id] = record_obj;
         record_id_to_username_map[record_obj.record_id] = {
             username: username,
-            index: global_user_obj.result_records.length - 1
+            
         }
         insert_result_record(record_obj);
         for(let i = 0; i < answers.length; i += 1){
@@ -711,6 +820,44 @@ function record_results(join_code, auth_token, username, next_record_id){
     }
 }
 
+function delete_records(quiz_id){
+    delete_records_db(quiz_id).then(record_ids => {
+        record_ids.forEach(record_id => {
+            let username = record_id_to_username_map[record_id].username;
+            delete global_users[username].result_records[record_id];
+        })
+        
+    })
+}
+
+async function delete_records_db(quiz_id){
+    let select_record_ids = await client.query(sql(`
+    SELECT record_id
+    FROM result_records
+    WHERE quiz_id = :quiz_id
+    `)({
+        quiz_id: quiz_id
+    }))
+    let record_ids = []
+    select_record_ids.rows.forEach(row => {
+        record_ids.push(Number(row.record_id));
+    })
+    record_ids.forEach(record_id => {
+        client.query(sql(`
+        DELETE FROM result_records
+        WHERE record_id = :record_id
+        `)({
+            record_id: record_id
+        }))
+        client.query(sql(`
+        DELETE FROM record_answers
+        WHERE record_id = :record_id
+        `)({
+            record_id: record_id
+        }))
+    });
+    return record_ids;
+}
 
 function assign_performance_data_on_records(){
     let global_user_keys = Object.keys(global_users);
@@ -718,8 +865,9 @@ function assign_performance_data_on_records(){
         let global_user = global_users[global_user_key];
         
         let result_records = global_user.result_records;
-        result_records.forEach(result_record => {
-            
+        let keys = Object.keys(result_records);
+        keys.forEach(key => {
+            let result_record = result_records[key];
             let performance_data = get_performance_data(result_record.quiz_id, result_record.answers);
             result_record.performance_data = performance_data;
         })
@@ -734,10 +882,11 @@ async function main() {
     let auth_tokens_promise = await get_auth_tokens();
     let next_record_id = await get_result_records();
     let get_record_answers_promise = await get_record_answers();
+    let get_quiz_ratings_promise = await get_quiz_ratings();
     
     assign_quizzes_to_creators();
     assign_performance_data_on_records()
-    
+
     let next_quiz_id;
     let quiz_keys = Object.keys(quizzes);
     next_quiz_id = Number(quiz_keys[quiz_keys.length - 1]) + 1;
@@ -875,11 +1024,12 @@ async function main() {
     app.post("/get_user_info", (req, res) => {
         let join_code = req.body.join_code;
         let auth_token = req.cookies.auth_token;
-        attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
+        let is_global_user = attempt_register_global_user_in_lobby(req.username, auth_token, join_code);
         let user_info = lobbies[join_code].participants[auth_token];
 
         res.send({
             user_info: user_info,
+            is_global_user: is_global_user
         });
     });
 
@@ -982,7 +1132,7 @@ async function main() {
         let record_about = record_id_to_username_map[record_id];
         let is_allowed = username != null && record_about != undefined && record_about.username === username;
         if(is_allowed){
-            let record_obj = global_users[username].result_records[record_about.index];
+            let record_obj = global_users[username].result_records[record_id];
             let quiz_id = record_obj.quiz_id;
             let questions = get_all_questions(quiz_id);
             res.send({
@@ -999,6 +1149,35 @@ async function main() {
         }
 
     })
+
+    app.post("/get_user_rating_on_quiz", (req, res) => {
+        let username = req.username;
+        let quiz_id = lobbies[req.body.join_code].quiz_id;
+        let rating_value = get_user_rating_on_quiz(quiz_id, username);
+        res.send({
+            rating_value: rating_value
+        })
+    })
+
+    // Used to record a quiz rating
+    app.post("/record_rating", (req, res) => {
+        let join_code = req.body.join_code;
+        let quiz_id = lobbies[join_code].quiz_id;
+        let username = req.username;
+        let is_positive = req.body.is_positive;
+        if(username != null){
+            record_quiz_rating(quiz_id, username, is_positive);
+            res.send({
+                code: 2
+            })
+        }
+        else{
+            res.send({
+                code: 1
+            })
+        }
+    })
+
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
@@ -1174,6 +1353,7 @@ async function main() {
 
             let logged_users = get_logged_participants(join_code);
             let scores_list = get_scores(join_code);
+            console.log(`Stop lobby destroy: ${join_code}`);
             clearTimeout(lobbies[join_code].destroy_timer);
             socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
@@ -1313,6 +1493,7 @@ async function main() {
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
                 if(logged_users.length === 0){
+                    console.log(`start countdown to destroy lobby: ${join_code}`);
                     lobbies[join_code].destroy_timer = 
                     setTimeout(() => {
                         destroy_lobby(join_code);

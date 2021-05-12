@@ -2,7 +2,7 @@ import * as React from "react";
 import { render } from "react-dom";
 
 interface IProps {
-    quizzes: { title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string }[];
+    quizzes: { title: string, category: string, difficulty: string, date_created: string, time_to_complete: number, creators_name: string, number_of_questions: number, description: string, quiz_id: string, rating: number }[];
     action: Function;
     button_text: string;
     add_new: boolean;
@@ -34,6 +34,7 @@ export class Quizzes_container extends React.Component<IProps, IState>{
                 <div className="quizz" key={index}>
                     <div className="flex_vertical top_part">
                         <span className="result_title">{quiz.title}</span>
+                        
                         <span className="result_heading">
                             Category: {quiz.category}
                         </span>
@@ -42,6 +43,9 @@ export class Quizzes_container extends React.Component<IProps, IState>{
                         </span>
                         <span className="result_heading">
                             Time to complete: {quiz.time_to_complete} mins
+                        </span>
+                        <span className="result_heading">
+                            Rating: {quiz.rating}
                         </span>
                     </div>
                     <div className="flex_vertical bottom_part">

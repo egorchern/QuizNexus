@@ -292,6 +292,33 @@ $heading_font_size: calc(1.5rem + 0.9vw);
     display: flex;
     flex-direction: column;
 }
+.rate{
+    margin-bottom: 20px;
+    
+}
+.rate_svg{
+    width: clamp(45px, 6vw, 60px);
+    height: auto;
+    transition: fill 0.3s;
+    cursor: pointer;
+    fill: hsl(0, 0%, 71%);
+    margin: 10px;
+}
+.rate_svg.positive:hover{
+    fill: var(--bs-success);
+}
+.rate_svg.negative:hover{
+    fill: var(--bs-danger);
+}
+.rate_svg.positive.active{
+    fill: var(--bs-success);
+    cursor: auto;
+}
+.rate_svg.negative.active{
+    fill: var(--bs-danger);
+    cursor: auto;
+}
+
 @media screen and (max-width: 750px) {
     .quiz {
         display: flex;
