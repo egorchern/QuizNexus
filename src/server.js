@@ -634,7 +634,7 @@ function is_title_free(title){
 }
 
 function destroy_lobby(join_code){
-    
+    console.log(`lobby: ${join_code} destroyed`);
     delete lobbies[join_code];
     
 }
@@ -757,6 +757,15 @@ function record_quiz_rating(quiz_id, username, is_positive){
         insert_quiz_rating(quiz_id, username, is_positive);
     }
     
+}
+
+function get_user_rating_on_quiz(quiz_id, username){
+    let ratings_obj = quizzes[quiz_id].ratings_list;
+    let val = ratings_obj[username];
+    if(val === undefined){
+        val = null;
+    }
+    return val;
 }
 
 function record_results(join_code, auth_token, username, next_record_id){
@@ -1088,6 +1097,15 @@ async function main() {
 
     })
 
+    app.post("/get_user_rating_on_quiz", (req, res) => {
+        let username = req.username;
+        let quiz_id = lobbies[req.body.join_code].quiz_id;
+        let rating_value = get_user_rating_on_quiz(quiz_id, username);
+        res.send({
+            rating_value: rating_value
+        })
+    })
+
     // Used to record a quiz rating
     app.post("/record_rating", (req, res) => {
         let join_code = req.body.join_code;
@@ -1106,6 +1124,7 @@ async function main() {
             })
         }
     })
+
     // Used when Edit page requests questions for edit. Response codes: 1 - not allowed, 2 - allowed
     app.post("/get_quiz_questions", (req, res) => {
         let quiz_id = req.body.quiz_id;
@@ -1281,6 +1300,7 @@ async function main() {
 
             let logged_users = get_logged_participants(join_code);
             let scores_list = get_scores(join_code);
+            console.log(`Stop lobby destroy: ${join_code}`);
             clearTimeout(lobbies[join_code].destroy_timer);
             socket.emit("get_all_scores", scores_list);
             socket.emit("get_lobby_state", lobbies[join_code].state);
@@ -1420,6 +1440,7 @@ async function main() {
                 lobbies[join_code].participants[auth_token].logged = false;
                 let logged_users = get_logged_participants(join_code);
                 if(logged_users.length === 0){
+                    console.log(`start countdown to destroy lobby: ${join_code}`);
                     lobbies[join_code].destroy_timer = 
                     setTimeout(() => {
                         destroy_lobby(join_code);

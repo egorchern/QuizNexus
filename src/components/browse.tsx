@@ -16,6 +16,8 @@ export class Browse extends React.Component {
             time_max_value: "",
             category_value: "Any",
             difficulty_value: "Any",
+            rating_min_value: "",
+            rating_max_value: ""
         };
         // This is to prevent pushing into history when the state is already at browse
         let path_name = location.pathname;
@@ -55,6 +57,16 @@ export class Browse extends React.Component {
             time_min_value: ev.target.value,
         });
     };
+    on_rating_min_change = (ev) => {
+        this.setState({
+            rating_min_value: ev.target.value
+        })
+    }
+    on_rating_max_change = (ev) => {
+        this.setState({
+            rating_max_value: ev.target.value
+        })
+    }
     on_time_max_change = (ev) => {
         this.setState({
             time_max_value: ev.target.value,
@@ -85,6 +97,8 @@ export class Browse extends React.Component {
                 && (this.state.time_min_value === "" || current_quiz.time_to_complete >= Number(this.state.time_min_value)) 
                 && (this.state.time_max_value === "" || current_quiz.time_to_complete <= Number(this.state.time_max_value))
                 && regex_matches_bool === true
+                && (this.state.rating_min_value === "" || current_quiz.rating >= Number(this.state.rating_min_value))
+                && (this.state.rating_max_value === "" || current_quiz.rating <= Number(this.state.rating_max_value))
             ) {
                 matching_results.push(current_quiz);
             }
@@ -101,6 +115,23 @@ export class Browse extends React.Component {
                             value={this.state.title_value}
                             onChange={this.on_title_change}
                         ></input>
+                    </div>
+                    <div className="browse_input_container">
+                        <span>Rating</span>
+                        <div className="two_column_grid">
+                            <input
+                                className="form-control"
+                                placeholder="min"
+                                value={this.state.rating_min_value}
+                                onChange={this.on_rating_min_change}
+                            ></input>
+                            <input
+                                className="form-control"
+                                placeholder="max"
+                                value={this.state.rating_max_value}
+                                onChange={this.on_rating_max_change}
+                            ></input>
+                        </div>
                     </div>
                     <div className="browse_input_container">
                         <span>Time to complete (minutes)</span>
