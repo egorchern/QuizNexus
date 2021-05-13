@@ -87,7 +87,7 @@ export class Record extends React.Component<Record_props, Record_state> {
         let content = null;
         if(this.state.record != undefined){
             content = (
-                <div>
+                <div className="width_full flex_vertical">
                     <Answer_grid
                     answers_list={this.state.record.answers}
                     number_of_questions={this.state.record.answers[0].answers.length}

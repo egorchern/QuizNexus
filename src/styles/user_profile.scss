@@ -129,4 +129,7 @@ $main_font_size: calc(1.2rem + 0.4vw);
         grid-column-end: auto;
         height: fit-content;
     }
+    .record{
+        column-gap: 4px !important;
+    }
 }
